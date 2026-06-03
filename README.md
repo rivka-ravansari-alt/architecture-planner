@@ -69,28 +69,91 @@ npm run dev
 
 App: http://localhost:5173 (proxies `/api` to port 8000)
 
-## Docker
+## Docker (local)
 
-Copy `backend/.env.example` to `backend/.env` and set secrets (`OPENAI_API_KEY`, `JWT_SECRET`, Google OAuth, etc.). For Docker, OAuth redirect should match the frontend URL:
+Copy `backend/.env.example` to `backend/.env` and set secrets. OAuth redirect for local Docker:
 
 - `FRONTEND_URL=http://localhost:8080`
 - `GOOGLE_REDIRECT_URI=http://localhost:8080/api/auth/google/callback`
-
-Register that redirect URI in Google Cloud Console.
 
 ```bash
 docker compose up --build
 ```
 
-- App: http://localhost:8080 (nginx serves the UI and proxies `/api` to the backend)
-- API: http://localhost:8000
-- PostgreSQL runs as the `db` service (overrides `DATABASE_URL` in compose)
+App: http://localhost:8080 · API (direct): http://localhost:8000
 
-Build individual images:
+## Google Cloud Run (production)
+
+Two services — **API** (`backend/Dockerfile`) and **web** (`frontend/Dockerfile`). The web service is the public URL; it proxies `/api` to the API so login cookies stay same-origin.
+
+```
+Browser → archsari-web (Cloud Run, port $PORT)
+            ├─ /        → React static files
+            └─ /api/*   → archsari-api (BACKEND_URL)
+```
+
+### 1. One-time GCP setup
 
 ```bash
-docker build -t archsari-backend ./backend
-docker build -t archsari-frontend ./frontend
+gcloud config set project YOUR_PROJECT_ID
+gcloud services enable run.googleapis.com sqladmin.googleapis.com artifactregistry.googleapis.com secretmanager.googleapis.com cloudbuild.googleapis.com
+
+gcloud artifacts repositories create archsari --repository-format=docker --location=us-central1
+```
+
+Create **Cloud SQL** (PostgreSQL), store secrets in **Secret Manager** (`openai-api-key`, `jwt-secret`, `google-client-secret`), and a **Google OAuth** Web client. See `deploy/gcp.env.example` for env var names.
+
+### 2. Deploy API
+
+```bash
+gcloud builds submit --tag us-central1-docker.pkg.dev/YOUR_PROJECT_ID/archsari/archsari-api:latest ./backend
+
+gcloud run deploy archsari-api \
+  --image us-central1-docker.pkg.dev/YOUR_PROJECT_ID/archsari/archsari-api:latest \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --port 8080 \
+  --timeout 300 \
+  --memory 512Mi \
+  --add-cloudsql-instances PROJECT:REGION:INSTANCE \
+  --set-secrets OPENAI_API_KEY=openai-api-key:latest,JWT_SECRET=jwt-secret:latest,GOOGLE_CLIENT_SECRET=google-client-secret:latest \
+  --set-env-vars "DATABASE_URL=postgresql+psycopg://USER:PASS@/architecture_planner?host=/cloudsql/PROJECT:REGION:INSTANCE,SESSION_COOKIE_SECURE=true,GOOGLE_CLIENT_ID=xxx,CORS_ALLOW_ORIGINS=https://placeholder,FRONTEND_URL=https://placeholder,GOOGLE_REDIRECT_URI=https://placeholder/api/auth/google/callback"
+```
+
+Note the API URL from deploy output (e.g. `https://archsari-api-xxxxx.run.app`).
+
+### 3. Deploy web
+
+```bash
+gcloud builds submit --tag us-central1-docker.pkg.dev/YOUR_PROJECT_ID/archsari/archsari-web:latest ./frontend
+
+gcloud run deploy archsari-web \
+  --image us-central1-docker.pkg.dev/YOUR_PROJECT_ID/archsari/archsari-web:latest \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --port 8080 \
+  --set-env-vars "BACKEND_URL=https://archsari-api-xxxxx.run.app"
+```
+
+### 4. Point OAuth at the web URL
+
+Use the **web** service URL everywhere users browse:
+
+- Google Console redirect: `https://archsari-web-xxxxx.run.app/api/auth/google/callback`
+- Update API env: `FRONTEND_URL`, `GOOGLE_REDIRECT_URI`, `CORS_ALLOW_ORIGINS` to that URL
+
+```bash
+gcloud run services update archsari-api --region us-central1 \
+  --update-env-vars "FRONTEND_URL=https://archsari-web-xxxxx.run.app,GOOGLE_REDIRECT_URI=https://archsari-web-xxxxx.run.app/api/auth/google/callback,CORS_ALLOW_ORIGINS=https://archsari-web-xxxxx.run.app"
+```
+
+### CI/CD
+
+`cloudbuild.yaml` builds and deploys both services. Set substitution `_BACKEND_URL` to your API URL before the web deploy step runs:
+
+```bash
+gcloud builds submit --config=cloudbuild.yaml \
+  --substitutions=_REGION=us-central1,_BACKEND_URL=https://archsari-api-xxxxx.run.app
 ```
 
 ## API Endpoints

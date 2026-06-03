@@ -1,20 +1,26 @@
+# Production image for Google Cloud Run (and other container hosts).
+# Cloud Run sets PORT (default 8080); do not hard-code the listen port.
+
 FROM python:3.12-slim
 
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PORT=8080
 
-COPY requirements.txt .
+COPY requirements-prod.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 
-RUN mkdir -p data/generation_prompts data/generation_outputs
+# Writable paths on Cloud Run (ephemeral disk; use /tmp for debug artifacts).
+RUN mkdir -p /tmp/data/generation_prompts /tmp/data/generation_outputs
 
-EXPOSE 8000
+ENV AI_PROMPTS_DIR=/tmp/data/generation_prompts \
+    AI_OUTPUTS_DIR=/tmp/data/generation_outputs
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"
+EXPOSE 8080
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# --proxy-headers: honor X-Forwarded-* from Cloud Run / nginx (HTTPS, host).
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips='*'"]
