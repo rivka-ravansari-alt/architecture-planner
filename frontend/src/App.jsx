@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { useAuth } from "./auth/AuthContext.jsx";
 import { api } from "./api.js";
 
 import { STEPS, DESCRIPTION_MAX_TOKENS, estimateTokenCount } from "./constants.js";
@@ -13,6 +14,7 @@ import StepProjectDetails from "./components/StepProjectDetails.jsx";
 import StepRequirements from "./components/StepRequirements.jsx";
 
 import ArchitectureWorkspace from "./components/ArchitectureWorkspace.jsx";
+import LoginPage from "./components/LoginPage.jsx";
 
 
 
@@ -65,6 +67,7 @@ const EMPTY_ANSWERS = {
 
 
 export default function App() {
+  const { user, loading: authLoading, logout } = useAuth();
 
   const [step, setStep] = useState(1);
 
@@ -366,6 +369,21 @@ export default function App() {
 
   const exitWorkspace = () => goToStep(2);
 
+  if (authLoading) {
+    return (
+      <div className="login-page">
+        <div className="login-card">
+          <span className="spinner" aria-hidden />
+          <p>Loading…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
   return (
 
     <div className={`app-shell ${inWorkspace ? "focus-mode" : ""}`}>
@@ -393,25 +411,27 @@ export default function App() {
 
           </div>
 
-          {(project !== null || step > 1) && (
-
-            <button
-
-              className="btn btn-ghost btn-reset"
-
-              onClick={reset}
-
-              disabled={loading}
-
-              title="Clear all answers and start a new plan"
-
-            >
-
-              Reset Project
-
-            </button>
-
-          )}
+          <div className="topbar-actions">
+            {(project !== null || step > 1) && (
+              <button
+                className="btn btn-ghost btn-reset"
+                onClick={reset}
+                disabled={loading}
+                title="Clear all answers and start a new plan"
+              >
+                Reset Project
+              </button>
+            )}
+            <div className="user-menu">
+              {user.picture && (
+                <img className="user-avatar" src={user.picture} alt="" width={32} height={32} />
+              )}
+              <span className="user-name">{user.name || user.email}</span>
+              <button type="button" className="btn btn-ghost" onClick={logout} disabled={loading}>
+                Sign out
+              </button>
+            </div>
+          </div>
 
         </header>
         )}

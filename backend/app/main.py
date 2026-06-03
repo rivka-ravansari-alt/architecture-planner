@@ -3,7 +3,9 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
+from .api.auth import router as auth_router
 from .api.projects import router as projects_router
 from .config import settings
 from .database import init_db
@@ -32,7 +34,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Authlib OAuth stores CSRF state in this cookie (separate from JWT auth_session).
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.jwt_secret,
+    session_cookie="oauth_session",
+    max_age=600,
+)
 
+app.include_router(auth_router, prefix="/api")
 app.include_router(projects_router, prefix="/api")
 
 

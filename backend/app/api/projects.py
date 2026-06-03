@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
+from ..auth.deps import get_current_user
 from ..database import get_db
 from ..project_types import PROJECT_TYPES
 from ..services.generation import ArchitectureGenerationError, generate_for_project
@@ -20,8 +21,13 @@ def list_project_types() -> list[schemas.ProjectTypeInfo]:
 
 
 @router.post("/projects", response_model=schemas.ProjectDetail, status_code=status.HTTP_201_CREATED)
-def create_project(payload: schemas.ProjectCreate, db: Session = Depends(get_db)) -> models.Project:
+def create_project(
+    payload: schemas.ProjectCreate,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+) -> models.Project:
     project = models.Project(
+        user_id=user.id,
         name=payload.name,
         description=payload.description,
         project_types=[t.value for t in payload.project_types],
@@ -43,8 +49,14 @@ def _get_or_404(db: Session, project_id: str) -> models.Project:
 
 
 @router.post("/projects/{project_id}/generate", response_model=schemas.ProjectDetail)
-def generate_project(project_id: str, db: Session = Depends(get_db)) -> models.Project:
+def generate_project(
+    project_id: str,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+) -> models.Project:
     project = _get_or_404(db, project_id)
+    if project.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")
     try:
         return generate_for_project(db, project)
     except ArchitectureGenerationError as exc:

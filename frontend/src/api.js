@@ -2,7 +2,8 @@ const BASE = "/api";
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...options.headers },
     ...options,
   });
   if (!res.ok) {
@@ -20,6 +21,8 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  getMe: () => request("/auth/me"),
+  logout: () => request("/auth/logout", { method: "POST" }),
   getProjectTypes: () => request("/project-types"),
   createProject: (payload) =>
     request("/projects", { method: "POST", body: JSON.stringify(payload) }),

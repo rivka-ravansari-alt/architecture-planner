@@ -1,0 +1,10 @@
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.env
+*.db
+architecture_planner.db
+tests
+data/generation_prompts/*
+data/generation_outputs/*

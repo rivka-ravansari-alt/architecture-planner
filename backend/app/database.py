@@ -85,6 +85,11 @@ def init_db() -> None:
         "component_type",
         "ALTER TABLE architecture_components ADD COLUMN component_type VARCHAR(40) DEFAULT 'api'",
     )
+    _ensure_column(
+        "projects",
+        "user_id",
+        "ALTER TABLE projects ADD COLUMN user_id VARCHAR(36) REFERENCES users(id)",
+    )
     # Removed from the model when main_flow replaced user_flow/data_flow.
     for legacy_column in ("user_flow", "data_flow"):
         _drop_column_if_exists("projects", legacy_column)

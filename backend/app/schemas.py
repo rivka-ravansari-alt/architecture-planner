@@ -35,6 +35,15 @@ class ExpectedUsers(str, Enum):
     u100000 = "100000+"
 
 
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    email: str
+    name: str
+    picture: str | None = None
+
+
 class RequirementAnswersIn(BaseModel):
     auth: bool = False
     file_upload: bool = False

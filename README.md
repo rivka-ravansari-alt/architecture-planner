@@ -69,6 +69,30 @@ npm run dev
 
 App: http://localhost:5173 (proxies `/api` to port 8000)
 
+## Docker
+
+Copy `backend/.env.example` to `backend/.env` and set secrets (`OPENAI_API_KEY`, `JWT_SECRET`, Google OAuth, etc.). For Docker, OAuth redirect should match the frontend URL:
+
+- `FRONTEND_URL=http://localhost:8080`
+- `GOOGLE_REDIRECT_URI=http://localhost:8080/api/auth/google/callback`
+
+Register that redirect URI in Google Cloud Console.
+
+```bash
+docker compose up --build
+```
+
+- App: http://localhost:8080 (nginx serves the UI and proxies `/api` to the backend)
+- API: http://localhost:8000
+- PostgreSQL runs as the `db` service (overrides `DATABASE_URL` in compose)
+
+Build individual images:
+
+```bash
+docker build -t archsari-backend ./backend
+docker build -t archsari-frontend ./frontend
+```
+
 ## API Endpoints
 
 - `GET /api/project-types`

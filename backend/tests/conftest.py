@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.auth.deps import get_current_user
 from app.config import settings
 from app.database import Base, get_db
 from app.main import app
@@ -46,10 +47,26 @@ def db_session(db_engine):
 
 
 @pytest.fixture
-def sample_project(db_session: Session):
+def test_user(db_session: Session):
+    from app import models
+
+    user = models.User(
+        google_sub="test-google-sub",
+        email="test@example.com",
+        name="Test User",
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def sample_project(db_session: Session, test_user):
     from app import models
 
     project = models.Project(
+        user_id=test_user.id,
         name="TaskFlow",
         description="A team task management product.",
         project_types=["web_app"],
@@ -81,13 +98,17 @@ def mock_ai_success(monkeypatch):
 
 
 @pytest.fixture
-def api_client(db_session: Session, ai_dirs, monkeypatch):
+def api_client(db_session: Session, test_user, ai_dirs, monkeypatch):
     monkeypatch.setattr(settings, "openai_api_key", "test-key")
 
     def override_get_db():
         yield db_session
 
+    def override_get_current_user():
+        return test_user
+
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = override_get_current_user
     with TestClient(app) as client:
         yield client
     app.dependency_overrides.clear()

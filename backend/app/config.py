@@ -23,6 +23,15 @@ class Settings(BaseSettings):
     ai_prompts_dir: str = "./data/generation_prompts"
     ai_outputs_dir: str = "./data/generation_outputs"
 
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_redirect_uri: str = "http://localhost:5173/api/auth/google/callback"
+    jwt_secret: str = "change-me-in-production"
+    jwt_expire_minutes: int = 10080
+    frontend_url: str = "http://localhost:5173"
+    session_cookie_name: str = "auth_session"
+    session_cookie_secure: bool = False
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_allow_origins.split(",") if origin.strip()]

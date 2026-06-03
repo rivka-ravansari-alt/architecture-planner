@@ -18,10 +18,27 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    google_sub: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(320), default="")
+    name: Mapped[str] = mapped_column(String(200), default="")
+    picture: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+    last_login_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+
+    projects: Mapped[list[Project]] = relationship(back_populates="owner")
+
+
 class Project(Base):
     __tablename__ = "projects"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=True
+    )
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str] = mapped_column(Text, default="")
     # Multi-select project types, e.g. ["web_app", "mobile_app"].
@@ -51,6 +68,7 @@ class Project(Base):
     recommendations: Mapped[list[Recommendation]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
     )
+    owner: Mapped[User | None] = relationship(back_populates="projects")
 
 
 class RequirementAnswers(Base):
