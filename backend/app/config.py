@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +32,13 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5173"
     session_cookie_name: str = "auth_session"
     session_cookie_secure: bool = False
+
+    @field_validator("openai_api_key", "jwt_secret", "google_client_secret", mode="before")
+    @classmethod
+    def strip_secret_whitespace(cls, value: object) -> object:
+        if isinstance(value, str):
+            return value.strip()
+        return value
 
     @property
     def cors_origins_list(self) -> list[str]:
