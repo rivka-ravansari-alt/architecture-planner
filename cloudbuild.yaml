@@ -73,7 +73,8 @@ steps:
       - --max-instances=10
       - --timeout=300
       - --set-secrets=OPENAI_API_KEY=openai-api-key:latest,JWT_SECRET=jwt-secret:latest,GOOGLE_CLIENT_SECRET=google-client-secret:latest
-      - --set-env-vars=^@^SESSION_COOKIE_SECURE=true@USE_STATIC_AI_RESPONSE=false@OPENAI_MODEL=gpt-4o-mini
+      # OAuth/cookies must use the *web* service URL (browser origin), not the API service URL.
+      - --set-env-vars=^@^SESSION_COOKIE_SECURE=true@USE_STATIC_AI_RESPONSE=false@OPENAI_MODEL=gpt-4o-mini@FRONTEND_URL=https://${_WEB_SERVICE}-$PROJECT_NUMBER.${_REGION}.run.app@GOOGLE_REDIRECT_URI=https://${_WEB_SERVICE}-$PROJECT_NUMBER.${_REGION}.run.app/api/auth/google/callback@CORS_ALLOW_ORIGINS=https://${_WEB_SERVICE}-$PROJECT_NUMBER.${_REGION}.run.app
     waitFor: [push-api]
 
   - id: deploy-web

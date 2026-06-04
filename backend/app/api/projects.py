@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -9,6 +11,7 @@ from ..database import get_db
 from ..project_types import PROJECT_TYPES
 from ..services.generation import ArchitectureGenerationError, generate_for_project
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -57,7 +60,22 @@ def generate_project(
     project = _get_or_404(db, project_id)
     if project.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed")
+    logger.info(
+        "generate endpoint step=started status=started project_id=%s user_id=%s",
+        project_id,
+        user.id,
+    )
     try:
-        return generate_for_project(db, project)
+        result = generate_for_project(db, project)
+        logger.info(
+            "generate endpoint step=complete status=completed project_id=%s",
+            project_id,
+        )
+        return result
     except ArchitectureGenerationError as exc:
+        logger.error(
+            "generate endpoint step=failed status=failed project_id=%s reason=%s",
+            project_id,
+            exc.message,
+        )
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=exc.message) from exc
