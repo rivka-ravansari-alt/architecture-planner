@@ -1,0 +1,63 @@
+/* App shell                                                          */
+/* ------------------------------------------------------------------ */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--bg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2.5rem 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+.login-card h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  color: var(--primary);
+}
+
+.login-card p {
+  margin: 0 0 1.5rem;
+  color: var(--text-soft);
+}
+
+.btn-google {
+  width: 100%;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  color: var(--text-soft);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

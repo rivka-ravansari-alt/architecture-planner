@@ -1,0 +1,511 @@
+/* Cards                                                              */
+/* ------------------------------------------------------------------ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 28px 30px;
+}
+
+.card h2 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.card .subtitle {
+  margin: 0 0 26px;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ */
+/* Forms                                                              */
+/* ------------------------------------------------------------------ */
+.field {
+  margin-bottom: 20px;
+}
+
+.field label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.field input[type="text"],
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 124, 172, 0.15);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 84px;
+  line-height: 1.5;
+}
+
+.field .error-text {
+  color: var(--danger);
+  font-size: 0.8rem;
+  margin-top: 6px;
+}
+
+.field .field-hint {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-top: 6px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+/* Option chips */
+.chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-soft);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.chip.selected {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Toggle list */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  background: var(--surface);
+  transition: border-color 0.15s;
+}
+
+.toggle-row:hover {
+  border-color: var(--border-strong);
+}
+
+.toggle-row .label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border-strong);
+  border-radius: 999px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: var(--shadow-xs);
+  transition: 0.2s;
+}
+
+.switch input:checked + .slider {
+  background: var(--primary);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(18px);
+}
+
+/* ------------------------------------------------------------------ */
+/* Buttons                                                            */
+/* ------------------------------------------------------------------ */
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 28px;
+  gap: 12px;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 11px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-muted);
+}
+
+.btn-ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checklist-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.checklist-marker {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  position: relative;
+}
+
+.checklist-marker::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--primary);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+  opacity: 0.55;
+}
+
+.checklist-text {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.summary-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.summary-item .k {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+
+.summary-item .v {
+  font-weight: 600;
+  margin-top: 6px;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+/* Architecture components as professional cards */
+.component-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.component-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.component-item:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.component-item-head,
+.component-item .top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.component-item .name {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+.component-item .reason {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin: 10px 0 0;
+}
+
+/* Subtle, neutral category tags (no neon) */
+.tag {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--text-soft);
+}
+
+.tag.core {
+  background: var(--accent-soft);
+  color: var(--primary);
+  border-color: #d6e2ee;
+}
+
+.tag.conditional {
+  background: var(--surface-muted);
+  color: var(--secondary);
+  border-color: var(--border);
+}
+
+.tag.production {
+  background: var(--success-soft);
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.tag.optional {
+  background: var(--surface-muted);
+  color: var(--text-soft);
+  border-color: var(--border);
+}
+
+/* Required / Optional status badge */
+.badge {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.badge.required {
+  background: var(--accent-soft);
+  color: var(--primary);
+  border-color: #d6e2ee;
+}
+
+.badge.optional {
+  background: var(--surface-muted);
+  color: var(--text-soft);
+  border-color: var(--border-strong);
+}
+
+/* Section header with count + hint */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-head h3 {
+  margin: 0;
+}
+
+.count-pill {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  color: var(--text-soft);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-grid;
+  place-items: center;
+}
+
+/* Card footer with move action */
+.btn-move {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn-move:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--primary-hover);
+}
+
+.btn-move:active {
+  transform: translateY(0.5px);
+}
+
+/* Flow lists */
+.flow-list {
+  counter-reset: step;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.flow-list li {
+  position: relative;
+  padding: 12px 14px 12px 46px;
+  margin-bottom: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.flow-list li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  background: var(--accent-soft);
+  color: var(--primary);
+  border: 1px solid #d6e2ee;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------------ */

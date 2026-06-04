@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from app.clients.ai_client import BaseAIClient
+from app.core.dependencies import get_ai_client
+from app.main import app
+
 
 def _create_project(client) -> str:
     response = client.post(
@@ -44,14 +48,18 @@ def test_generate_endpoint_returns_ai_architecture(api_client, mock_ai_success):
     assert len(body["architecture_diagrams"]["technical_flow"]["edges"]) >= 1
 
 
-def test_generate_endpoint_returns_502_on_ai_failure(api_client, monkeypatch):
+def test_generate_endpoint_returns_502_on_ai_failure(api_client):
     project_id = _create_project(api_client)
 
-    def _fail(_prompt: str) -> str:
-        raise RuntimeError("provider unavailable")
+    class FailingClient(BaseAIClient):
+        def generate(self, prompt: str) -> str:
+            raise RuntimeError("provider unavailable")
 
-    monkeypatch.setattr("app.services.generation.generate_architecture", _fail)
+    app.dependency_overrides[get_ai_client] = lambda: FailingClient()
+    try:
+        response = api_client.post(f"/api/projects/{project_id}/generate")
+    finally:
+        app.dependency_overrides.pop(get_ai_client, None)
 
-    response = api_client.post(f"/api/projects/{project_id}/generate")
     assert response.status_code == 502
     assert "failed" in response.json()["detail"].lower()

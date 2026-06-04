@@ -1,0 +1,391 @@
+/* Architecture document workspace                                    */
+/* ------------------------------------------------------------------ */
+.arch-doc-shell {
+  display: flex;
+  gap: 0;
+  min-height: calc(100vh - 220px);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.arch-doc-toc {
+  width: var(--doc-toc-w);
+  flex: 0 0 var(--doc-toc-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.arch-doc-toc-head {
+  padding: 24px 20px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.arch-doc-toc-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+
+.arch-doc-toc-project {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--primary);
+  line-height: 1.35;
+}
+
+.arch-doc-toc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 10px;
+  position: sticky;
+  top: 0;
+}
+
+.arch-doc-toc-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.arch-doc-toc-item:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.arch-doc-toc-item.active {
+  background: var(--accent-soft);
+  border-left-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.arch-doc-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-y: auto;
+  max-height: calc(100vh - 220px);
+  scroll-behavior: smooth;
+}
+
+.arch-doc-scroll-inner {
+  padding: 24px 28px 40px;
+  width: 100%;
+  min-width: 0;
+}
+
+.arch-doc-content {
+  width: 100%;
+  max-width: var(--doc-content-max);
+  margin: 0;
+}
+
+.arch-doc-section {
+  margin-bottom: 28px;
+  scroll-margin-top: 16px;
+}
+
+.arch-doc-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.arch-doc-chevron {
+  width: 18px;
+  flex: 0 0 18px;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  line-height: 1;
+}
+
+.arch-doc-section-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--primary);
+  line-height: 1.25;
+}
+
+.arch-doc-section-body {
+  margin-top: 20px;
+  padding: 24px 26px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.arch-doc-subheading {
+  margin: 0 0 14px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+.arch-doc-subheading + .arch-doc-subheading,
+.doc-summary-grid + .arch-doc-subheading,
+.doc-text + .arch-doc-subheading,
+.doc-status-grid + .arch-doc-subheading,
+.doc-component-grid + .arch-doc-subheading,
+.doc-risk-group + .arch-doc-subheading,
+.table-wrap + .arch-doc-subheading {
+  margin-top: 28px;
+}
+
+.doc-summary-grid {
+  margin-bottom: 4px;
+}
+
+.doc-text {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+.doc-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.doc-status-item {
+  padding: 14px 16px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.doc-status-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.doc-status-value {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.doc-status-value.is-ok {
+  color: #15803d;
+}
+
+.doc-component-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.doc-component-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  background: var(--surface-soft);
+}
+
+.doc-component-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.doc-component-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.doc-component-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  background: #fff;
+  border: 1px solid var(--border);
+  color: #475569;
+}
+
+.doc-component-name {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.doc-component-reason {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.doc-component-actions {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.doc-risk-group {
+  margin-bottom: 8px;
+}
+
+.doc-risk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.doc-risk-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  background: var(--surface-soft);
+}
+
+.doc-risk-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.doc-risk-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.doc-risk-desc {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.doc-bullet-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doc-bullet-list li {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.doc-empty {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.doc-footnote {
+  margin: 14px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+@media (max-width: 960px) {
+  .arch-doc-shell {
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .arch-doc-toc {
+    width: 100%;
+    flex: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .arch-doc-toc-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: static;
+  }
+
+  .arch-doc-toc-item {
+    flex: 1 1 auto;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    border-radius: var(--radius-sm);
+  }
+
+  .arch-doc-toc-item.active {
+    border-left: none;
+    border-bottom-color: var(--primary);
+  }
+
+  .arch-doc-scroll {
+    max-height: none;
+  }
+
+  .arch-doc-scroll-inner {
+    padding: 20px 16px 32px;
+  }
+
+  .arch-doc-content {
+    max-width: 100%;
+  }
+
+  .doc-component-grid,
+  .doc-risk-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .doc-status-grid {
+    grid-template-columns: 1fr;
+  }
+}

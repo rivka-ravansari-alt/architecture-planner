@@ -1,0 +1,13 @@
+/* Notice shown when inputs changed and the plan will be regenerated */
+.info-note {
+  background: var(--accent-soft);
+  border: 1px solid #d6e2ee;
+  color: var(--primary);
+  padding: 13px 16px;
+  border-radius: var(--radius);
+  margin-bottom: 18px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ */

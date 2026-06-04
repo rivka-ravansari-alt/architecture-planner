@@ -1,0 +1,150 @@
+/* Tables (AWS pricing style)                                         */
+/* ------------------------------------------------------------------ */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  background: var(--surface-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+td {
+  color: var(--text-soft);
+}
+
+td strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+tbody tr {
+  transition: background 0.12s;
+}
+
+tbody tr:hover {
+  background: var(--surface-soft);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+/* Optional rows in the cloud mapping table */
+tbody tr.row-optional td {
+  color: var(--text-soft);
+  background: var(--surface-soft);
+}
+
+.callout {
+  background: var(--warn-soft);
+  border: 1px solid #fde68a;
+  color: #92400e;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+}
+
+.callout svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+/* Risks & recommendations */
+.risk-item,
+.rec-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: var(--surface);
+}
+
+.rec-item {
+  font-size: 0.88rem;
+  color: var(--text);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.rec-item::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 7px;
+  flex: 0 0 auto;
+}
+
+.risk-item .title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.risk-item .desc {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-top: 6px;
+}
+
+.sev {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.sev.high {
+  background: var(--danger-soft);
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.sev.medium {
+  background: var(--warn-soft);
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.sev.low {
+  background: var(--accent-soft);
+  color: var(--primary);
+  border-color: #d6e2ee;
+}
+
+/* ------------------------------------------------------------------ */

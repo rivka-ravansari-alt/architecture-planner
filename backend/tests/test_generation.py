@@ -8,17 +8,17 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select
 
-from app import models
-from app.services.ai_client import AIClientError
-from app.services.generation import ArchitectureGenerationError, generate_for_project
+from app.clients.ai_client import BaseAIClient
+from app.core.exceptions import AIClientError, ArchitectureGenerationError
+from app.models import ArchitectureGenerationRequest
+from app.services.generation_service import GenerationService, generate_for_project
+from tests.conftest import MockAIClient
 from tests.fixtures import VALID_AI_RESPONSE_JSON
 
 
-def test_success_persists_ai_output(
-    db_session, sample_project, mock_ai_success, ai_dirs
-):
+def test_success_persists_ai_output(db_session, sample_project, mock_ai_client, ai_dirs):
     prompts_dir, outputs_dir = ai_dirs
-    result = generate_for_project(db_session, sample_project)
+    result = GenerationService(db_session, ai_client=mock_ai_client).generate(sample_project)
 
     assert result.generated_at is not None
     assert len(result.components) == 4
@@ -33,8 +33,8 @@ def test_success_persists_ai_output(
     assert "technical_flow" in result.architecture_diagrams
 
     request = db_session.scalar(
-        select(models.ArchitectureGenerationRequest).where(
-            models.ArchitectureGenerationRequest.project_id == sample_project.id
+        select(ArchitectureGenerationRequest).where(
+            ArchitectureGenerationRequest.project_id == sample_project.id
         )
     )
     assert request is not None
@@ -48,44 +48,41 @@ def test_success_persists_ai_output(
     assert "TaskFlow" in Path(request.input_os_path).read_text(encoding="utf-8")
 
 
-def test_invalid_ai_response_marks_request_failed(db_session, sample_project, ai_dirs, monkeypatch):
-    def _bad(_prompt: str) -> str:
-        return '{"not": "valid architecture"}'
-
-    monkeypatch.setattr("app.services.generation.generate_architecture", _bad)
+def test_invalid_ai_response_marks_request_failed(db_session, sample_project, ai_dirs):
+    service = GenerationService(db_session, ai_client=MockAIClient('{"not": "valid architecture"}'))
 
     with pytest.raises(ArchitectureGenerationError):
-        generate_for_project(db_session, sample_project)
+        service.generate(sample_project)
 
-    request = db_session.scalar(select(models.ArchitectureGenerationRequest))
+    request = db_session.scalar(select(ArchitectureGenerationRequest))
     assert request.status == "failed"
     assert sample_project.components == []
 
 
-def test_ai_client_error_raises_and_marks_failed(
-    db_session, sample_project, ai_dirs, monkeypatch
-):
-    def _fail(_prompt: str) -> str:
-        raise AIClientError("network down")
+def test_ai_client_error_raises_and_marks_failed(db_session, sample_project, ai_dirs):
+    class FailingClient(BaseAIClient):
+        def generate(self, prompt: str) -> str:
+            raise AIClientError("network down")
 
-    monkeypatch.setattr("app.services.generation.generate_architecture", _fail)
+    service = GenerationService(db_session, ai_client=FailingClient())
 
     with pytest.raises(ArchitectureGenerationError, match="network down"):
-        generate_for_project(db_session, sample_project)
+        service.generate(sample_project)
 
-    request = db_session.scalar(select(models.ArchitectureGenerationRequest))
+    request = db_session.scalar(select(ArchitectureGenerationRequest))
     assert request.status == "failed"
 
 
 def test_regeneration_replaces_previous_output(
-    db_session, sample_project, mock_ai_success, ai_dirs
+    db_session, sample_project, mock_ai_client, ai_dirs
 ):
-    generate_for_project(db_session, sample_project)
+    service = GenerationService(db_session, ai_client=mock_ai_client)
+    service.generate(sample_project)
     first_count = len(sample_project.components)
 
-    generate_for_project(db_session, sample_project)
+    service.generate(sample_project)
     assert len(sample_project.components) == first_count
 
-    requests = db_session.scalars(select(models.ArchitectureGenerationRequest)).all()
+    requests = db_session.scalars(select(ArchitectureGenerationRequest)).all()
     assert len(requests) == 2
     assert requests[-1].status == "completed"

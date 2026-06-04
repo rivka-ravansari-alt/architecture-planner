@@ -16,7 +16,6 @@ import {
   Workflow,
 } from "lucide-react";
 
-/** Canonical component types returned by the AI — icons are UI-only. */
 export const COMPONENT_TYPES = [
   "user",
   "web_app",

@@ -1,0 +1,112 @@
+import Sidebar from "./Sidebar.jsx";
+import Topbar from "./Topbar.jsx";
+import ErrorBanner from "../ui/ErrorBanner.jsx";
+import StaleNotice from "../wizard/StaleNotice.jsx";
+import WizardActions from "../wizard/WizardActions.jsx";
+import StepProjectDetails from "../wizard/StepProjectDetails.jsx";
+import StepRequirements from "../wizard/StepRequirements.jsx";
+import ArchitectureWorkspace from "../../features/architecture/components/ArchitectureWorkspace.jsx";
+
+export default function AppShell({
+  user,
+  wizard,
+  projectTypes,
+  onLogout,
+  children,
+}) {
+  const {
+    step,
+    maxStep,
+    form,
+    setForm,
+    answers,
+    setAnswers,
+    errors,
+    project,
+    components,
+    loading,
+    error,
+    derived,
+    inWorkspace,
+    sidebarCollapsed,
+    setSidebarCollapsed,
+    goToStep,
+    goNext,
+    goBack,
+    reset,
+    moveComponent,
+    primaryLabel,
+    showStaleNotice,
+  } = wizard;
+
+  return (
+    <div className={`app-shell ${inWorkspace ? "focus-mode" : ""}`}>
+      <Sidebar
+        current={step}
+        maxStep={maxStep}
+        onStepClick={goToStep}
+        loading={loading}
+        collapsed={inWorkspace && sidebarCollapsed}
+        focusMode={inWorkspace}
+        onToggleCollapse={() => setSidebarCollapsed((collapsed) => !collapsed)}
+      />
+
+      <main className="main">
+        {!inWorkspace && (
+          <Topbar
+            step={step}
+            user={user}
+            loading={loading}
+            onReset={reset}
+            onLogout={onLogout}
+            showReset={project !== null || step > 1}
+          />
+        )}
+
+        <div className={`content ${inWorkspace ? "content-workspace content-focus" : ""}`}>
+          <ErrorBanner message={error} />
+          {showStaleNotice && <StaleNotice />}
+
+          {step === 1 && (
+            <StepProjectDetails
+              form={form}
+              setForm={setForm}
+              projectTypes={projectTypes}
+              errors={errors}
+            />
+          )}
+
+          {step === 2 && <StepRequirements answers={answers} setAnswers={setAnswers} />}
+
+          {inWorkspace && (
+            <ArchitectureWorkspace
+              project={project}
+              projectTypes={projectTypes}
+              components={components}
+              onMove={moveComponent}
+              risks={derived.risks}
+              recommendations={derived.recommendations}
+              costs={derived.costs}
+              onExit={() => goToStep(2)}
+              onReset={reset}
+              onToggleAppSidebar={() => setSidebarCollapsed((collapsed) => !collapsed)}
+              appSidebarCollapsed={sidebarCollapsed}
+            />
+          )}
+
+          {!inWorkspace && (
+            <WizardActions
+              step={step}
+              loading={loading}
+              primaryLabel={primaryLabel}
+              onBack={goBack}
+              onNext={goNext}
+            />
+          )}
+
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}
