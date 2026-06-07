@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
+import time
 
 from sqlalchemy.orm import Session
 
 from app.clients.ai_client import AIClientFactory, BaseAIClient
-from app.config.settings import settings
 from app.core.exceptions import AIClientError, AIValidationError, ArchitectureGenerationError
 from app.core.logging import GenerationLogger
 from app.models import ArchitectureGenerationRequest, Project
@@ -16,6 +14,7 @@ from app.repositories.generation_request_repository import GenerationRequestRepo
 from app.repositories.project_repository import ProjectRepository
 from app.services.component_mapper_service import ComponentMapperService
 from app.services.cost_estimator_service import CostEstimatorService
+from app.services.generation_storage_service import GenerationStorageService
 from app.services.prompt_builder_service import PromptBuilderService
 from app.validators.ai_response_validator import AIResponseValidator
 
@@ -34,6 +33,7 @@ class GenerationService:
         cost_estimator: CostEstimatorService | None = None,
         project_repo: ProjectRepository | None = None,
         request_repo: GenerationRequestRepository | None = None,
+        generation_storage: GenerationStorageService | None = None,
         logger: GenerationLogger | None = None,
     ) -> None:
         self._db = db
@@ -44,30 +44,92 @@ class GenerationService:
         self._cost_estimator = cost_estimator or CostEstimatorService()
         self._project_repo = project_repo or ProjectRepository(db)
         self._request_repo = request_repo or GenerationRequestRepository(db)
+        self._generation_storage = generation_storage or GenerationStorageService()
         self._logger = logger or GenerationLogger()
-        self._prompts_dir = Path(settings.ai_prompts_dir)
-        self._outputs_dir = Path(settings.ai_outputs_dir)
 
     def generate(self, project: Project) -> Project:
         request = self._create_request(project)
         request_id = request.id
+        model_name = self._generation_storage.resolve_model_name()
         current_step = "create_request"
+
+        raw_response: str | None = None
+        parsed_response: dict | None = None
+        validation_result: dict | None = None
+        errors: list[str] = []
+        duration_seconds: float | None = None
+        request_saved = False
 
         try:
             current_step = "build_prompt"
             prompt = self._build_prompt(project, request_id)
 
-            current_step = "save_prompt"
-            self._save_prompt(request, prompt, project.id, request_id)
+            current_step = "save_generation_request"
+            request_payload = self._generation_storage.build_request_payload(
+                project,
+                generation_id=request_id,
+                prompt=prompt,
+                model_name=model_name,
+            )
+            request_path = self._generation_storage.save_request(
+                project.id, request_id, request_payload
+            )
+            self._request_repo.save_prompt_path(request, request_path)
+            self._request_repo.flush()
+            request_saved = True
 
             current_step = "call_ai"
-            raw_response = self._call_ai(prompt, project.id, request_id)
+            ai_started = time.monotonic()
+            try:
+                raw_response = self._call_ai(prompt, project.id, request_id)
+            except AIClientError as exc:
+                duration_seconds = time.monotonic() - ai_started
+                errors.append(str(exc))
+                self._save_generation_response(
+                    request,
+                    project.id,
+                    request_id,
+                    model_name,
+                    raw_response=raw_response,
+                    parsed_response=parsed_response,
+                    validation_result=validation_result,
+                    errors=errors,
+                    duration_seconds=duration_seconds,
+                )
+                raise
+            duration_seconds = time.monotonic() - ai_started
 
             current_step = "validate_response"
-            validated = self._validate_response(raw_response, project.id, request_id)
+            try:
+                validated = self._validate_response(raw_response, project.id, request_id)
+                parsed_response = validated
+                validation_result = {"valid": True}
+            except AIValidationError as exc:
+                errors.append(str(exc))
+                self._save_generation_response(
+                    request,
+                    project.id,
+                    request_id,
+                    model_name,
+                    raw_response=raw_response,
+                    parsed_response=parsed_response,
+                    validation_result=validation_result,
+                    errors=errors,
+                    duration_seconds=duration_seconds,
+                )
+                raise
 
-            current_step = "save_output"
-            self._save_output(request, validated, project.id, request_id)
+            self._save_generation_response(
+                request,
+                project.id,
+                request_id,
+                model_name,
+                raw_response=raw_response,
+                parsed_response=parsed_response,
+                validation_result=validation_result,
+                errors=errors or None,
+                duration_seconds=duration_seconds,
+            )
 
             current_step = "map_payload"
             mapped = self._map_payload(validated, project.id, request_id)
@@ -84,12 +146,54 @@ class GenerationService:
             raise ArchitectureGenerationError(str(exc)) from exc
         except Exception as exc:
             reason = f"{type(exc).__name__}: {exc}"
+            if request_saved:
+                errors.append(reason)
+                self._save_generation_response(
+                    request,
+                    project.id,
+                    request_id,
+                    model_name,
+                    raw_response=raw_response,
+                    parsed_response=parsed_response,
+                    validation_result=validation_result,
+                    errors=errors,
+                    duration_seconds=duration_seconds,
+                )
             self._handle_failure(request, current_step, project.id, reason)
             raise ArchitectureGenerationError(f"Architecture generation failed: {exc}") from exc
 
         self._project_repo.commit()
         self._project_repo.refresh(project)
         return project
+
+    def _save_generation_response(
+        self,
+        request: ArchitectureGenerationRequest,
+        project_id: str,
+        generation_id: str,
+        model_name: str,
+        *,
+        raw_response: str | None,
+        parsed_response: dict | None,
+        validation_result: dict | None,
+        errors: list[str] | None,
+        duration_seconds: float | None,
+    ) -> None:
+        payload = self._generation_storage.build_response_payload(
+            generation_id=generation_id,
+            project_id=project_id,
+            model_name=model_name,
+            raw_ai_response=raw_response,
+            parsed_response=parsed_response,
+            validation_result=validation_result,
+            errors=errors,
+            duration_seconds=duration_seconds,
+        )
+        response_path = self._generation_storage.save_response(
+            project_id, generation_id, payload
+        )
+        self._request_repo.save_output_path(request, response_path)
+        self._request_repo.flush()
 
     def _create_request(self, project: Project) -> ArchitectureGenerationRequest:
         self._logger.log_step(
@@ -115,29 +219,6 @@ class GenerationService:
         )
         return prompt
 
-    def _save_prompt(
-        self,
-        request: ArchitectureGenerationRequest,
-        prompt: str,
-        project_id: str,
-        request_id: str,
-    ) -> None:
-        self._logger.log_step(
-            "save_prompt", project_id=project_id, request_id=request_id, status="started"
-        )
-        self._ensure_artifact_dirs()
-        input_path = self._prompts_dir / f"{request.id}_input.txt"
-        input_path.write_text(prompt, encoding="utf-8")
-        self._request_repo.save_prompt_path(request, str(input_path.resolve()))
-        self._request_repo.flush()
-        self._logger.log_step(
-            "save_prompt",
-            project_id=project_id,
-            request_id=request_id,
-            status="completed",
-            reason=f"path={request.input_os_path}",
-        )
-
     def _call_ai(self, prompt: str, project_id: str, request_id: str) -> str:
         self._logger.log_step(
             "call_ai", project_id=project_id, request_id=request_id, status="started"
@@ -161,27 +242,6 @@ class GenerationService:
             "validate_response", project_id=project_id, request_id=request_id, status="completed"
         )
         return validated
-
-    def _save_output(
-        self,
-        request: ArchitectureGenerationRequest,
-        validated: dict,
-        project_id: str,
-        request_id: str,
-    ) -> None:
-        self._logger.log_step(
-            "save_output", project_id=project_id, request_id=request_id, status="started"
-        )
-        output_path = self._outputs_dir / f"{request.id}_output.json"
-        output_path.write_text(json.dumps(validated, indent=2), encoding="utf-8")
-        self._request_repo.save_output_path(request, str(output_path.resolve()))
-        self._logger.log_step(
-            "save_output",
-            project_id=project_id,
-            request_id=request_id,
-            status="completed",
-            reason=f"path={request.output_os_path}",
-        )
 
     def _map_payload(self, validated: dict, project_id: str, request_id: str) -> dict:
         self._logger.log_step(
@@ -282,10 +342,6 @@ class GenerationService:
         )
         self._request_repo.mark_failed(request)
         self._request_repo.commit()
-
-    def _ensure_artifact_dirs(self) -> None:
-        self._prompts_dir.mkdir(parents=True, exist_ok=True)
-        self._outputs_dir.mkdir(parents=True, exist_ok=True)
 
 
 def generate_for_project(db: Session, project: Project) -> Project:

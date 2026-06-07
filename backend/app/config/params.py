@@ -285,6 +285,18 @@ COST_USER_MULTIPLIER: dict[str, float] = {
 STAGE_PRODUCTION = "production"
 
 # ---------------------------------------------------------------------------
+# Object storage (AI generation artifacts)
+# ---------------------------------------------------------------------------
+
+STORAGE_PROVIDERS: tuple[str, ...] = ("local", "gcs", "s3")
+
+GENERATION_STORAGE_PREFIX = "generations"
+GENERATION_REQUEST_FILENAME = "request.json"
+GENERATION_RESPONSE_FILENAME = "response.json"
+
+GENERATION_TYPE_ARCHITECTURE = "architecture"
+
+# ---------------------------------------------------------------------------
 # AI generation
 # ---------------------------------------------------------------------------
 
@@ -358,10 +370,9 @@ GENERATION_STATUS_FAILED = "failed"
 GENERATION_STEPS: tuple[str, ...] = (
     "create_request",
     "build_prompt",
-    "save_prompt",
+    "save_generation_request",
     "call_ai",
     "validate_response",
-    "save_output",
     "map_payload",
     "estimate_costs",
     "persist_document",

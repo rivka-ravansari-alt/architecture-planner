@@ -4,7 +4,7 @@ __pycache__/
 *.pyc
 backend/.env
 backend/*.db
-backend/data/
+backend/object-storage/
 
 # Node
 frontend/node_modules/

@@ -19,7 +19,7 @@ app/
 ├── schemas/                # Pydantic DTOs (request/response validation)
 ├── repositories/           # Database access (CRUD, queries)
 ├── services/               # Business logic orchestration
-├── clients/                # External APIs (OpenAI, Google OAuth)
+├── clients/                # External APIs (OpenAI, Google OAuth, object storage)
 ├── validators/             # Input/output validation (AI JSON schema)
 ├── utils/                  # Pure helpers (JWT, token estimate)
 └── api/
@@ -47,13 +47,93 @@ app/
 
 1. Create audit request row
 2. Build prompt (`PromptBuilderService`)
-3. Save prompt artifact
+3. Save `request.json` to object storage (`GenerationStorageService`)
 4. Call AI (`BaseAIClient` via factory)
 5. Validate JSON (`AIResponseValidator`)
-6. Save output artifact
+6. Save `response.json` to object storage (including failures after the AI call)
 7. Map to domain objects (`ComponentMapperService`)
 8. Estimate costs (`CostEstimatorService`)
 9. Persist to database (`ProjectRepository`)
+
+### Generation object storage
+
+Every `/generate` run writes two JSON files under object storage:
+
+```
+gs://{OBJECT_STORAGE_BUCKET}/
+  generations/          # GENERATION_STORAGE_PREFIX in params.py
+    {project_id}/
+      {generation_id}/
+        request.json
+        response.json
+```
+
+| File | Contents |
+|------|----------|
+| `request.json` | Project/user ids, project types, generation type, original wizard input, prompt sent to the model, model name, parameters, timestamp |
+| `response.json` | Raw AI text, parsed JSON (if validation ran), validation result, errors (on failure), duration, timestamp |
+
+Configure via `.env`:
+
+| Variable | Purpose |
+|----------|---------|
+| `OBJECT_STORAGE_PROVIDER` | Default `gcs` — use Google Cloud Storage |
+| `OBJECT_STORAGE_BUCKET` | GCS bucket name (e.g. `archsari-generations-prod`) |
+| `GCS_PROJECT_ID` | Optional; defaults to Application Default Credentials project |
+| `OBJECT_STORAGE_LOCAL_ROOT` | Only if `OBJECT_STORAGE_PROVIDER=local` (offline dev) |
+
+`StorageClientFactory` uses **GCS** by default. **S3** is still a stub.
+
+The `architecture_generation_requests` table stores `gs://...` URIs in `input_os_path` and `output_os_path`.
+
+### GCS setup
+
+**Local dev** (writes to the same bucket as production):
+
+```bash
+gcloud auth application-default login
+```
+
+Set in `backend/.env`:
+
+```env
+OBJECT_STORAGE_PROVIDER=gcs
+OBJECT_STORAGE_BUCKET=archsari-generations-prod
+GCS_PROJECT_ID=your-gcp-project-id
+```
+
+**Cloud Run** (same env vars; ADC from the service account — no key file needed):
+
+1. **Create a bucket** (once per environment):
+
+   ```bash
+   gcloud storage buckets create gs://archsari-generations-prod \
+     --project=YOUR_PROJECT_ID \
+     --location=us-central1 \
+     --uniform-bucket-level-access
+   ```
+
+2. **Grant the Cloud Run service account** write access:
+
+   ```bash
+   gcloud storage buckets add-iam-policy-binding gs://archsari-generations-prod \
+     --member="serviceAccount:YOUR_CLOUD_RUN_SA@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
+     --role="roles/storage.objectAdmin"
+   ```
+
+3. **Set env vars** on the backend service (local `.env` or Cloud Run):
+
+   - `OBJECT_STORAGE_PROVIDER=gcs` (default)
+   - `OBJECT_STORAGE_BUCKET=archsari-generations-prod`
+   - `GCS_PROJECT_ID=YOUR_PROJECT_ID` (optional if ADC project is correct)
+
+4. **Redeploy** the backend image after changing env vars.
+
+Objects appear at:
+
+`gs://archsari-generations-prod/generations/{project_id}/{generation_id}/request.json`
+
+To work offline without GCS, set `OBJECT_STORAGE_PROVIDER=local` and `OBJECT_STORAGE_LOCAL_ROOT=./object-storage`.
 
 ## Running locally
 

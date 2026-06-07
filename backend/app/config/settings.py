@@ -28,8 +28,11 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_model: str = "gpt-4.1-mini"
     use_static_ai_response: bool = False
-    ai_prompts_dir: str = "./data/generation_prompts"
-    ai_outputs_dir: str = "./data/generation_outputs"
+
+    object_storage_provider: str = "gcs"
+    object_storage_local_root: str = "./object-storage"
+    object_storage_bucket: str = "archsari-generations-prod"
+    gcs_project_id: str = ""
 
     google_client_id: str = ""
     google_client_secret: str = ""

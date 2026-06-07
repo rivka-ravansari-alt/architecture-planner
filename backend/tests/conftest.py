@@ -26,11 +26,10 @@ class MockAIClient(BaseAIClient):
 
 @pytest.fixture
 def ai_dirs(tmp_path, monkeypatch):
-    prompts = tmp_path / "prompts"
-    outputs = tmp_path / "outputs"
-    monkeypatch.setattr(settings, "ai_prompts_dir", str(prompts))
-    monkeypatch.setattr(settings, "ai_outputs_dir", str(outputs))
-    return prompts, outputs
+    storage = tmp_path / "object-storage"
+    monkeypatch.setattr(settings, "object_storage_provider", "local")
+    monkeypatch.setattr(settings, "object_storage_local_root", str(storage))
+    return storage
 
 
 @pytest.fixture

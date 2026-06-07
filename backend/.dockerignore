@@ -6,5 +6,4 @@ __pycache__
 *.db
 architecture_planner.db
 tests
-data/generation_prompts/*
-data/generation_outputs/*
+object-storage

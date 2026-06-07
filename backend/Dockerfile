@@ -14,11 +14,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 
-# Writable paths on Cloud Run (ephemeral disk; use /tmp for debug artifacts).
-RUN mkdir -p /tmp/data/generation_prompts /tmp/data/generation_outputs
-
-ENV AI_PROMPTS_DIR=/tmp/data/generation_prompts \
-    AI_OUTPUTS_DIR=/tmp/data/generation_outputs
+# Default for Cloud Run: persist generations to GCS (override via service env vars).
+ENV OBJECT_STORAGE_PROVIDER=gcs \
+    OBJECT_STORAGE_BUCKET=archsari-generations-prod
 
 EXPOSE 8080
 
