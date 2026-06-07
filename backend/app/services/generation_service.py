@@ -71,9 +71,7 @@ class GenerationService:
                 prompt=prompt,
                 model_name=model_name,
             )
-            request_path = self._generation_storage.save_request(
-                project.id, request_id, request_payload
-            )
+            request_path = self._generation_storage.save_request(request_id, request_payload)
             self._request_repo.save_prompt_path(request, request_path)
             self._request_repo.flush()
             request_saved = True
@@ -189,9 +187,7 @@ class GenerationService:
             errors=errors,
             duration_seconds=duration_seconds,
         )
-        response_path = self._generation_storage.save_response(
-            project_id, generation_id, payload
-        )
+        response_path = self._generation_storage.save_response(generation_id, payload)
         self._request_repo.save_output_path(request, response_path)
         self._request_repo.flush()
 

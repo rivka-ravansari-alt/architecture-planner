@@ -62,10 +62,9 @@ Every `/generate` run writes two JSON files under object storage:
 ```
 gs://{OBJECT_STORAGE_BUCKET}/
   generations/          # GENERATION_STORAGE_PREFIX in params.py
-    {project_id}/
-      {generation_id}/
-        request.json
-        response.json
+    {generation_id}/
+      request.json
+      response.json
 ```
 
 | File | Contents |
@@ -131,7 +130,7 @@ GCS_PROJECT_ID=your-gcp-project-id
 
 Objects appear at:
 
-`gs://archsari-generations-prod/generations/{project_id}/{generation_id}/request.json`
+`gs://archsari-generations-prod/generations/{generation_id}/request.json`
 
 To work offline without GCS, set `OBJECT_STORAGE_PROVIDER=local` and `OBJECT_STORAGE_LOCAL_ROOT=./object-storage`.
 

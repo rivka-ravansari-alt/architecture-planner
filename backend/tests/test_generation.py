@@ -49,7 +49,7 @@ def test_success_persists_ai_output(db_session, sample_project, mock_ai_client, 
     assert Path(request.input_os_path).exists()
     assert Path(request.output_os_path).exists()
 
-    gen_dir = storage_dir / GENERATION_STORAGE_PREFIX / sample_project.id / request.id
+    gen_dir = storage_dir / GENERATION_STORAGE_PREFIX / request.id
     request_json = json.loads(
         (gen_dir / GENERATION_REQUEST_FILENAME).read_text(encoding="utf-8")
     )
@@ -83,7 +83,6 @@ def test_invalid_ai_response_marks_request_failed(db_session, sample_project, ai
         (
             storage_dir
             / GENERATION_STORAGE_PREFIX
-            / sample_project.id
             / request.id
             / GENERATION_RESPONSE_FILENAME
         ).read_text(encoding="utf-8")
@@ -111,7 +110,6 @@ def test_ai_client_error_raises_and_marks_failed(db_session, sample_project, ai_
         (
             storage_dir
             / GENERATION_STORAGE_PREFIX
-            / sample_project.id
             / request.id
             / GENERATION_RESPONSE_FILENAME
         ).read_text(encoding="utf-8")

@@ -18,7 +18,7 @@ from app.services.generation_storage_service import GenerationStorageService
 
 def test_local_storage_client_writes_and_reads(tmp_path):
     client = LocalStorageClient(tmp_path)
-    key = "generations/proj-1/gen-1/request.json"
+    key = "generations/gen-1/request.json"
     payload = {"generation_id": "gen-1", "project_id": "proj-1"}
 
     client.write_json(key, payload)
@@ -64,7 +64,7 @@ def test_gcs_storage_client_writes_and_reads():
         "archsari-generations-test",
         gcs_client=_FakeGcsClient("archsari-generations-test"),
     )
-    key = "generations/proj-1/gen-1/request.json"
+    key = "generations/gen-1/request.json"
     payload = {"generation_id": "gen-1", "project_id": "proj-1"}
 
     uri = client.write_json(key, payload)
@@ -91,7 +91,7 @@ def test_generation_storage_service_saves_request_and_response(tmp_path, sample_
         prompt=prompt,
         model_name="gpt-test",
     )
-    service.save_request(sample_project.id, generation_id, request_payload)
+    service.save_request(generation_id, request_payload)
 
     response_payload = service.build_response_payload(
         generation_id=generation_id,
@@ -102,19 +102,17 @@ def test_generation_storage_service_saves_request_and_response(tmp_path, sample_
         validation_result={"valid": True},
         duration_seconds=1.5,
     )
-    service.save_response(sample_project.id, generation_id, response_payload)
+    service.save_response(generation_id, response_payload)
 
     request_path = (
         tmp_path
         / GENERATION_STORAGE_PREFIX
-        / sample_project.id
         / generation_id
         / GENERATION_REQUEST_FILENAME
     )
     response_path = (
         tmp_path
         / GENERATION_STORAGE_PREFIX
-        / sample_project.id
         / generation_id
         / GENERATION_RESPONSE_FILENAME
     )

@@ -21,7 +21,7 @@ from app.models import Project
 
 
 class GenerationStorageService:
-    """Builds generation artifacts and writes them under generations/{project_id}/{id}/."""
+    """Builds generation artifacts and writes them under generations/{generation_id}/."""
 
     def __init__(self, storage: StorageClient | None = None) -> None:
         self._storage = storage or StorageClientFactory.create()
@@ -74,12 +74,12 @@ class GenerationStorageService:
             "duration_seconds": duration_seconds,
         }
 
-    def save_request(self, project_id: str, generation_id: str, payload: dict[str, Any]) -> str:
-        key = self._object_key(project_id, generation_id, GENERATION_REQUEST_FILENAME)
+    def save_request(self, generation_id: str, payload: dict[str, Any]) -> str:
+        key = self._object_key(generation_id, GENERATION_REQUEST_FILENAME)
         return self._storage.write_json(key, payload)
 
-    def save_response(self, project_id: str, generation_id: str, payload: dict[str, Any]) -> str:
-        key = self._object_key(project_id, generation_id, GENERATION_RESPONSE_FILENAME)
+    def save_response(self, generation_id: str, payload: dict[str, Any]) -> str:
+        key = self._object_key(generation_id, GENERATION_RESPONSE_FILENAME)
         return self._storage.write_json(key, payload)
 
     @staticmethod
@@ -89,11 +89,10 @@ class GenerationStorageService:
         return settings.openai_model
 
     @staticmethod
-    def _object_key(project_id: str, generation_id: str, filename: str) -> str:
+    def _object_key(generation_id: str, filename: str) -> str:
         return "/".join(
             (
                 GENERATION_STORAGE_PREFIX,
-                project_id,
                 generation_id,
                 filename,
             )
