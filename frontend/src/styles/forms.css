@@ -82,6 +82,14 @@
   margin-top: 6px;
 }
 
+.field-hint-sm {
+  color: var(--text-faint);
+  font-size: 0.65rem;
+  margin-top: 4px;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -184,6 +192,78 @@
 
 .switch input:checked + .slider::before {
   transform: translateX(18px);
+}
+
+/* Dynamic intake form */
+.dynamic-form .card + .card {
+  margin-top: 20px;
+}
+
+.intake-features-card .toggle-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.intake-features-card .toggle-section-active {
+  border-color: var(--border-strong);
+}
+
+.intake-features-card .toggle-row {
+  margin-bottom: 0;
+  border: none;
+  border-radius: 0;
+}
+
+.toggle-row-nested {
+  padding: 12px 0;
+  border: none;
+  margin-bottom: 0;
+  background: transparent;
+}
+
+.toggle-section-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.toggle-section-content.open {
+  grid-template-rows: 1fr;
+}
+
+.toggle-section-inner {
+  overflow: hidden;
+  padding: 0 18px;
+  opacity: 0;
+  transition: opacity 0.25s ease, padding 0.3s ease;
+}
+
+.toggle-section-content.open .toggle-section-inner {
+  padding: 4px 18px 18px;
+  opacity: 1;
+}
+
+.option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.option-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.option-check input {
+  accent-color: var(--primary);
 }
 
 /* ------------------------------------------------------------------ */

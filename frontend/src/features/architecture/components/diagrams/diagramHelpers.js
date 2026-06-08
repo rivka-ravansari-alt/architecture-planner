@@ -5,20 +5,20 @@ export const DIAGRAM_DEFINITIONS = [
     tabLabel: "High Level Design",
     fallbackTitle: "High Level Design",
     description:
-      "Major business components and system boundaries — optimized for quick stakeholder understanding.",
+      "Simple business-level view of primary architecture components — readable in under 10 seconds.",
   },
   {
     key: "system_flow",
     tabLabel: "System Flow",
     fallbackTitle: "System Flow",
-    description: "How requests and data move through the system from trigger to outcome.",
+    description: "Request lifecycle and data movement through participating components.",
   },
   {
-    key: "technical_flow",
-    tabLabel: "Technical Flow",
-    fallbackTitle: "Technical Flow",
+    key: "technical_architecture",
+    tabLabel: "Technical Architecture",
+    fallbackTitle: "Technical Architecture",
     description:
-      "Internal services, databases, queues, APIs, and infrastructure implementation details.",
+      "Complete technical architecture including operational and infrastructure layers.",
   },
 ];
 
@@ -30,7 +30,9 @@ export function resolveArchitectureDiagrams(project) {
   const multi = project?.architecture_diagrams;
   if (multi && typeof multi === "object") {
     return DIAGRAM_DEFINITIONS.map(({ key, tabLabel, fallbackTitle, description }) => {
-      const diagram = multi[key];
+      const diagram =
+        multi[key] ||
+        (key === "technical_architecture" ? multi.production_architecture : null);
       if (!diagram?.nodes?.length) return null;
       return {
         key,

@@ -1,4 +1,4 @@
-from app.config.params import DESCRIPTION_MAX_TOKENS
+from app.config.params import DESCRIPTION_MAX_CHARS
 from app.schemas.auth import UserOut
 from app.schemas.enums import ExpectedUsers, ProjectType, Stage
 from app.schemas.project import (
@@ -14,13 +14,11 @@ from app.schemas.project import (
     ProjectCreate,
     ProjectDetail,
     ProjectTypeInfo,
-    RecommendationOut,
     RequirementAnswersIn,
-    RiskOut,
 )
 
 __all__ = [
-    "DESCRIPTION_MAX_TOKENS",
+    "DESCRIPTION_MAX_CHARS",
     "AnswersOut",
     "ArchitectureDiagramOut",
     "ArchitectureDiagramsOut",
@@ -35,9 +33,7 @@ __all__ = [
     "ProjectDetail",
     "ProjectType",
     "ProjectTypeInfo",
-    "RecommendationOut",
     "RequirementAnswersIn",
-    "RiskOut",
     "Stage",
     "UserOut",
 ]

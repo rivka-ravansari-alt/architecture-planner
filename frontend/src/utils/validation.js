@@ -1,4 +1,4 @@
-import { DESCRIPTION_MAX_TOKENS } from "../constants/wizard.js";
+import { DESCRIPTION_MAX_CHARS } from "../constants/wizard.js";
 
 export function estimateTokenCount(text) {
   const stripped = text.trim();
@@ -6,20 +6,50 @@ export function estimateTokenCount(text) {
   return Math.max(1, Math.ceil(stripped.length / 4));
 }
 
-export function validateProjectForm(form) {
+/**
+ * Validates required basic product fields only.
+ * @param {ReturnType<import("./intakeFormState.js").createEmptyIntakeForm>} intakeForm
+ */
+export function validateBasicProduct(intakeForm) {
+  const { product } = intakeForm;
+  /** @type {Record<string, string>} */
   const errors = {};
-  if (!form.name.trim()) errors.name = "Project name is required.";
-  if (!form.description.trim()) {
-    errors.description = "Project description is required.";
-  } else if (estimateTokenCount(form.description) > DESCRIPTION_MAX_TOKENS) {
-    errors.description = `Project description must be ${DESCRIPTION_MAX_TOKENS} tokens or fewer.`;
+
+  if (!String(product.name || "").trim()) {
+    errors.name = "Product name is required.";
   }
-  if (form.project_types.length === 0) {
-    errors.project_types = "Select at least one project type.";
+
+  const description = String(product.description || "");
+  if (!description.trim()) {
+    errors.description = "Product description is required.";
+  } else if (description.length > DESCRIPTION_MAX_CHARS) {
+    errors.description = `Product description must be ${DESCRIPTION_MAX_CHARS} characters or fewer.`;
   }
+
+  const platforms = Array.isArray(product.platforms) ? product.platforms : [];
+  if (platforms.length === 0) {
+    errors.platforms = "Select at least one platform.";
+  }
+
+  if (!String(product.stage || "").trim()) {
+    errors.stage = "Stage is required.";
+  }
+
+  if (!String(product.expected_users || "").trim()) {
+    errors.expected_users = "Expected users is required.";
+  }
+
   return errors;
 }
 
-export function buildInputKey(form, answers) {
-  return JSON.stringify({ form, answers });
+/** @deprecated Use validateBasicProduct */
+export function validateProjectForm(form) {
+  return validateBasicProduct({ product: form, features: {} });
+}
+
+/**
+ * @param {ReturnType<import("./intakeFormState.js").createEmptyIntakeForm>} intakeForm
+ */
+export function buildInputKey(intakeForm) {
+  return JSON.stringify(intakeForm);
 }

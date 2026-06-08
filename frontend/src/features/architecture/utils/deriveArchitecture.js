@@ -79,12 +79,6 @@ export function computeCosts(project, components) {
 
 export function deriveArchitecture(project, components) {
   return {
-    risks: (project.risks || []).map((risk) => ({
-      title: risk.title,
-      description: risk.description,
-      severity: risk.severity,
-    })),
-    recommendations: (project.recommendations || []).map((item) => item.text || item),
     costs: computeCosts(project, components),
   };
 }

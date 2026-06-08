@@ -258,6 +258,125 @@
   line-height: 1.35;
 }
 
+.doc-component-implementation {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.doc-implementation-details {
+  margin-top: 10px;
+}
+
+.doc-implementation-details > summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--accent, #2563eb);
+  list-style: none;
+  user-select: none;
+}
+
+.doc-implementation-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.doc-implementation-details > summary::before {
+  content: "+ ";
+  font-weight: 600;
+}
+
+.doc-implementation-details[open] > summary::before {
+  content: "− ";
+}
+
+.doc-implementation-options {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.doc-implementation-option {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+}
+
+.doc-implementation-option.is-na {
+  background: #fafafa;
+}
+
+.doc-implementation-option-title {
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.doc-implementation-meta {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.doc-implementation-meta > div {
+  display: grid;
+  gap: 2px;
+}
+
+.doc-implementation-meta dt {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.doc-implementation-meta dd {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+.doc-implementation-points {
+  margin-top: 8px;
+}
+
+.doc-implementation-points-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.doc-implementation-points ul {
+  margin: 4px 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+.doc-implementation-points + .doc-implementation-points {
+  margin-top: 6px;
+}
+
+.doc-implementation-na {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
 .doc-component-reason {
   margin: 10px 0 0;
   font-size: 0.85rem;

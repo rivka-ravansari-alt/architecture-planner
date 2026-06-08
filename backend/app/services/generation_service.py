@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from dataclasses import dataclass, field
 
 from sqlalchemy.orm import Session
 
@@ -12,16 +13,38 @@ from app.core.logging import GenerationLogger
 from app.models import ArchitectureGenerationRequest, Project
 from app.repositories.generation_request_repository import GenerationRequestRepository
 from app.repositories.project_repository import ProjectRepository
+from app.services.architecture_guardrail_service import ArchitectureGuardrailService
 from app.services.component_mapper_service import ComponentMapperService
 from app.services.cost_estimator_service import CostEstimatorService
+from app.services.diagram_rules_service import DiagramRulesService
 from app.services.generation_storage_service import GenerationStorageService
 from app.services.prompt_builder_service import PromptBuilderService
 from app.validators.ai_response_validator import AIResponseValidator
 
 
-class GenerationService:
-    """Runs the full architecture generation pipeline for a project."""
+@dataclass
+class _GenerationRun:
+    project: Project
+    request: ArchitectureGenerationRequest
+    model_name: str
+    current_step: str = "create_request"
+    raw_response: str | None = None
+    parsed_response: dict | None = None
+    validation_result: dict | None = None
+    errors: list[str] = field(default_factory=list)
+    duration_seconds: float | None = None
+    request_saved: bool = False
 
+    @property
+    def request_id(self) -> str:
+        return self.request.id
+
+    @property
+    def project_id(self) -> str:
+        return self.project.id
+
+
+class GenerationService:
     def __init__(
         self,
         db: Session,
@@ -29,6 +52,8 @@ class GenerationService:
         ai_client: BaseAIClient | None = None,
         prompt_builder: PromptBuilderService | None = None,
         validator: AIResponseValidator | None = None,
+        guardrails: ArchitectureGuardrailService | None = None,
+        diagram_rules: DiagramRulesService | None = None,
         mapper: ComponentMapperService | None = None,
         cost_estimator: CostEstimatorService | None = None,
         project_repo: ProjectRepository | None = None,
@@ -40,6 +65,8 @@ class GenerationService:
         self._ai_client = ai_client or AIClientFactory.create()
         self._prompt_builder = prompt_builder or PromptBuilderService()
         self._validator = validator or AIResponseValidator()
+        self._guardrails = guardrails or ArchitectureGuardrailService()
+        self._diagram_rules = diagram_rules or DiagramRulesService()
         self._mapper = mapper or ComponentMapperService()
         self._cost_estimator = cost_estimator or CostEstimatorService()
         self._project_repo = project_repo or ProjectRepository(db)
@@ -48,118 +75,144 @@ class GenerationService:
         self._logger = logger or GenerationLogger()
 
     def generate(self, project: Project) -> Project:
-        request = self._create_request(project)
-        request_id = request.id
-        model_name = self._generation_storage.resolve_model_name()
-        current_step = "create_request"
-
-        raw_response: str | None = None
-        parsed_response: dict | None = None
-        validation_result: dict | None = None
-        errors: list[str] = []
-        duration_seconds: float | None = None
-        request_saved = False
-
+        run = self._start_generation(project)
         try:
-            current_step = "build_prompt"
-            prompt = self._build_prompt(project, request_id)
-
-            current_step = "save_generation_request"
-            request_payload = self._generation_storage.build_request_payload(
-                project,
-                generation_id=request_id,
-                prompt=prompt,
-                model_name=model_name,
-            )
-            request_path = self._generation_storage.save_request(request_id, request_payload)
-            self._request_repo.save_prompt_path(request, request_path)
-            self._request_repo.flush()
-            request_saved = True
-
-            current_step = "call_ai"
-            ai_started = time.monotonic()
-            try:
-                raw_response = self._call_ai(prompt, project.id, request_id)
-            except AIClientError as exc:
-                duration_seconds = time.monotonic() - ai_started
-                errors.append(str(exc))
-                self._save_generation_response(
-                    request,
-                    project.id,
-                    request_id,
-                    model_name,
-                    raw_response=raw_response,
-                    parsed_response=parsed_response,
-                    validation_result=validation_result,
-                    errors=errors,
-                    duration_seconds=duration_seconds,
-                )
-                raise
-            duration_seconds = time.monotonic() - ai_started
-
-            current_step = "validate_response"
-            try:
-                validated = self._validate_response(raw_response, project.id, request_id)
-                parsed_response = validated
-                validation_result = {"valid": True}
-            except AIValidationError as exc:
-                errors.append(str(exc))
-                self._save_generation_response(
-                    request,
-                    project.id,
-                    request_id,
-                    model_name,
-                    raw_response=raw_response,
-                    parsed_response=parsed_response,
-                    validation_result=validation_result,
-                    errors=errors,
-                    duration_seconds=duration_seconds,
-                )
-                raise
-
-            self._save_generation_response(
-                request,
-                project.id,
-                request_id,
-                model_name,
-                raw_response=raw_response,
-                parsed_response=parsed_response,
-                validation_result=validation_result,
-                errors=errors or None,
-                duration_seconds=duration_seconds,
-            )
-
-            current_step = "map_payload"
-            mapped = self._map_payload(validated, project.id, request_id)
-
-            current_step = "estimate_costs"
-            costs = self._estimate_costs(project, mapped["components"], project.id, request_id)
-
-            current_step = "persist_document"
-            self._persist_document(project, mapped, costs, validated["diagrams"], request_id)
-
-            self._complete_request(request, project.id, request_id)
+            self._execute_generation_pipeline(run)
         except (AIClientError, AIValidationError) as exc:
-            self._handle_failure(request, current_step, project.id, str(exc))
+            self._fail_generation(run, str(exc))
             raise ArchitectureGenerationError(str(exc)) from exc
         except Exception as exc:
             reason = f"{type(exc).__name__}: {exc}"
-            if request_saved:
-                errors.append(reason)
-                self._save_generation_response(
-                    request,
-                    project.id,
-                    request_id,
-                    model_name,
-                    raw_response=raw_response,
-                    parsed_response=parsed_response,
-                    validation_result=validation_result,
-                    errors=errors,
-                    duration_seconds=duration_seconds,
-                )
-            self._handle_failure(request, current_step, project.id, reason)
+            self._record_unexpected_error(run, reason)
+            self._fail_generation(run, reason)
             raise ArchitectureGenerationError(f"Architecture generation failed: {exc}") from exc
 
+        return self._finish_generation(project)
+
+    def _start_generation(self, project: Project) -> _GenerationRun:
+        request = self._create_request(project)
+        return _GenerationRun(
+            project=project,
+            request=request,
+            model_name=self._generation_storage.resolve_model_name(),
+        )
+
+    def _execute_generation_pipeline(self, run: _GenerationRun) -> None:
+        run.current_step = "build_prompt"
+        prompt = self._build_prompt(run.project, run.request_id)
+
+        run.current_step = "save_generation_request"
+        self._persist_request_artifact(run, prompt)
+        self._release_db_lock_for_ai(run)
+
+        run.current_step = "call_ai"
+        self._call_ai_step(run, prompt)
+
+        run.current_step = "validate_response"
+        validated = self._validate_ai_step(run)
+
+        self._record_successful_response(run)
+        self._process_validated_output(run, validated)
+        self._complete_request(run.request, run.project_id, run.request_id)
+
+    def _release_db_lock_for_ai(self, run: _GenerationRun) -> None:
+        """Commit pending writes before the long AI call so SQLite stays writable."""
+        self._request_repo.commit()
+        self._request_repo.refresh(run.request)
+        self._project_repo.refresh(run.project)
+
+    def _persist_request_artifact(self, run: _GenerationRun, prompt: str) -> None:
+        request_payload = self._generation_storage.build_request_payload(
+            run.project,
+            generation_id=run.request_id,
+            prompt=prompt,
+            model_name=run.model_name,
+        )
+        request_path = self._generation_storage.save_request(run.request_id, request_payload)
+        self._request_repo.save_prompt_path(run.request, request_path)
+        self._request_repo.flush()
+        run.request_saved = True
+
+    def _call_ai_step(self, run: _GenerationRun, prompt: str) -> None:
+        ai_started = time.monotonic()
+        try:
+            run.raw_response = self._call_ai(prompt, run.project_id, run.request_id)
+        except AIClientError as exc:
+            run.duration_seconds = time.monotonic() - ai_started
+            run.errors.append(str(exc))
+            self._save_run_response(run)
+            raise
+        run.duration_seconds = time.monotonic() - ai_started
+
+    def _validate_ai_step(self, run: _GenerationRun) -> dict:
+        try:
+            validated = self._validate_response(
+                run.raw_response,
+                run.project,
+                run.project_id,
+                run.request_id,
+            )
+        except AIValidationError as exc:
+            run.errors.append(str(exc))
+            self._save_run_response(run)
+            raise
+
+        run.parsed_response = validated
+        run.validation_result = {"valid": True}
+        return validated
+
+    def _record_successful_response(self, run: _GenerationRun) -> None:
+        self._save_run_response(run, errors=run.errors or None)
+
+    def _process_validated_output(self, run: _GenerationRun, validated: dict) -> None:
+        run.current_step = "map_payload"
+        mapped = self._map_payload(validated, run.project_id, run.request_id)
+
+        run.current_step = "estimate_costs"
+        costs = self._estimate_costs(
+            run.project,
+            mapped["components"],
+            run.project_id,
+            run.request_id,
+        )
+
+        run.current_step = "persist_document"
+        self._persist_document(
+            run.project,
+            mapped,
+            costs,
+            validated["diagrams"],
+            run.request_id,
+        )
+
+    def _record_unexpected_error(self, run: _GenerationRun, reason: str) -> None:
+        if not run.request_saved:
+            return
+        run.errors.append(reason)
+        self._save_run_response(run)
+
+    def _save_run_response(
+        self,
+        run: _GenerationRun,
+        *,
+        errors: list[str] | None = None,
+    ) -> None:
+        self._save_generation_response(
+            run.request,
+            run.project_id,
+            run.request_id,
+            run.model_name,
+            raw_response=run.raw_response,
+            parsed_response=run.parsed_response,
+            validation_result=run.validation_result,
+            errors=errors if errors is not None else run.errors,
+            duration_seconds=run.duration_seconds,
+        )
+
+    def _fail_generation(self, run: _GenerationRun, reason: str) -> None:
+        self._handle_failure(run.request, run.current_step, run.project_id, reason)
+
+    def _finish_generation(self, project: Project) -> Project:
         self._project_repo.commit()
         self._project_repo.refresh(project)
         return project
@@ -229,11 +282,19 @@ class GenerationService:
         )
         return raw_response
 
-    def _validate_response(self, raw: str, project_id: str, request_id: str) -> dict:
+    def _validate_response(
+        self,
+        raw: str,
+        project: Project,
+        project_id: str,
+        request_id: str,
+    ) -> dict:
         self._logger.log_step(
             "validate_response", project_id=project_id, request_id=request_id, status="started"
         )
         validated = self._validator.validate(raw)
+        validated = self._guardrails.apply(validated, project)
+        validated = self._diagram_rules.apply(validated)
         self._logger.log_step(
             "validate_response", project_id=project_id, request_id=request_id, status="completed"
         )
@@ -243,21 +304,16 @@ class GenerationService:
         self._logger.log_step(
             "map_payload", project_id=project_id, request_id=request_id, status="started"
         )
-        components, risks, recommendations, next_steps, summary, main_flow = (
-            self._mapper.map_payload(validated)
-        )
+        components, summary, main_flow = self._mapper.map_payload(validated)
         self._logger.log_step(
             "map_payload",
             project_id=project_id,
             request_id=request_id,
             status="completed",
-            reason=f"components={len(components)} risks={len(risks)}",
+            reason=f"components={len(components)}",
         )
         return {
             "components": components,
-            "risks": risks,
-            "recommendations": recommendations,
-            "next_steps": next_steps,
             "summary": summary,
             "main_flow": main_flow,
         }
@@ -301,10 +357,7 @@ class GenerationService:
             project,
             components=mapped["components"],
             costs=costs,
-            risks=mapped["risks"],
-            recommendations=mapped["recommendations"],
             main_flow=mapped["main_flow"],
-            next_steps=mapped["next_steps"],
             architecture_summary=mapped["summary"],
             architecture_diagrams=diagrams,
         )
@@ -339,7 +392,3 @@ class GenerationService:
         self._request_repo.mark_failed(request)
         self._request_repo.commit()
 
-
-def generate_for_project(db: Session, project: Project) -> Project:
-    """Convenience wrapper used by tests and legacy callers."""
-    return GenerationService(db).generate(project)

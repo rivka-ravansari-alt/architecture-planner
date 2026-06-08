@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.config.params import DESCRIPTION_MAX_TOKENS
+from app.config.params import DESCRIPTION_MAX_CHARS
 from app.schemas.project import ProjectCreate
 from app.utils.token_estimate import estimate_token_count
 
@@ -14,8 +14,8 @@ def test_estimate_token_count_short():
     assert estimate_token_count("hi") == 1
 
 
-def test_rejects_description_over_token_limit():
-    long_text = "word " * (DESCRIPTION_MAX_TOKENS + 10)
+def test_rejects_description_over_char_limit():
+    long_text = "x" * (DESCRIPTION_MAX_CHARS + 1)
     with pytest.raises(ValidationError):
         ProjectCreate(
             name="Test",

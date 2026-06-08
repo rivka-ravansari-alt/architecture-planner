@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Request, status
 
 from app.api.controllers.auth_controller import AuthController
-from app.core.dependencies import get_auth_service, get_current_user
+from app.core.dependencies import get_auth_service, get_optional_user
 from app.models import User
 from app.schemas.auth import UserOut
 from app.services.auth_service import AuthService
@@ -28,8 +28,13 @@ async def google_callback(request: Request, controller: AuthController = Depends
     return await controller.google_callback(request)
 
 
-@router.get("/me", response_model=UserOut)
-def auth_me(user: User = Depends(get_current_user), controller: AuthController = Depends(_controller)):
+@router.get("/me", response_model=UserOut | None)
+def auth_me(
+    user: User | None = Depends(get_optional_user),
+    controller: AuthController = Depends(_controller),
+):
+    if user is None:
+        return None
     return controller.current_user(user)
 
 

@@ -14,6 +14,18 @@ function inferTypeFromNodeName(name) {
   const lower = name.toLowerCase();
   if (/\b(end\s+)?user\b/.test(lower) || lower === "user") return "user";
   if (lower.includes("mobile")) return "mobile_app";
+  if (lower.includes("admin") && lower.includes("panel")) return "admin_panel";
+  if (lower.includes("cdn") || lower.includes("content delivery")) return "cdn";
+  if (lower.includes("load balancer") || lower.includes("load balancing")) return "load_balancer";
+  if (lower.includes("api gateway") || lower === "api" || lower.includes("api layer")) return "api_gateway";
+  if (lower.includes("secret") || lower.includes("vault")) return "secrets";
+  if (lower.includes("config") || lower.includes("parameter store")) return "config";
+  if (lower.includes("trace") || lower.includes("tracing")) return "tracing";
+  if (lower.includes("alert")) return "alerting";
+  if (lower.includes("cache") && !lower.includes("cdn")) return "cache";
+  if (lower.includes("search") || lower.includes("opensearch") || lower.includes("elasticsearch")) return "search";
+  if (lower.includes("external") || lower.includes("third-party") || lower.includes("third party")) return "external_api";
+  if (lower.includes("service") && !lower.includes("api")) return "service";
   if (lower.includes("extension")) return "browser_extension";
   if (lower.includes("browser")) return "web_app";
   if (lower.includes("web") && (lower.includes("client") || lower.includes("application") || lower.includes("app"))) return "web_app";
@@ -29,14 +41,14 @@ function inferTypeFromNodeName(name) {
   if (lower.includes("analytic")) return "analytics";
   if (lower.includes("notification")) return "notification";
   if (lower.includes("payment") || lower.includes("billing")) return "payment";
-  if (lower.includes("ai ") || lower.includes("llm")) return "ai_service";
-  if (lower.includes("api") || lower.includes("gateway")) return "api";
+  if (lower.includes("ai ") || lower.includes("llm")) return "ai_provider";
+  if (lower.includes("api") || lower.includes("gateway")) return "api_gateway";
   if (lower.includes("upload")) return "worker";
   if (lower.includes("web")) return "web_app";
   return DEFAULT_COMPONENT_TYPE;
 }
 
-export function buildFlowGraph(diagram, components = [], diagramType = "technical_flow") {
+export function buildFlowGraph(diagram, components = [], diagramType = "high_level") {
   if (!diagram) {
     return null;
   }
@@ -55,7 +67,7 @@ export function buildFlowGraph(diagram, components = [], diagramType = "technica
   const enriched = nodes.map((node) => {
     const match = lookup.get(node.name);
     const componentType = normalizeComponentType(
-      match?.type || inferTypeFromNodeName(node.name)
+      node.type || match?.type || inferTypeFromNodeName(node.name)
     );
     const tag = match?.optional ? "optional" : "required";
     return {

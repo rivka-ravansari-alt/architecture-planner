@@ -3,22 +3,19 @@ export const DOCUMENT_SECTIONS = [
   { id: "components", label: "Components" },
   { id: "diagrams", label: "Architecture Diagrams" },
   { id: "flow", label: "Architecture Flow" },
-  { id: "risks", label: "Risks" },
-  { id: "recommendations", label: "Recommendations" },
-  { id: "next-steps", label: "Next Steps" },
   { id: "costs", label: "Cloud & Costs" },
 ];
 
-export const RISK_LEVELS = ["high", "medium", "low"];
-
 export const DIAGRAM_TAB_LABELS = {
-  high_level: "High Level",
+  high_level: "High Level Design",
   system_flow: "System Flow",
-  technical_flow: "Technical Flow",
+  production_architecture: "Technical Architecture",
+  technical_architecture: "Technical Architecture",
 };
 
 export const DIAGRAM_DESCRIPTIONS = {
-  high_level: "Business and system-boundary view for stakeholders.",
-  system_flow: "Request and data movement through the system.",
-  technical_flow: "Internal services, infrastructure, and processing steps.",
+  high_level: "Simple business-level view of primary architecture components.",
+  system_flow: "Request lifecycle and data movement through the system.",
+  production_architecture: "Complete technical architecture with operational layers.",
+  technical_architecture: "Complete technical architecture with operational layers.",
 };

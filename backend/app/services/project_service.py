@@ -12,8 +12,6 @@ from app.schemas.project import ProjectCreate
 
 
 class ProjectService:
-    """Handles project creation and access control."""
-
     def __init__(self, db: Session, repository: ProjectRepository | None = None) -> None:
         self._repo = repository or ProjectRepository(db)
 

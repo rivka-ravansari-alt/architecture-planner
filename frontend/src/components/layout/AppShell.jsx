@@ -17,10 +17,8 @@ export default function AppShell({
   const {
     step,
     maxStep,
-    form,
-    setForm,
-    answers,
-    setAnswers,
+    intakeForm,
+    setIntakeForm,
     errors,
     project,
     components,
@@ -69,14 +67,15 @@ export default function AppShell({
 
           {step === 1 && (
             <StepProjectDetails
-              form={form}
-              setForm={setForm}
-              projectTypes={projectTypes}
+              intakeForm={intakeForm}
+              setIntakeForm={setIntakeForm}
               errors={errors}
             />
           )}
 
-          {step === 2 && <StepRequirements answers={answers} setAnswers={setAnswers} />}
+          {step === 2 && (
+            <StepRequirements intakeForm={intakeForm} setIntakeForm={setIntakeForm} />
+          )}
 
           {inWorkspace && (
             <ArchitectureWorkspace
@@ -84,8 +83,6 @@ export default function AppShell({
               projectTypes={projectTypes}
               components={components}
               onMove={moveComponent}
-              risks={derived.risks}
-              recommendations={derived.recommendations}
               costs={derived.costs}
               onExit={() => goToStep(2)}
               onReset={reset}

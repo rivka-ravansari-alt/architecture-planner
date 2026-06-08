@@ -16,9 +16,8 @@ from app.config.params import (
 )
 from app.core.exceptions import AIClientError, ArchitectureGenerationError
 from app.models import ArchitectureGenerationRequest
-from app.services.generation_service import GenerationService, generate_for_project
+from app.services.generation_service import GenerationService
 from tests.conftest import MockAIClient
-from tests.fixtures import VALID_AI_RESPONSE_JSON
 
 
 def test_success_persists_ai_output(db_session, sample_project, mock_ai_client, ai_dirs):
@@ -28,14 +27,12 @@ def test_success_persists_ai_output(db_session, sample_project, mock_ai_client, 
     assert result.generated_at is not None
     assert len(result.components) == 4
     assert result.architecture_summary.startswith("A browser client")
-    assert len(result.risks) == 1
-    assert len(result.recommendations) == 2
-    assert result.next_steps[0].startswith("Confirm")
     assert len(result.cost_estimates) == 3
     assert result.architecture_diagrams is not None
     assert "high_level" in result.architecture_diagrams
     assert "system_flow" in result.architecture_diagrams
-    assert "technical_flow" in result.architecture_diagrams
+    assert "technical_architecture" in result.architecture_diagrams
+    assert "technical_flow" not in result.architecture_diagrams
 
     request = db_session.scalar(
         select(ArchitectureGenerationRequest).where(

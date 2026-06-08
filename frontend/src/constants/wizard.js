@@ -1,12 +1,12 @@
 export const WIZARD_STEPS = [
-  "Project Details",
-  "Requirements",
+  "Product Info",
+  "Architecture",
   "Architecture Document",
 ];
 
 export const STEP_SUBTITLES = [
-  "Tell us about the application you want to plan.",
-  "Answer a few questions so we can determine the right components.",
+  "Basic product details that shape platform choice and scale.",
+  "Toggle only the capabilities that affect infrastructure and cost.",
   "Review your AI-generated architecture document and refine the plan.",
 ];
 
@@ -32,7 +32,7 @@ export const REQUIREMENTS = [
   { key: "include_edge_cases", label: "Should edge cases be included?" },
 ];
 
-export const DESCRIPTION_MAX_TOKENS = 500;
+export const DESCRIPTION_MAX_CHARS = 1200;
 
 export const EMPTY_FORM = {
   name: "",
@@ -53,7 +53,7 @@ export const EMPTY_ANSWERS = {
 };
 
 export const STALE_NOTICE_TEXT =
-  "You've changed your inputs. The architecture, cloud mapping, risks, recommendations, and cost estimates will be regenerated when you open the Architecture Document.";
+  "You've changed your inputs. The architecture, cloud mapping, and cost estimates will be regenerated when you open the Architecture Document.";
 
 export const AUTH_ROUTES = {
   googleLogin: "/api/auth/google",

@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Generator
 
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.pool import NullPool
 
 from app.config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class Base(DeclarativeBase):
@@ -16,11 +20,28 @@ class Base(DeclarativeBase):
 
 def _engine_kwargs(url: str) -> dict:
     if url.startswith("sqlite"):
-        return {"connect_args": {"check_same_thread": False}}
+        return {
+            "connect_args": {"check_same_thread": False, "timeout": 30},
+            "poolclass": NullPool,
+        }
     return {"pool_pre_ping": True}
 
 
 engine = create_engine(settings.database_url, **_engine_kwargs(settings.database_url))
+
+
+@event.listens_for(engine, "connect")
+def _configure_sqlite_connection(dbapi_connection, _connection_record) -> None:
+    if not settings.database_url.startswith("sqlite"):
+        return
+    dbapi_connection.execute("PRAGMA busy_timeout=30000")
+    try:
+        dbapi_connection.execute("PRAGMA journal_mode=WAL")
+        dbapi_connection.execute("PRAGMA synchronous=NORMAL")
+    except Exception:
+        pass
+
+
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
@@ -33,16 +54,25 @@ def get_db() -> Generator[Session, None, None]:
 
 
 class DatabaseInitializer:
-    """Creates tables and applies lightweight schema migrations."""
-
     def __init__(self, db_engine=engine) -> None:
         self._engine = db_engine
 
     def initialize(self) -> None:
         import app.models  # noqa: F401 — register ORM models
 
+        self._enable_sqlite_wal()
         Base.metadata.create_all(bind=self._engine)
         self._apply_migrations()
+
+    def _enable_sqlite_wal(self) -> None:
+        if not str(self._engine.url).startswith("sqlite"):
+            return
+        try:
+            with self._engine.begin() as conn:
+                conn.execute(text("PRAGMA journal_mode=WAL"))
+                conn.execute(text("PRAGMA synchronous=NORMAL"))
+        except Exception as exc:
+            logger.warning("SQLite WAL mode unavailable (%s); using default journal.", exc)
 
     def _apply_migrations(self) -> None:
         self._ensure_column(
@@ -69,6 +99,11 @@ class DatabaseInitializer:
             "architecture_components",
             "component_type",
             "ALTER TABLE architecture_components ADD COLUMN component_type VARCHAR(40) DEFAULT 'api'",
+        )
+        self._ensure_column(
+            "architecture_components",
+            "implementation_options",
+            "ALTER TABLE architecture_components ADD COLUMN implementation_options JSON",
         )
         self._ensure_column(
             "projects",

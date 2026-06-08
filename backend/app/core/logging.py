@@ -8,8 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class GenerationLogger:
-    """Logs generation pipeline steps with a consistent format."""
-
     def __init__(self, logger_instance: logging.Logger | None = None) -> None:
         self._logger = logger_instance or logger
 
@@ -35,8 +33,6 @@ class GenerationLogger:
 
 
 class AIClientLogger:
-    """Logs AI client operations."""
-
     def __init__(self, logger_instance: logging.Logger | None = None) -> None:
         self._logger = logger_instance or logger
 

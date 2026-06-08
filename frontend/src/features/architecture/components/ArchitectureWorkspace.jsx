@@ -1,5 +1,7 @@
 import { DOCUMENT_SECTIONS } from "../../../constants/document.js";
+import { STAGES } from "../../../constants/wizard.js";
 import { useDocumentSections } from "../../../hooks/useDocumentSections.js";
+import { labelFor } from "../../../utils/text.js";
 import ArchitectureDocument from "./ArchitectureDocument.jsx";
 
 export default function ArchitectureWorkspace({
@@ -7,8 +9,6 @@ export default function ArchitectureWorkspace({
   projectTypes,
   components,
   onMove,
-  risks,
-  recommendations,
   costs,
   onExit,
   onReset,
@@ -45,7 +45,12 @@ export default function ArchitectureWorkspace({
         </div>
         <div className="focus-workspace-bar-center">
           <h1 className="focus-workspace-title">Architecture Document</h1>
-          <p className="focus-workspace-sub">{project.name}</p>
+          <p className="focus-workspace-sub">
+            {project.name}
+            <span className="focus-workspace-meta">
+              · {labelFor(STAGES, project.stage)}
+            </span>
+          </p>
         </div>
         <div className="focus-workspace-bar-end">
           <button
@@ -86,8 +91,6 @@ export default function ArchitectureWorkspace({
               projectTypes={projectTypes}
               components={components}
               onMove={onMove}
-              risks={risks}
-              recommendations={recommendations}
               costs={costs}
               expandedSections={expandedSections}
               onToggleSection={toggleSection}

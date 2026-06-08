@@ -2,6 +2,63 @@
 
 from __future__ import annotations
 
+
+def _option_detail(
+    when_to_use: str,
+    cost_impact: str,
+    pros: list[str],
+    cons: list[str],
+    *,
+    not_applicable: bool = False,
+) -> dict[str, object]:
+    detail: dict[str, object] = {
+        "when_to_use": when_to_use,
+        "cost_impact": cost_impact,
+        "pros": pros,
+        "cons": cons,
+    }
+    if not_applicable:
+        detail["not_applicable"] = True
+    return detail
+
+
+def _na_option(message: str = "Not applicable for this component.") -> dict[str, object]:
+    return _option_detail(message, "", [], [], not_applicable=True)
+
+
+def _implementation_options(recommended: str, **overrides: dict[str, object]) -> dict[str, object]:
+    options: dict[str, object] = {
+        "recommended": recommended,
+        "serverless": _option_detail(
+            "Low or spiky traffic with minimal operations overhead.",
+            "Very low at MVP scale; pay per use.",
+            ["Minimal ops", "Automatic scaling"],
+            ["Cold starts", "Execution limits"],
+        ),
+        "container": _option_detail(
+            "Steady, predictable traffic where always-on compute is cost-effective.",
+            "Moderate baseline; can beat serverless at steady load.",
+            ["Consistent performance", "Long-running workloads"],
+            ["Higher idle cost", "More deployment work"],
+        ),
+        "managed_service": _option_detail(
+            "Default choice when a fully managed platform fits the workload.",
+            "Low-to-moderate fixed monthly cost for small workloads.",
+            ["Fast to ship", "Built-in maintenance"],
+            ["Less fine-grained control"],
+        ),
+        "external_provider": _option_detail(
+            "Third-party SaaS or API when outsourcing is the best fit.",
+            "Usage-based or subscription pricing from the vendor.",
+            ["Fast integration", "Vendor handles compliance and uptime"],
+            ["Vendor lock-in", "Per-seat or API pricing can grow"],
+        ),
+    }
+    options.update(overrides)
+    options["recommended"] = recommended
+    return options
+
+
 STATIC_AI_PAYLOAD: dict = {
     "components": [
         {
@@ -9,32 +66,42 @@ STATIC_AI_PAYLOAD: dict = {
             "type": "web_app",
             "tag": "required",
             "reason": "Provides the user interface for interacting with the product.",
+            "implementation_options": _implementation_options(
+                "managed_service",
+                serverless=_na_option(),
+                external_provider=_na_option(),
+            ),
             "cloud_options": {
-                "aws": ["CloudFront", "S3", "Amplify Hosting"],
-                "gcp": ["Cloud CDN", "Cloud Storage", "Firebase Hosting"],
-                "azure": ["Azure CDN", "Static Web Apps", "Blob Storage"],
+                "aws": ["Amplify Hosting"],
+                "gcp": ["Firebase Hosting"],
+                "azure": ["Azure Static Web Apps"],
             },
         },
         {
-            "name": "API Layer",
+            "name": "Backend / API Layer",
             "type": "api",
             "tag": "required",
             "reason": "Central entry point for client requests and service routing.",
+            "implementation_options": _implementation_options(
+                "serverless",
+                external_provider=_na_option(),
+            ),
             "cloud_options": {
-                "aws": ["API Gateway", "Application Load Balancer"],
-                "gcp": ["API Gateway", "Cloud Load Balancing"],
-                "azure": ["API Management", "Application Gateway"],
+                "aws": ["API Gateway"],
+                "gcp": ["API Gateway"],
+                "azure": ["API Management"],
             },
         },
         {
             "name": "Application Service",
-            "type": "worker",
-            "tag": "required",
-            "reason": "Runs core business logic and orchestrates backend workflows.",
+            "type": "service",
+            "tag": "optional",
+            "reason": "Runs core business logic when separated from the API tier.",
+            "implementation_options": _implementation_options("serverless"),
             "cloud_options": {
-                "aws": ["Lambda", "ECS", "Elastic Beanstalk"],
-                "gcp": ["Cloud Run", "Cloud Functions", "App Engine"],
-                "azure": ["App Service", "Azure Functions", "Container Apps"],
+                "aws": ["Lambda", "ECS Fargate"],
+                "gcp": ["Cloud Run", "Cloud Functions"],
+                "azure": ["Azure Functions", "Container Apps"],
             },
         },
         {
@@ -42,10 +109,15 @@ STATIC_AI_PAYLOAD: dict = {
             "type": "authentication",
             "tag": "required",
             "reason": "Handles user sign-up, login, and session management.",
+            "implementation_options": _implementation_options(
+                "managed_service",
+                serverless=_na_option(),
+                container=_na_option(),
+            ),
             "cloud_options": {
                 "aws": ["Cognito"],
-                "gcp": ["Identity Platform", "Firebase Auth"],
-                "azure": ["Entra ID B2C", "Entra ID"],
+                "gcp": ["Firebase Authentication", "Identity Platform"],
+                "azure": ["Entra ID B2C"],
             },
         },
         {
@@ -53,10 +125,14 @@ STATIC_AI_PAYLOAD: dict = {
             "type": "database",
             "tag": "required",
             "reason": "Stores application data with durable, queryable persistence.",
+            "implementation_options": _implementation_options(
+                "managed_service",
+                external_provider=_na_option(),
+            ),
             "cloud_options": {
-                "aws": ["RDS", "DynamoDB", "Aurora"],
-                "gcp": ["Cloud SQL", "Firestore", "Spanner"],
-                "azure": ["Azure SQL", "Cosmos DB", "PostgreSQL Flexible Server"],
+                "aws": ["DynamoDB", "RDS"],
+                "gcp": ["Firestore", "Cloud SQL"],
+                "azure": ["Cosmos DB", "Azure SQL Database"],
             },
         },
         {
@@ -64,6 +140,12 @@ STATIC_AI_PAYLOAD: dict = {
             "type": "object_storage",
             "tag": "optional",
             "reason": "Stores uploaded files and static assets when file uploads are needed.",
+            "implementation_options": _implementation_options(
+                "managed_service",
+                serverless=_na_option(),
+                container=_na_option(),
+                external_provider=_na_option(),
+            ),
             "cloud_options": {
                 "aws": ["S3"],
                 "gcp": ["Cloud Storage"],
@@ -75,10 +157,11 @@ STATIC_AI_PAYLOAD: dict = {
             "type": "worker",
             "tag": "optional",
             "reason": "Processes long-running or async jobs outside the request path.",
+            "implementation_options": _implementation_options("serverless"),
             "cloud_options": {
-                "aws": ["SQS", "Lambda", "ECS workers"],
-                "gcp": ["Pub/Sub", "Cloud Run workers", "Cloud Tasks"],
-                "azure": ["Service Bus", "Azure Functions", "Container Apps jobs"],
+                "aws": ["Lambda", "ECS Fargate"],
+                "gcp": ["Cloud Run Jobs", "Cloud Functions"],
+                "azure": ["Azure Functions", "Container Apps Jobs"],
             },
         },
         {
@@ -86,10 +169,16 @@ STATIC_AI_PAYLOAD: dict = {
             "type": "monitoring",
             "tag": "optional",
             "reason": "Tracks health, metrics, and logs for production operations.",
+            "implementation_options": _implementation_options(
+                "managed_service",
+                serverless=_na_option(),
+                container=_na_option(),
+                external_provider=_na_option(),
+            ),
             "cloud_options": {
-                "aws": ["CloudWatch", "CloudWatch Logs"],
-                "gcp": ["Cloud Monitoring", "Cloud Logging"],
-                "azure": ["Azure Monitor", "Log Analytics"],
+                "aws": ["CloudWatch"],
+                "gcp": ["Cloud Monitoring"],
+                "azure": ["Azure Monitor"],
             },
         },
     ],
@@ -120,7 +209,6 @@ STATIC_AI_PAYLOAD: dict = {
                 {"id": "app_service", "name": "Application Service", "group": "platform"},
                 {"id": "database", "name": "Database", "group": "data"},
                 {"id": "object_storage", "name": "File Storage", "group": "data"},
-                {"id": "monitoring", "name": "Monitoring", "group": "operations"},
             ],
             "edges": [
                 {"source": "user", "target": "web_client"},
@@ -129,7 +217,6 @@ STATIC_AI_PAYLOAD: dict = {
                 {"source": "api_layer", "target": "app_service"},
                 {"source": "app_service", "target": "database"},
                 {"source": "app_service", "target": "object_storage"},
-                {"source": "api_layer", "target": "monitoring"},
             ],
         },
         "system_flow": {
@@ -154,55 +241,31 @@ STATIC_AI_PAYLOAD: dict = {
                 {"source": "database", "target": "dashboard"},
             ],
         },
-        "technical_flow": {
-            "title": "Technical Flow",
+        "technical_architecture": {
+            "title": "Technical Architecture",
             "nodes": [
-                {"id": "browser", "name": "Browser"},
-                {"id": "api_gateway", "name": "API Gateway"},
-                {"id": "auth", "name": "Authentication"},
-                {"id": "app_service", "name": "Application Service"},
-                {"id": "queue", "name": "Processing Queue"},
-                {"id": "worker", "name": "Background Worker"},
-                {"id": "object_storage", "name": "Object Storage"},
-                {"id": "database", "name": "Database"},
+                {"id": "user", "name": "End User", "group": "experience"},
+                {"id": "web_client", "name": "Web Client", "group": "experience"},
+                {"id": "api_layer", "name": "API Layer", "group": "platform"},
+                {"id": "auth", "name": "Authentication Service", "group": "platform"},
+                {"id": "app_service", "name": "Application Service", "group": "platform"},
+                {"id": "database", "name": "Database", "group": "data"},
+                {"id": "object_storage", "name": "File Storage", "group": "data"},
+                {"id": "monitoring", "name": "Monitoring", "group": "operations", "type": "monitoring"},
+                {"id": "logging", "name": "Logging", "group": "operations", "type": "logging"},
+                {"id": "secrets", "name": "Secrets Manager", "group": "operations", "type": "secrets"},
             ],
             "edges": [
-                {"source": "browser", "target": "api_gateway"},
-                {"source": "api_gateway", "target": "auth"},
-                {"source": "api_gateway", "target": "app_service"},
-                {"source": "app_service", "target": "queue"},
-                {"source": "queue", "target": "worker"},
-                {"source": "worker", "target": "object_storage"},
-                {"source": "worker", "target": "database"},
+                {"source": "user", "target": "web_client"},
+                {"source": "web_client", "target": "api_layer"},
+                {"source": "api_layer", "target": "auth"},
+                {"source": "api_layer", "target": "app_service"},
                 {"source": "app_service", "target": "database"},
+                {"source": "app_service", "target": "object_storage"},
+                {"source": "api_layer", "target": "monitoring"},
+                {"source": "app_service", "target": "logging"},
+                {"source": "app_service", "target": "secrets"},
             ],
         },
     },
-    "risks": [
-        {
-            "title": "Authentication gaps",
-            "description": "Weak session handling could expose user accounts.",
-            "severity": "high",
-        },
-        {
-            "title": "Database scaling",
-            "description": "Traffic growth may require indexing and scaling strategy.",
-            "severity": "medium",
-        },
-        {
-            "title": "Cost overruns",
-            "description": "Optional services can increase monthly spend if left always on.",
-            "severity": "low",
-        },
-    ],
-    "recommendations": [
-        "Start with managed auth and database services to reduce operational overhead.",
-        "Keep async processing optional until traffic justifies a queue and workers.",
-        "Add monitoring before production launch.",
-    ],
-    "next_steps": [
-        "Confirm required vs optional components with stakeholders.",
-        "Pick a primary cloud provider and map services.",
-        "Define MVP deployment and CI/CD pipeline.",
-    ],
 }

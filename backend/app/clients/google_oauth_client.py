@@ -9,8 +9,6 @@ from app.config.settings import settings
 
 
 class GoogleOAuthClient:
-    """Wraps Authlib OAuth registration and redirect helpers."""
-
     def __init__(self) -> None:
         self._oauth = OAuth()
         self._oauth.register(

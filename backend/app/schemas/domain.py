@@ -15,13 +15,7 @@ class MappedComponent:
     optional: bool
     order: int
     cloud: dict[str, list[str]]
-
-
-@dataclass
-class MappedRisk:
-    title: str
-    description: str
-    severity: str
+    implementation_options: dict[str, object]
 
 
 @dataclass

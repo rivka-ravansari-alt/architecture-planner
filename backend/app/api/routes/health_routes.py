@@ -14,5 +14,5 @@ def _controller() -> HealthController:
 
 
 @router.get("/health")
-def health(controller: HealthController = Depends(_controller)):
+async def health(controller: HealthController = Depends(_controller)):
     return controller.check()

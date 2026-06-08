@@ -9,35 +9,43 @@ from typing import Any
 from app.config.params import (
     AI_RESPONSE_TOP_LEVEL_FIELDS,
     COMPONENT_REQUIRED_FIELDS,
+    COMPONENT_TYPE_ALIASES,
     DEFAULT_DIAGRAM_TITLES,
     DIAGRAM_KEYS,
     ERR_AI_NO_JSON_OBJECT,
     ERR_AI_RESPONSE_EMPTY,
-    RISK_REQUIRED_FIELDS,
+    IMPLEMENTATION_MODEL_LABELS,
+    LEGACY_DIAGRAM_KEY_ALIASES,
     VALID_COMPONENT_TAGS,
     VALID_COMPONENT_TYPES,
     VALID_DIAGRAM_GROUPS,
-    VALID_RISK_SEVERITIES,
+    VALID_IMPLEMENTATION_MODELS,
 )
 from app.core.exceptions import AIValidationError
 from app.services.cloud_defaults_service import CloudDefaultsService
 
+_DEFAULT_IMPLEMENTATION_OPTIONS: dict[str, object] = {
+    "recommended": "managed_service",
+    "managed_service": {
+        "when_to_use": "Managed platform suitable for this component at the requested scale.",
+        "cost_impact": "Varies with usage and scale.",
+        "pros": [],
+        "cons": [],
+    },
+}
+
 
 class AIResponseValidator:
-    """Validates and normalizes AI JSON architecture responses."""
-
     def __init__(self, cloud_defaults: CloudDefaultsService | None = None) -> None:
         self._cloud_defaults = cloud_defaults or CloudDefaultsService()
 
     def validate(self, raw: str) -> dict[str, Any]:
         payload = self._parse_json(raw)
+        payload = self._normalize_ai_payload(payload)
         self._validate_top_level(payload)
         self._validate_components(payload)
         self._validate_architecture(payload)
         payload["diagrams"] = self._validate_diagrams(payload)
-        self._validate_risks(payload)
-        self._validate_string_lists(payload, "recommendations")
-        self._validate_string_lists(payload, "next_steps")
         return payload
 
     def _parse_json(self, raw: str) -> dict[str, Any]:
@@ -64,6 +72,50 @@ class AIResponseValidator:
             raise AIValidationError(ERR_AI_NO_JSON_OBJECT)
         return text[start : end + 1]
 
+    def _normalize_ai_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        for component in payload.get("components", []):
+            if not isinstance(component, dict):
+                continue
+            if "description" in component and "reason" not in component:
+                component["reason"] = component["description"]
+            for cloud_key in ("cloud_mappings", "cloud", "cloud_options"):
+                if cloud_key in component and "cloud_options" not in component:
+                    component["cloud_options"] = component[cloud_key]
+                    break
+            if "implementation_options" not in component:
+                component["implementation_options"] = dict(_DEFAULT_IMPLEMENTATION_OPTIONS)
+
+        diagram = payload.get("diagram")
+        if isinstance(diagram, dict) and "diagrams" not in payload:
+            payload["diagrams"] = {
+                "high_level": diagram,
+                "system_flow": diagram,
+                "technical_architecture": diagram,
+            }
+
+        architecture = payload.get("architecture")
+        if isinstance(architecture, dict):
+            if not str(architecture.get("summary", "")).strip():
+                architecture["summary"] = "High-level architecture for the product."
+            flow = architecture.get("flow")
+            if not isinstance(flow, list) or not flow:
+                architecture["flow"] = [
+                    "User interacts with the client.",
+                    "Client sends requests to the backend.",
+                    "Backend reads and writes application data.",
+                ]
+
+        payload.pop("risks", None)
+        payload.pop("recommendations", None)
+        payload.pop("next_steps", None)
+
+        diagrams = payload.get("diagrams")
+        if isinstance(diagrams, dict):
+            diagrams.pop("technical_flow", None)
+            payload["diagrams"] = self._migrate_diagram_keys(diagrams)
+
+        return payload
+
     def _validate_top_level(self, payload: dict[str, Any]) -> None:
         for field in AI_RESPONSE_TOP_LEVEL_FIELDS:
             if field not in payload:
@@ -85,6 +137,7 @@ class AIResponseValidator:
                 raise AIValidationError(f"components[{index}] is missing {key}.")
 
         component_type = str(component["type"]).strip().lower()
+        component_type = COMPONENT_TYPE_ALIASES.get(component_type, component_type)
         if component_type not in VALID_COMPONENT_TYPES:
             raise AIValidationError(
                 f"components[{index}].type must be one of: "
@@ -99,6 +152,112 @@ class AIResponseValidator:
             )
         component["tag"] = tag
         component["cloud_options"] = self._cloud_defaults.normalize_cloud_options(component)
+        component["implementation_options"] = self._normalize_implementation_options(
+            component.get("implementation_options"),
+            index,
+        )
+
+    def _normalize_implementation_options(
+        self,
+        value: Any,
+        index: int,
+    ) -> dict[str, Any]:
+        if not isinstance(value, dict):
+            raise AIValidationError(
+                f"components[{index}].implementation_options must be an object."
+            )
+
+        recommended = str(value.get("recommended", "")).strip().lower()
+        if recommended not in VALID_IMPLEMENTATION_MODELS:
+            allowed = ", ".join(sorted(VALID_IMPLEMENTATION_MODELS))
+            raise AIValidationError(
+                f"components[{index}].implementation_options.recommended must be one of: "
+                f"{allowed}, got '{value.get('recommended')}'."
+            )
+
+        normalized: dict[str, Any] = {"recommended": recommended}
+        for model in VALID_IMPLEMENTATION_MODELS:
+            raw = value.get(model)
+            if raw is None:
+                continue
+            detail = self._normalize_option_detail(raw, index, model)
+            if detail:
+                normalized[model] = detail
+
+        recommended_detail = normalized.get(recommended)
+        recommended_when = (
+            recommended_detail.get("when_to_use", "")
+            if isinstance(recommended_detail, dict)
+            else ""
+        )
+        if not str(recommended_when).strip():
+            label = IMPLEMENTATION_MODEL_LABELS.get(recommended, recommended)
+            raise AIValidationError(
+                f"components[{index}].implementation_options must include a non-empty "
+                f"when_to_use for the recommended model ({label})."
+            )
+
+        return normalized
+
+    def _normalize_option_detail(
+        self,
+        raw: Any,
+        index: int,
+        model: str,
+    ) -> dict[str, Any] | None:
+        field_path = f"components[{index}].implementation_options.{model}"
+
+        if isinstance(raw, str):
+            when_to_use = raw.strip()
+            if not when_to_use:
+                return None
+            not_applicable = when_to_use.lower().startswith("not applicable")
+            detail: dict[str, Any] = {
+                "when_to_use": when_to_use,
+                "cost_impact": "" if not_applicable else "Varies with usage and scale.",
+                "pros": [],
+                "cons": [],
+            }
+            if not_applicable:
+                detail["not_applicable"] = True
+            return detail
+
+        if not isinstance(raw, dict):
+            raise AIValidationError(f"{field_path} must be a string or object.")
+
+        when_to_use = str(raw.get("when_to_use", "")).strip()
+        if not when_to_use:
+            raise AIValidationError(f"{field_path}.when_to_use is required.")
+
+        cost_impact = str(raw.get("cost_impact", "")).strip()
+        pros = self._normalize_string_list(raw.get("pros"), f"{field_path}.pros")
+        cons = self._normalize_string_list(raw.get("cons"), f"{field_path}.cons")
+        not_applicable = bool(raw.get("not_applicable")) or when_to_use.lower().startswith(
+            "not applicable"
+        )
+
+        detail = {
+            "when_to_use": when_to_use,
+            "cost_impact": cost_impact,
+            "pros": pros,
+            "cons": cons,
+        }
+        if not_applicable:
+            detail["not_applicable"] = True
+        return detail
+
+    @staticmethod
+    def _normalize_string_list(value: Any, field_path: str) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise AIValidationError(f"{field_path} must be a list of strings.")
+        normalized: list[str] = []
+        for item in value:
+            text = str(item).strip()
+            if text:
+                normalized.append(text)
+        return normalized
 
     def _validate_architecture(self, payload: dict[str, Any]) -> None:
         architecture = payload["architecture"]
@@ -181,6 +340,12 @@ class AIResponseValidator:
             group_value = str(group).strip().lower()
             if group_value and group_value in VALID_DIAGRAM_GROUPS:
                 normalized["group"] = group_value
+        node_type = node.get("type")
+        if node_type is not None and str(node_type).strip():
+            normalized["type"] = COMPONENT_TYPE_ALIASES.get(
+                str(node_type).strip().lower(),
+                str(node_type).strip().lower(),
+            )
         return normalized
 
     def _validate_edges(
@@ -226,29 +391,12 @@ class AIResponseValidator:
             normalized["label"] = str(label).strip()
         return normalized
 
-    def _validate_risks(self, payload: dict[str, Any]) -> None:
-        risks = payload["risks"]
-        if not isinstance(risks, list):
-            raise AIValidationError("risks must be a list.")
-        for index, risk in enumerate(risks):
-            self._validate_risk(risk, index)
-
-    def _validate_risk(self, risk: Any, index: int) -> None:
-        if not isinstance(risk, dict):
-            raise AIValidationError(f"risks[{index}] must be an object.")
-        for key in RISK_REQUIRED_FIELDS:
-            if key not in risk or not str(risk[key]).strip():
-                raise AIValidationError(f"risks[{index}] is missing {key}.")
-        severity = str(risk["severity"]).strip().lower()
-        if severity not in VALID_RISK_SEVERITIES:
-            raise AIValidationError(
-                f"risks[{index}].severity must be low, medium, or high, got '{risk['severity']}'."
-            )
-        risk["severity"] = severity
-
-    def _validate_string_lists(self, payload: dict[str, Any], field: str) -> None:
-        items = payload[field]
-        if not isinstance(items, list) or not items:
-            raise AIValidationError(f"{field} must be a non-empty list.")
-        if not all(isinstance(item, str) and item.strip() for item in items):
-            raise AIValidationError(f"{field} must contain non-empty strings.")
+    @staticmethod
+    def _migrate_diagram_keys(diagrams: dict[str, Any]) -> dict[str, Any]:
+        migrated = dict(diagrams)
+        for legacy_key, current_key in LEGACY_DIAGRAM_KEY_ALIASES.items():
+            if legacy_key in migrated and current_key not in migrated:
+                migrated[current_key] = migrated.pop(legacy_key)
+            elif legacy_key in migrated:
+                migrated.pop(legacy_key, None)
+        return migrated

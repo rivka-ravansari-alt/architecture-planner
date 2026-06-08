@@ -4,8 +4,6 @@ from __future__ import annotations
 
 
 class AppError(Exception):
-    """Base exception for domain and service errors."""
-
     def __init__(self, message: str) -> None:
         self.message = message
         super().__init__(message)
@@ -32,12 +30,12 @@ class BadRequestError(AppError):
 
 
 class AIClientError(AppError):
-    """Raised when the AI provider call fails."""
+    pass
 
 
 class AIValidationError(AppError):
-    """Raised when the AI response is missing or invalid."""
+    pass
 
 
 class ArchitectureGenerationError(AppError):
-    """Raised when the generation pipeline fails."""
+    pass

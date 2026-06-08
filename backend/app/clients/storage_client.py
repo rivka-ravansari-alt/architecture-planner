@@ -12,20 +12,16 @@ from app.config.settings import settings
 
 
 class StorageClient(ABC):
-    """Writes JSON objects to a bucket at a logical object key."""
-
     @abstractmethod
     def write_json(self, key: str, payload: dict[str, Any]) -> str:
-        """Persist JSON at `key` and return the resolved storage URI/path."""
+        """Serialize and persist a JSON payload."""
 
     @abstractmethod
     def read_json(self, key: str) -> dict[str, Any]:
-        """Load JSON previously written at `key`."""
+        """Load and deserialize a JSON payload."""
 
 
 class LocalStorageClient(StorageClient):
-    """Maps object keys to files under a local root directory."""
-
     def __init__(self, root: str | Path) -> None:
         self._root = Path(root)
 
@@ -41,8 +37,6 @@ class LocalStorageClient(StorageClient):
 
 
 class GCSStorageClient(StorageClient):
-    """Google Cloud Storage backend."""
-
     def __init__(
         self,
         bucket: str,
@@ -82,8 +76,6 @@ class GCSStorageClient(StorageClient):
 
 
 class S3StorageClient(StorageClient):
-    """Amazon S3 backend (not yet wired)."""
-
     def __init__(self, bucket: str) -> None:
         self._bucket = bucket
 
@@ -99,8 +91,6 @@ class S3StorageClient(StorageClient):
 
 
 class StorageClientFactory:
-    """Selects the configured object storage implementation."""
-
     @staticmethod
     def create(
         *,

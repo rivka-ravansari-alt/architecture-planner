@@ -11,8 +11,6 @@ from app.config.settings import settings
 
 
 class JwtService:
-    """Encodes and decodes session JWT tokens."""
-
     def create_access_token(self, user_id: str) -> str:
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_expire_minutes)
         payload = {"sub": user_id, "exp": expire}

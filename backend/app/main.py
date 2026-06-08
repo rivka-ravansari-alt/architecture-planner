@@ -29,10 +29,13 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     init_db()
-    if settings.use_static_ai_response:
+    from app.config.settings import Settings
+
+    runtime_settings = Settings()
+    if runtime_settings.use_static_ai_response:
         logger.warning("AI generation uses static JSON (USE_STATIC_AI_RESPONSE=true).")
-    elif settings.openai_api_key:
-        logger.info("AI generation uses OpenAI model %s.", settings.openai_model)
+    elif runtime_settings.openai_api_key:
+        logger.info("AI generation uses OpenAI model %s.", runtime_settings.openai_model)
     else:
         logger.warning("OpenAI API key is not configured; /generate will fail.")
     yield
@@ -86,6 +89,10 @@ def _register_exception_handlers(application: FastAPI) -> None:
     @application.exception_handler(ArchitectureGenerationError)
     async def generation_failed_handler(_request: Request, exc: ArchitectureGenerationError):
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=exc.message)
+
+    @application.exception_handler(AIClientError)
+    async def ai_client_handler(_request: Request, exc: AIClientError):
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=exc.message)
 
 
 def _register_routes(application: FastAPI) -> None:

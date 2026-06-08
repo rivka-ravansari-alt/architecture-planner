@@ -21,8 +21,6 @@ from app.models import Project
 
 
 class GenerationStorageService:
-    """Builds generation artifacts and writes them under generations/{generation_id}/."""
-
     def __init__(self, storage: StorageClient | None = None) -> None:
         self._storage = storage or StorageClientFactory.create()
 
@@ -84,9 +82,12 @@ class GenerationStorageService:
 
     @staticmethod
     def resolve_model_name() -> str:
-        if settings.use_static_ai_response:
+        from app.config.settings import Settings
+
+        runtime_settings = Settings()
+        if runtime_settings.use_static_ai_response:
             return "static"
-        return settings.openai_model
+        return runtime_settings.openai_model
 
     @staticmethod
     def _object_key(generation_id: str, filename: str) -> str:

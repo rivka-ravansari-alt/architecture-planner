@@ -68,7 +68,7 @@ function ArchitectureDiagramCanvas({ diagram, components, diagramType }) {
   );
 }
 
-export default function ArchitectureDiagram({ diagram, components, diagramType = "technical_flow" }) {
+export default function ArchitectureDiagram({ diagram, components, diagramType = "high_level" }) {
   if (diagram?.type === "mermaid") {
     return null;
   }

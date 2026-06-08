@@ -4,9 +4,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.config.params import DESCRIPTION_MAX_TOKENS
+from app.config.params import DESCRIPTION_MAX_CHARS
 from app.schemas.enums import ExpectedUsers, ProjectType, Stage
-from app.utils.token_estimate import estimate_token_count
 
 
 class RequirementAnswersIn(BaseModel):
@@ -21,7 +20,7 @@ class RequirementAnswersIn(BaseModel):
 
 class ProjectCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
-    description: str = Field(min_length=1, max_length=DESCRIPTION_MAX_TOKENS * 4)
+    description: str = Field(min_length=1, max_length=DESCRIPTION_MAX_CHARS)
     project_types: list[ProjectType] = Field(min_length=1)
     stage: Stage = Stage.mvp
     expected_users: ExpectedUsers = ExpectedUsers.u100
@@ -39,9 +38,9 @@ class ProjectCreate(BaseModel):
     @field_validator("description")
     @classmethod
     def validate_description_length(cls, value: str) -> str:
-        if estimate_token_count(value) > DESCRIPTION_MAX_TOKENS:
+        if len(value) > DESCRIPTION_MAX_CHARS:
             raise ValueError(
-                f"Project description must be {DESCRIPTION_MAX_TOKENS} tokens or fewer."
+                f"Project description must be {DESCRIPTION_MAX_CHARS} characters or fewer."
             )
         return value
 
@@ -65,6 +64,7 @@ class ComponentOut(BaseModel):
     optional: bool
     order: int
     cloud_mapping: CloudMappingOut | None = None
+    implementation_options: dict[str, object] | None = None
 
 
 class CostEstimateOut(BaseModel):
@@ -76,22 +76,11 @@ class CostEstimateOut(BaseModel):
     notes: str
 
 
-class RiskOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    title: str
-    description: str
-    severity: str
-
-
-class RecommendationOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    text: str
-
-
 class DiagramNodeOut(BaseModel):
     id: str
     name: str
     group: str | None = None
+    type: str | None = None
 
 
 class DiagramEdgeOut(BaseModel):
@@ -116,7 +105,7 @@ class DiagramViewOut(BaseModel):
 class ArchitectureDiagramsOut(BaseModel):
     high_level: DiagramViewOut
     system_flow: DiagramViewOut
-    technical_flow: DiagramViewOut
+    technical_architecture: DiagramViewOut
 
 
 class AnswersOut(BaseModel):
@@ -141,15 +130,12 @@ class ProjectDetail(BaseModel):
     created_at: datetime
     generated_at: datetime | None = None
     main_flow: list[str] = []
-    next_steps: list[str] = []
     architecture_summary: str = ""
     architecture_diagram: ArchitectureDiagramOut | None = None
     architecture_diagrams: ArchitectureDiagramsOut | None = None
     answers: AnswersOut | None = None
     components: list[ComponentOut] = []
     cost_estimates: list[CostEstimateOut] = []
-    risks: list[RiskOut] = []
-    recommendations: list[RecommendationOut] = []
 
 
 class ProjectTypeInfo(BaseModel):

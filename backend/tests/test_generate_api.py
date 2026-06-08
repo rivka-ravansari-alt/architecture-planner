@@ -39,13 +39,10 @@ def test_generate_endpoint_returns_ai_architecture(api_client, mock_ai_success):
     body = response.json()
     assert body["architecture_summary"]
     assert len(body["components"]) == 4
-    assert body["risks"][0]["severity"] == "high"
-    assert body["recommendations"]
-    assert body["next_steps"]
     assert body["cost_estimates"]
     assert body["architecture_diagrams"]["high_level"]["title"] == "High Level Design"
     assert len(body["architecture_diagrams"]["system_flow"]["nodes"]) >= 1
-    assert len(body["architecture_diagrams"]["technical_flow"]["edges"]) >= 1
+    assert "technical_flow" not in body["architecture_diagrams"]
 
 
 def test_generate_endpoint_returns_502_on_ai_failure(api_client):

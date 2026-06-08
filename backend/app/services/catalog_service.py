@@ -7,8 +7,6 @@ from app.schemas.project import ProjectTypeInfo
 
 
 class CatalogService:
-    """Exposes static wizard catalog data."""
-
     def list_project_types(self) -> list[ProjectTypeInfo]:
         return [
             ProjectTypeInfo(

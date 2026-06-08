@@ -1,6 +1,7 @@
 import Badge from "../../../../components/ui/Badge.jsx";
 import { getComponentIcon, normalizeComponentType } from "../../../../constants/componentTypes.js";
 import { truncateToSentences } from "../../../../utils/text.js";
+import ImplementationOptionsDetails from "./ImplementationOptionsDetails.jsx";
 
 export default function ComponentCard({ component, onMove }) {
   const isOptional = component.optional;
@@ -19,6 +20,7 @@ export default function ComponentCard({ component, onMove }) {
           {isOptional ? "Optional" : "Required"}
         </Badge>
       </div>
+      <ImplementationOptionsDetails implementationOptions={component.implementation_options} />
       <p className="doc-component-reason">{truncateToSentences(component.reason)}</p>
       <div className="doc-component-actions">
         <button

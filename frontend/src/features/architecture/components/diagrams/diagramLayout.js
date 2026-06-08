@@ -14,11 +14,14 @@ const FLOW_LAYER_GAP_Y = 40;
 const MAX_DOMAIN_ROW_WIDTH = 680;
 
 const TIER_ORDER = ["entry", "processing", "infrastructure"];
+const PRODUCTION_TIER_ORDER = ["entry", "processing", "data", "observability"];
 
 export const TIER_LABELS = {
   entry: "Clients & Entry Points",
   processing: "Application & Processing",
   infrastructure: "Storage & Infrastructure",
+  data: "Data & Content",
+  observability: "Infrastructure, Security & Observability",
 };
 
 const DOMAIN_ORDER = ["experience", "platform", "data", "operations"];
@@ -34,45 +37,94 @@ const TYPE_TIER = {
   user: "entry",
   web_app: "entry",
   mobile_app: "entry",
+  admin_panel: "entry",
   browser_extension: "entry",
+  cdn: "entry",
+  load_balancer: "entry",
   api: "processing",
+  api_gateway: "processing",
   authentication: "processing",
+  auth: "processing",
+  service: "processing",
   worker: "processing",
   ai_service: "processing",
+  ai_provider: "processing",
   analytics: "processing",
   notification: "processing",
   payment: "processing",
-  monitoring: "processing",
+  external_api: "processing",
+  integration: "processing",
+  monitoring: "infrastructure",
+  logging: "infrastructure",
+  tracing: "infrastructure",
+  alerting: "infrastructure",
+  secrets: "infrastructure",
+  config: "infrastructure",
+  cache: "infrastructure",
   database: "infrastructure",
   object_storage: "infrastructure",
   queue: "infrastructure",
+  search: "infrastructure",
+  backup: "infrastructure",
+};
+
+const TYPE_TIER_PRODUCTION = {
+  ...TYPE_TIER,
+  database: "data",
+  object_storage: "data",
+  queue: "data",
+  cache: "data",
+  search: "data",
+  monitoring: "observability",
+  logging: "observability",
+  tracing: "observability",
+  alerting: "observability",
+  secrets: "observability",
+  config: "observability",
 };
 
 const TYPE_DOMAIN = {
   user: "experience",
   web_app: "experience",
   mobile_app: "experience",
+  admin_panel: "experience",
   browser_extension: "experience",
+  cdn: "platform",
+  load_balancer: "platform",
   api: "platform",
+  api_gateway: "platform",
   authentication: "platform",
+  auth: "platform",
+  service: "platform",
   worker: "platform",
   ai_service: "platform",
-  database: "data",
-  object_storage: "data",
-  queue: "data",
-  monitoring: "operations",
+  ai_provider: "platform",
   analytics: "operations",
   notification: "operations",
   payment: "operations",
+  external_api: "operations",
+  database: "data",
+  object_storage: "data",
+  queue: "data",
+  cache: "data",
+  search: "data",
+  monitoring: "operations",
+  logging: "operations",
+  tracing: "operations",
+  alerting: "operations",
+  secrets: "operations",
+  config: "operations",
+  integration: "operations",
+  backup: "operations",
 };
 
-function tierIndex(tier) {
-  const index = TIER_ORDER.indexOf(tier);
+function tierIndex(tier, tierOrder = TIER_ORDER) {
+  const index = tierOrder.indexOf(tier);
   return index === -1 ? 1 : index;
 }
 
-function tierForComponentType(componentType) {
-  return TYPE_TIER[componentType] || "processing";
+function tierForComponentType(componentType, typeTierMap = TYPE_TIER) {
+  return typeTierMap[componentType] || "processing";
 }
 
 function domainForNode(node) {
@@ -82,20 +134,23 @@ function domainForNode(node) {
   return TYPE_DOMAIN[node.componentType] || "platform";
 }
 
-function refineTiers(nodes, edges) {
+function refineTiers(nodes, edges, typeTierMap = TYPE_TIER) {
   const tiers = new Map(
-    nodes.map((node) => [node.id, tierForComponentType(node.componentType)])
+    nodes.map((node) => [node.id, tierForComponentType(node.componentType, typeTierMap)])
   );
+
+  const tierOrder =
+    typeTierMap === TYPE_TIER_PRODUCTION ? PRODUCTION_TIER_ORDER : TIER_ORDER;
 
   for (let pass = 0; pass < nodes.length; pass += 1) {
     for (const edge of edges) {
       if (!tiers.has(edge.source) || !tiers.has(edge.target)) continue;
-      const sourceTier = tierIndex(tiers.get(edge.source));
-      let targetTier = tierIndex(tiers.get(edge.target));
-      const minTarget = Math.min(sourceTier + 1, TIER_ORDER.length - 1);
+      const sourceTier = tierIndex(tiers.get(edge.source), tierOrder);
+      let targetTier = tierIndex(tiers.get(edge.target), tierOrder);
+      const minTarget = Math.min(sourceTier + 1, tierOrder.length - 1);
       if (targetTier < minTarget) {
         targetTier = minTarget;
-        tiers.set(edge.target, TIER_ORDER[targetTier]);
+        tiers.set(edge.target, tierOrder[targetTier]);
       }
     }
   }
@@ -181,16 +236,17 @@ function centerGroupsHorizontally(groups) {
   }
 }
 
-function layoutTechnicalFlow(nodes, edges) {
-  const tiers = refineTiers(nodes, edges);
-  const byTier = new Map(TIER_ORDER.map((tier) => [tier, []]));
+function layoutTechnicalFlow(nodes, edges, tierOrder = TIER_ORDER, typeTierMap = TYPE_TIER) {
+  const tiers = refineTiers(nodes, edges, typeTierMap);
+  const byTier = new Map(tierOrder.map((tier) => [tier, []]));
 
   for (const node of nodes) {
     const tier = tiers.get(node.id) || "processing";
+    if (!byTier.has(tier)) byTier.set(tier, []);
     byTier.get(tier).push(node);
   }
 
-  const activeTiers = TIER_ORDER.filter((tier) => byTier.get(tier).length > 0);
+  const activeTiers = tierOrder.filter((tier) => byTier.get(tier)?.length > 0);
   const groups = [];
   const positioned = [];
   let currentY = 0;
@@ -297,7 +353,7 @@ function layoutHighLevel(nodes, edges) {
 /**
  * Layout nodes using a strategy tuned for the diagram type.
  */
-export function layoutDiagramNodes(nodes, edges, diagramType = "technical_flow") {
+export function layoutDiagramNodes(nodes, edges, diagramType = "high_level") {
   if (!nodes.length) {
     return { groups: [], nodes: [] };
   }
@@ -307,6 +363,9 @@ export function layoutDiagramNodes(nodes, edges, diagramType = "technical_flow")
       return layoutHighLevel(nodes, edges);
     case "system_flow":
       return layoutSystemFlow(nodes, edges);
+    case "technical_architecture":
+    case "production_architecture":
+      return layoutTechnicalFlow(nodes, edges, PRODUCTION_TIER_ORDER, TYPE_TIER_PRODUCTION);
     case "technical_flow":
     default:
       return layoutTechnicalFlow(nodes, edges);

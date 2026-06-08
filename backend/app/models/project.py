@@ -86,6 +86,7 @@ class ArchitectureComponent(Base):
     category: Mapped[str] = mapped_column(String(20), default="core")
     optional: Mapped[bool] = mapped_column(Boolean, default=False)
     order: Mapped[int] = mapped_column(Integer, default=0)
+    implementation_options: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     project: Mapped[Project] = relationship(back_populates="components")
     cloud_mapping: Mapped[CloudMapping | None] = relationship(

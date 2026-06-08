@@ -23,8 +23,6 @@ class GoogleUserProfile:
 
 
 class AuthService:
-    """Handles OAuth sign-in and session token creation."""
-
     def __init__(
         self,
         db: Session,

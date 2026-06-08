@@ -17,8 +17,6 @@ from app.schemas.domain import ProviderCost
 
 
 class CostEstimatorService:
-    """Computes rough monthly cost ranges per cloud provider."""
-
     def estimate(
         self,
         *,

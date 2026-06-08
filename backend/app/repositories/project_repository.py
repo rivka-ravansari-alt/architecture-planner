@@ -11,12 +11,10 @@ from app.models import (
     CloudMapping,
     CostEstimate,
     Project,
-    Recommendation,
     RequirementAnswers,
-    Risk,
 )
 from app.repositories.base import BaseRepository
-from app.schemas.domain import MappedComponent, MappedRisk, ProviderCost
+from app.schemas.domain import MappedComponent, ProviderCost
 from app.schemas.project import ProjectCreate
 
 
@@ -52,20 +50,15 @@ class ProjectRepository(BaseRepository):
         *,
         components: list[MappedComponent],
         costs: list[ProviderCost],
-        risks: list[MappedRisk],
-        recommendations: list[str],
         main_flow: list[str],
-        next_steps: list[str],
         architecture_summary: str,
         architecture_diagrams: dict,
     ) -> None:
         self.clear_generated_content(project)
         self._add_components(project, components)
         self._add_costs(project, costs)
-        self._add_risks(project, risks)
-        self._add_recommendations(project, recommendations)
         project.main_flow = main_flow
-        project.next_steps = next_steps
+        project.next_steps = []
         project.architecture_summary = architecture_summary
         project.architecture_diagrams = architecture_diagrams
         project.architecture_diagram = None
@@ -81,6 +74,7 @@ class ProjectRepository(BaseRepository):
                 category=comp.category,
                 optional=comp.optional,
                 order=comp.order,
+                implementation_options=comp.implementation_options or None,
             )
             component.cloud_mapping = CloudMapping(
                 aws=comp.cloud.get("aws", []),
@@ -101,12 +95,3 @@ class ProjectRepository(BaseRepository):
                 )
             )
 
-    def _add_risks(self, project: Project, risks: list[MappedRisk]) -> None:
-        for risk in risks:
-            project.risks.append(
-                Risk(title=risk.title, description=risk.description, severity=risk.severity)
-            )
-
-    def _add_recommendations(self, project: Project, recommendations: list[str]) -> None:
-        for recommendation in recommendations:
-            project.recommendations.append(Recommendation(text=recommendation))

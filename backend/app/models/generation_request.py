@@ -10,8 +10,6 @@ from app.models._helpers import _now, _uuid
 
 
 class ArchitectureGenerationRequest(Base):
-    """Tracks the lifecycle of a single architecture generation run."""
-
     __tablename__ = "architecture_generation_requests"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)

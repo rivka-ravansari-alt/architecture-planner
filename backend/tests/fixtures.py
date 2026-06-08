@@ -4,6 +4,76 @@ from __future__ import annotations
 
 import json
 
+
+def _option_detail(
+    when_to_use: str,
+    cost_impact: str,
+    pros: list[str],
+    cons: list[str],
+    *,
+    not_applicable: bool = False,
+) -> dict[str, object]:
+    detail: dict[str, object] = {
+        "when_to_use": when_to_use,
+        "cost_impact": cost_impact,
+        "pros": pros,
+        "cons": cons,
+    }
+    if not_applicable:
+        detail["not_applicable"] = True
+    return detail
+
+
+def _na_option(message: str = "Not applicable for this component.") -> dict[str, object]:
+    return _option_detail(message, "", [], [], not_applicable=True)
+
+
+def implementation_options(
+    recommended: str,
+    *,
+    serverless: dict[str, object] | None = None,
+    container: dict[str, object] | None = None,
+    managed_service: dict[str, object] | None = None,
+    external_provider: dict[str, object] | None = None,
+) -> dict[str, object]:
+    defaults = {
+        "serverless": _option_detail(
+            "Low or spiky traffic with minimal operations overhead.",
+            "Very low at MVP scale; pay per use.",
+            ["Minimal ops", "Automatic scaling"],
+            ["Cold starts", "Execution limits"],
+        ),
+        "container": _option_detail(
+            "Steady, predictable traffic where always-on compute is cost-effective.",
+            "Moderate baseline; can beat serverless at steady load.",
+            ["Consistent performance", "Long-running workloads"],
+            ["Higher idle cost", "More deployment work"],
+        ),
+        "managed_service": _option_detail(
+            "Default choice when a fully managed platform fits the workload.",
+            "Low-to-moderate fixed monthly cost for small workloads.",
+            ["Fast to ship", "Built-in maintenance"],
+            ["Less fine-grained control"],
+        ),
+        "external_provider": _option_detail(
+            "Third-party SaaS or API when outsourcing is the best fit.",
+            "Usage-based or subscription pricing from the vendor.",
+            ["Fast integration", "Vendor handles compliance and uptime"],
+            ["Vendor lock-in", "Per-seat or API pricing can grow"],
+        ),
+    }
+    overrides = {
+        "serverless": serverless,
+        "container": container,
+        "managed_service": managed_service,
+        "external_provider": external_provider,
+    }
+    options: dict[str, object] = {"recommended": recommended}
+    for key, default in defaults.items():
+        options[key] = overrides[key] if overrides[key] is not None else default
+    return options
+
+
 VALID_AI_PAYLOAD = {
     "components": [
         {
@@ -11,17 +81,26 @@ VALID_AI_PAYLOAD = {
             "type": "web_app",
             "tag": "required",
             "reason": "Users access the product in the browser.",
+            "implementation_options": implementation_options(
+                "managed_service",
+                serverless=_na_option(),
+                external_provider=_na_option(),
+            ),
             "cloud_options": {
-                "aws": ["CloudFront", "S3"],
-                "gcp": ["Cloud CDN", "Cloud Storage"],
-                "azure": ["Azure CDN", "Static Web Apps"],
+                "aws": ["Amplify Hosting"],
+                "gcp": ["Firebase Hosting"],
+                "azure": ["Azure Static Web Apps"],
             },
         },
         {
-            "name": "API Gateway",
+            "name": "Backend / API Layer",
             "type": "api",
             "tag": "required",
             "reason": "Central entry point for all client requests.",
+            "implementation_options": implementation_options(
+                "serverless",
+                external_provider=_na_option(),
+            ),
             "cloud_options": {
                 "aws": ["API Gateway"],
                 "gcp": ["API Gateway"],
@@ -33,9 +112,14 @@ VALID_AI_PAYLOAD = {
             "type": "authentication",
             "tag": "required",
             "reason": "Handles login and session management.",
+            "implementation_options": implementation_options(
+                "managed_service",
+                serverless=_na_option(),
+                container=_na_option(),
+            ),
             "cloud_options": {
                 "aws": ["Cognito"],
-                "gcp": ["Identity Platform", "Firebase Auth"],
+                "gcp": ["Firebase Authentication", "Identity Platform"],
                 "azure": ["Entra ID B2C"],
             },
         },
@@ -44,6 +128,12 @@ VALID_AI_PAYLOAD = {
             "type": "object_storage",
             "tag": "optional",
             "reason": "Stores uploaded files when needed.",
+            "implementation_options": implementation_options(
+                "managed_service",
+                serverless=_na_option(),
+                container=_na_option(),
+                external_provider=_na_option(),
+            ),
             "cloud_options": {
                 "aws": ["S3"],
                 "gcp": ["Cloud Storage"],
@@ -63,11 +153,11 @@ VALID_AI_PAYLOAD = {
         "high_level": {
             "title": "High Level Design",
             "nodes": [
-                {"id": "user", "name": "End User"},
-                {"id": "web_client", "name": "Web Client"},
-                {"id": "api_gateway", "name": "API Gateway"},
-                {"id": "auth", "name": "Authentication Service"},
-                {"id": "object_storage", "name": "Object Storage"},
+                {"id": "user", "name": "End User", "group": "experience"},
+                {"id": "web_client", "name": "Web Client", "group": "experience"},
+                {"id": "api_gateway", "name": "API Gateway", "group": "platform"},
+                {"id": "auth", "name": "Authentication Service", "group": "platform"},
+                {"id": "object_storage", "name": "Object Storage", "group": "data"},
             ],
             "edges": [
                 {"source": "user", "target": "web_client"},
@@ -94,40 +184,29 @@ VALID_AI_PAYLOAD = {
                 {"source": "web_client", "target": "process"},
             ],
         },
-        "technical_flow": {
-            "title": "Technical Flow",
+        "technical_architecture": {
+            "title": "Technical Architecture",
             "nodes": [
-                {"id": "browser", "name": "Browser"},
-                {"id": "api_gateway", "name": "API Gateway"},
-                {"id": "auth", "name": "Authentication Service"},
-                {"id": "app_service", "name": "Application Service"},
-                {"id": "queue", "name": "Processing Queue"},
-                {"id": "object_storage", "name": "Object Storage"},
+                {"id": "user", "name": "End User", "group": "experience"},
+                {"id": "web_client", "name": "Web Client", "group": "experience"},
+                {"id": "api_gateway", "name": "API Gateway", "group": "platform"},
+                {"id": "auth", "name": "Authentication Service", "group": "platform"},
+                {"id": "database", "name": "Database", "group": "data"},
+                {"id": "object_storage", "name": "Object Storage", "group": "data"},
+                {"id": "monitoring", "name": "Monitoring", "group": "operations", "type": "monitoring"},
+                {"id": "logging", "name": "Logging", "group": "operations", "type": "logging"},
             ],
             "edges": [
-                {"source": "browser", "target": "api_gateway"},
+                {"source": "user", "target": "web_client"},
+                {"source": "web_client", "target": "api_gateway"},
                 {"source": "api_gateway", "target": "auth"},
-                {"source": "api_gateway", "target": "app_service"},
-                {"source": "app_service", "target": "queue"},
-                {"source": "queue", "target": "object_storage"},
+                {"source": "api_gateway", "target": "database"},
+                {"source": "api_gateway", "target": "object_storage"},
+                {"source": "api_gateway", "target": "monitoring"},
+                {"source": "api_gateway", "target": "logging"},
             ],
         },
     },
-    "risks": [
-        {
-            "title": "Session hijacking",
-            "description": "Stolen tokens could allow account takeover.",
-            "severity": "high",
-        }
-    ],
-    "recommendations": [
-        "Use a managed identity provider.",
-        "Add rate limiting on public endpoints.",
-    ],
-    "next_steps": [
-        "Confirm the component list with stakeholders.",
-        "Pick a cloud provider and provision core services.",
-    ],
 }
 
 VALID_AI_RESPONSE_JSON = json.dumps(VALID_AI_PAYLOAD)

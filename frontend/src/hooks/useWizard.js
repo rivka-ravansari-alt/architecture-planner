@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { api } from "../api/index.js";
-import { EMPTY_ANSWERS, EMPTY_FORM } from "../constants/wizard.js";
 import { deriveArchitecture } from "../features/architecture/utils/deriveArchitecture.js";
-import { buildInputKey, validateProjectForm } from "../utils/validation.js";
+import { buildIntakeOutput, EMPTY_INTAKE_FORM } from "../utils/intakeFormState.js";
+import { toLegacyPayload } from "../utils/intakeFormMapper.js";
+import { buildInputKey, validateBasicProduct } from "../utils/validation.js";
 
 export function useWizard() {
   const [step, setStep] = useState(1);
   const [maxStep, setMaxStep] = useState(1);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [answers, setAnswers] = useState(EMPTY_ANSWERS);
+  const [intakeForm, setIntakeForm] = useState(EMPTY_INTAKE_FORM);
   const [errors, setErrors] = useState({});
   const [project, setProject] = useState(null);
   const [components, setComponents] = useState([]);
@@ -18,7 +18,7 @@ export function useWizard() {
   const [generatedKey, setGeneratedKey] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  const inputKey = useMemo(() => buildInputKey(form, answers), [form, answers]);
+  const inputKey = useMemo(() => buildInputKey(intakeForm), [intakeForm]);
   const needsGeneration = project === null || generatedKey !== inputKey;
   const inWorkspace = step === 3 && project;
 
@@ -32,10 +32,12 @@ export function useWizard() {
   }, [inWorkspace]);
 
   const validateStep1 = useCallback(() => {
-    const nextErrors = validateProjectForm(form);
+    const nextErrors = validateBasicProduct(intakeForm);
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
-  }, [form]);
+  }, [intakeForm]);
+
+  const getIntakeOutput = useCallback(() => buildIntakeOutput(intakeForm), [intakeForm]);
 
   const unlockAndGo = useCallback((target) => {
     setMaxStep((current) => Math.max(current, target));
@@ -47,7 +49,8 @@ export function useWizard() {
       setLoading(true);
       setError(null);
       try {
-        const created = await api.createProject({ ...form, answers });
+        const payload = toLegacyPayload(intakeForm);
+        const created = await api.createProject(payload);
         const generated = await api.generate(created.id);
         setProject(generated);
         setComponents(generated.components.map((component) => ({ ...component })));
@@ -60,7 +63,7 @@ export function useWizard() {
         setLoading(false);
       }
     },
-    [form, answers, inputKey]
+    [intakeForm, inputKey]
   );
 
   const goToStep = useCallback(
@@ -110,8 +113,7 @@ export function useWizard() {
   }, [step, goToStep]);
 
   const reset = useCallback(() => {
-    setForm(EMPTY_FORM);
-    setAnswers(EMPTY_ANSWERS);
+    setIntakeForm(EMPTY_INTAKE_FORM);
     setProject(null);
     setComponents([]);
     setGeneratedKey(null);
@@ -129,16 +131,19 @@ export function useWizard() {
     );
   }, []);
 
-  const primaryLabel = step === 2 && needsGeneration ? "Generate Architecture" : "Continue";
+  const primaryLabel =
+    loading && step === 2
+      ? "Generating with AI… (20–90 sec)"
+      : step === 2 && needsGeneration
+        ? "Generate Architecture"
+        : "Continue";
   const showStaleNotice = step < 3 && project !== null && needsGeneration;
 
   return {
     step,
     maxStep,
-    form,
-    setForm,
-    answers,
-    setAnswers,
+    intakeForm,
+    setIntakeForm,
     errors,
     project,
     components,
@@ -157,5 +162,6 @@ export function useWizard() {
     moveComponent,
     primaryLabel,
     showStaleNotice,
+    getIntakeOutput,
   };
 }

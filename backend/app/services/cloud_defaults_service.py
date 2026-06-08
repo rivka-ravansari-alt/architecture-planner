@@ -12,8 +12,6 @@ from app.config.params import (
 
 
 class CloudDefaultsService:
-    """Resolves and normalizes cloud provider options per component type."""
-
     def default_cloud_options_for_type(self, component_type: str) -> dict[str, list[str]]:
         defaults = CLOUD_DEFAULTS_BY_TYPE.get(component_type) or CLOUD_DEFAULTS_BY_TYPE[
             CLOUD_DEFAULTS_FALLBACK_TYPE

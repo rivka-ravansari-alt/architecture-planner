@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
   const refresh = useCallback(async () => {
     try {
       const me = await api.getMe();
-      setUser(me);
+      setUser(me ?? null);
     } catch {
       setUser(null);
     }
@@ -21,8 +21,11 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      await refresh();
-      if (!cancelled) setLoading(false);
+      try {
+        await refresh();
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
     return () => {
       cancelled = true;

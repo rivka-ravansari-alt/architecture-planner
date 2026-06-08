@@ -52,20 +52,25 @@ def get_catalog_service() -> CatalogService:
     return CatalogService()
 
 
-def get_current_user(
+def get_optional_user(
     request: Request,
     db: Session = Depends(get_db),
     jwt_service: JwtService = Depends(get_jwt_service),
-) -> User:
+) -> User | None:
     token = request.cookies.get(settings.session_cookie_name)
     if not token:
-        raise UnauthorizedError(ERR_NOT_AUTHENTICATED)
+        return None
 
     user_id = jwt_service.decode_access_token(token)
     if not user_id:
-        raise UnauthorizedError(ERR_INVALID_SESSION)
+        return None
 
-    user = UserRepository(db).find_by_id(user_id)
+    return UserRepository(db).find_by_id(user_id)
+
+
+def get_current_user(
+    user: User | None = Depends(get_optional_user),
+) -> User:
     if user is None:
-        raise UnauthorizedError(ERR_USER_NOT_FOUND)
+        raise UnauthorizedError(ERR_NOT_AUTHENTICATED)
     return user

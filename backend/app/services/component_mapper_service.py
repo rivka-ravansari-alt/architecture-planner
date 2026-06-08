@@ -1,4 +1,4 @@
-"""Maps validated AI JSON to internal component and risk models."""
+"""Maps validated AI JSON to internal component models."""
 
 from __future__ import annotations
 
@@ -11,36 +11,31 @@ from app.config.params import (
     COMPONENT_CATEGORY_OPTIONAL,
     COMPONENT_KEY_HINTS,
     COMPONENT_ORDER_MULTIPLIER,
+    COMPONENT_TYPE_ALIASES,
     COMPONENT_TYPE_KEY_MAP,
     DEFAULT_COMPONENT_TYPE,
-    FEATURE_FLAG_KEYS,
     SLUG_MAX_LENGTH,
     VALID_COMPONENT_TYPES,
 )
-from app.schemas.domain import MappedComponent, MappedRisk
+from app.schemas.domain import MappedComponent
 
 
 class ComponentMapperService:
-    """Translates AI component payloads into domain objects."""
-
     def map_payload(
         self,
         payload: dict[str, Any],
-    ) -> tuple[list[MappedComponent], list[MappedRisk], list[str], list[str], str, list[str]]:
+    ) -> tuple[list[MappedComponent], str, list[str]]:
         components = self._map_components(payload["components"])
-        risks = self._map_risks(payload["risks"])
-        recommendations = [str(item).strip() for item in payload["recommendations"]]
-        next_steps = [str(item).strip() for item in payload["next_steps"]]
         summary = str(payload["architecture"]["summary"]).strip()
         main_flow = [str(step).strip() for step in payload["architecture"]["flow"]]
-        return components, risks, recommendations, next_steps, summary, main_flow
+        return components, summary, main_flow
 
     def feature_flags_from_components(self, components: list[MappedComponent]) -> dict[str, bool]:
         keys = {component.key for component in components if not component.optional}
         return {
             "file_upload": "object_storage" in keys,
-            "ai": "ai_service" in keys,
-            "background_processing": "queue_worker" in keys,
+            "ai": "ai_service" in keys or "ai_provider" in keys,
+            "background_processing": "queue_worker" in keys or "queue" in keys,
         }
 
     def _map_components(self, items: list[dict[str, Any]]) -> list[MappedComponent]:
@@ -63,6 +58,7 @@ class ComponentMapperService:
         key = self.infer_component_key(name, used_keys, component_type)
         used_keys.add(key)
         cloud = self._extract_cloud_options(item["cloud_options"])
+        implementation_options = self._extract_implementation_options(item.get("implementation_options"))
         return MappedComponent(
             key=key,
             name=name,
@@ -72,10 +68,12 @@ class ComponentMapperService:
             optional=optional,
             order=order * COMPONENT_ORDER_MULTIPLIER,
             cloud=cloud,
+            implementation_options=implementation_options,
         )
 
     def _resolve_component_type(self, item: dict[str, Any]) -> str:
         component_type = str(item.get("type", DEFAULT_COMPONENT_TYPE)).strip().lower()
+        component_type = COMPONENT_TYPE_ALIASES.get(component_type, component_type)
         if component_type not in VALID_COMPONENT_TYPES:
             return DEFAULT_COMPONENT_TYPE
         return component_type
@@ -90,15 +88,24 @@ class ComponentMapperService:
             for provider in CLOUD_PROVIDERS
         }
 
-    def _map_risks(self, items: list[dict[str, Any]]) -> list[MappedRisk]:
-        return [
-            MappedRisk(
-                title=str(risk["title"]).strip(),
-                description=str(risk["description"]).strip(),
-                severity=str(risk["severity"]).strip().lower(),
-            )
-            for risk in items
-        ]
+    @staticmethod
+    def _extract_implementation_options(value: Any) -> dict[str, Any]:
+        if not isinstance(value, dict):
+            return {}
+        normalized: dict[str, Any] = {}
+        for key, item in value.items():
+            field = str(key).strip()
+            if not field:
+                continue
+            if field == "recommended":
+                normalized[field] = str(item).strip().lower()
+            elif isinstance(item, dict):
+                normalized[field] = item
+            else:
+                text = str(item).strip()
+                if text:
+                    normalized[field] = text
+        return normalized
 
     def infer_component_key(
         self,

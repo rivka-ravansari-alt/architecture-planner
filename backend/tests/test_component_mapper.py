@@ -7,9 +7,7 @@ from tests.fixtures import VALID_AI_RESPONSE_JSON
 
 def test_maps_components_with_keys():
     validated = AIResponseValidator().validate(VALID_AI_RESPONSE_JSON)
-    components, risks, recs, steps, summary, flow = ComponentMapperService().map_payload(
-        validated
-    )
+    components, summary, flow = ComponentMapperService().map_payload(validated)
     assert len(components) == 4
     assert components[0].key
     assert components[0].cloud["aws"]

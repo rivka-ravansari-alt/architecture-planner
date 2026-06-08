@@ -1,12 +1,20 @@
 /** @typedef {{ id: string; label: string; description?: string }} ProjectTypeOption */
 /** @typedef {{ id: string; label: string }} SelectOption */
 
-/** @typedef {Object} WizardForm
+/** @typedef {Object} IntakeProduct
  * @property {string} name
  * @property {string} description
- * @property {string[]} project_types
- * @property {string} stage
+ * @property {string[]} platforms
  * @property {string} expected_users
+ */
+
+/** @typedef {Object} IntakeFeatureState
+ * @property {boolean} enabled
+ */
+
+/** @typedef {Object} IntakeForm
+ * @property {IntakeProduct} product
+ * @property {Record<string, IntakeFeatureState & Record<string, unknown>>} features
  */
 
 /** @typedef {Object} RequirementAnswers
@@ -31,6 +39,8 @@
  * @property {string} type
  * @property {string} reason
  * @property {boolean} optional
+ * @property {Object} [implementation_options]
+ *   Recommended key plus per-model detail objects (when_to_use, cost_impact, pros, cons).
  * @property {CloudMapping} [cloud_mapping]
  */
 
@@ -44,9 +54,6 @@
  * @property {string} [generated_at]
  * @property {string} [architecture_summary]
  * @property {string[]} [main_flow]
- * @property {string[]} [next_steps]
- * @property {Array<{title: string; description: string; severity: string}>} [risks]
- * @property {Array<{text: string}>} [recommendations]
  * @property {Object} [architecture_diagrams]
  */
 
