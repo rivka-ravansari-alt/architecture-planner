@@ -35,6 +35,7 @@ class Project(Base):
     architecture_summary: Mapped[str] = mapped_column(Text, default="")
     architecture_diagram: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     architecture_diagrams: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    cost_breakdown: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     answers: Mapped[RequirementAnswers | None] = relationship(
         back_populates="project", cascade="all, delete-orphan", uselist=False
@@ -69,6 +70,7 @@ class RequirementAnswers(Base):
     ai: Mapped[bool] = mapped_column(Boolean, default=False)
     payments: Mapped[bool] = mapped_column(Boolean, default=False)
     include_edge_cases: Mapped[bool] = mapped_column(Boolean, default=False)
+    intake_features: Mapped[dict] = mapped_column(JSON, default=dict)
 
     project: Mapped[Project] = relationship(back_populates="answers")
 

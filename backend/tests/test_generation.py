@@ -27,7 +27,9 @@ def test_success_persists_ai_output(db_session, sample_project, mock_ai_client, 
     assert result.generated_at is not None
     assert len(result.components) == 4
     assert result.architecture_summary.startswith("A browser client")
-    assert len(result.cost_estimates) == 3
+    assert result.cost_breakdown is not None
+    assert set(result.cost_breakdown["cloud_cost"]) == {"aws", "gcp", "azure"}
+    assert result.cost_breakdown["total_monthly_cost"]["low"] >= 0
     assert result.architecture_diagrams is not None
     assert "high_level" in result.architecture_diagrams
     assert "system_flow" in result.architecture_diagrams

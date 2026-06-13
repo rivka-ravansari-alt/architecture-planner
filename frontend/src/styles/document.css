@@ -175,6 +175,47 @@
   color: var(--text-soft);
 }
 
+.doc-cost-intro {
+  margin-bottom: 12px;
+}
+
+.table-wrap-primary {
+  margin-bottom: 8px;
+}
+
+.cloud-infra-cost-table {
+  font-size: 0.95rem;
+}
+
+.cloud-infra-cost-table th,
+.cloud-infra-cost-table td {
+  padding: 12px 14px;
+}
+
+.cloud-infra-cost-table tr.row-total td {
+  border-top: 2px solid var(--border);
+  background: var(--surface-soft);
+}
+
+.doc-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.doc-list li {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.doc-cost-secondary {
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+}
+
 .doc-status-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

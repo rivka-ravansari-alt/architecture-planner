@@ -39,6 +39,9 @@ export function toLegacyPayload(intakeForm) {
     project_types: projectTypes,
     stage: product.stage || "mvp",
     expected_users: product.expected_users || "100",
-    answers,
+    answers: {
+      ...answers,
+      intake_features: features,
+    },
   };
 }

@@ -110,6 +110,16 @@ class DatabaseInitializer:
             "user_id",
             "ALTER TABLE projects ADD COLUMN user_id VARCHAR(36) REFERENCES users(id)",
         )
+        self._ensure_column(
+            "projects",
+            "cost_breakdown",
+            "ALTER TABLE projects ADD COLUMN cost_breakdown JSON",
+        )
+        self._ensure_column(
+            "requirement_answers",
+            "intake_features",
+            "ALTER TABLE requirement_answers ADD COLUMN intake_features JSON DEFAULT '{}'",
+        )
         for legacy_column in ("user_flow", "data_flow"):
             self._drop_column_if_exists("projects", legacy_column)
 

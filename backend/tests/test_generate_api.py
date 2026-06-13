@@ -39,7 +39,9 @@ def test_generate_endpoint_returns_ai_architecture(api_client, mock_ai_success):
     body = response.json()
     assert body["architecture_summary"]
     assert len(body["components"]) == 4
-    assert body["cost_estimates"]
+    assert body["cost_breakdown"]
+    assert set(body["cost_breakdown"]["cloud_cost"]) == {"aws", "gcp", "azure"}
+    assert body["cost_breakdown"]["total_monthly_cost"]["low"] >= 0
     assert body["architecture_diagrams"]["high_level"]["title"] == "High Level Design"
     assert len(body["architecture_diagrams"]["system_flow"]["nodes"]) >= 1
     assert "technical_flow" not in body["architecture_diagrams"]

@@ -183,8 +183,6 @@ COMPONENT_KEY_HINTS: list[tuple[str, tuple[str, ...]]] = [
     ("security", ("security", "waf", "firewall", "encryption")),
 ]
 
-FEATURE_FLAG_KEYS: tuple[str, ...] = ("file_upload", "ai", "background_processing")
-
 # ---------------------------------------------------------------------------
 # Diagram types
 # ---------------------------------------------------------------------------
@@ -405,41 +403,11 @@ CLOUD_DEFAULTS_BY_TYPE: dict[str, dict[str, list[str]]] = {
 CLOUD_DEFAULTS_FALLBACK_TYPE = "api_gateway"
 
 # ---------------------------------------------------------------------------
-# Cost estimation
+# Object storage (AI generation artifacts)
 # ---------------------------------------------------------------------------
 
 COST_CURRENCY = "USD"
-
-COST_BASELINE: dict[str, tuple[float, float]] = {
-    "aws": (15, 45),
-    "gcp": (12, 40),
-    "azure": (18, 50),
-}
-
-COST_FEATURE_BANDS: dict[str, dict[str, tuple[float, float]]] = {
-    "file_upload": {"aws": (5, 20), "gcp": (4, 18), "azure": (5, 22)},
-    "ai": {"aws": (20, 120), "gcp": (18, 110), "azure": (22, 130)},
-    "background_processing": {"aws": (8, 30), "gcp": (7, 28), "azure": (9, 32)},
-}
-
-COST_PRODUCTION_BAND: dict[str, tuple[float, float]] = {
-    "aws": (15, 60),
-    "gcp": (12, 55),
-    "azure": (16, 65),
-}
-
-COST_USER_MULTIPLIER: dict[str, float] = {
-    "100": 1.0,
-    "1000": 1.8,
-    "10000": 4.0,
-    "100000+": 9.0,
-}
-
 STAGE_PRODUCTION = "production"
-
-# ---------------------------------------------------------------------------
-# Object storage (AI generation artifacts)
-# ---------------------------------------------------------------------------
 
 STORAGE_PROVIDERS: tuple[str, ...] = ("local", "gcs", "s3")
 

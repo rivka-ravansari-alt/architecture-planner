@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.config.params import DESCRIPTION_MAX_CHARS
+from app.schemas.cost import CostBreakdownOut
 from app.schemas.enums import ExpectedUsers, ProjectType, Stage
 
 
@@ -16,6 +17,7 @@ class RequirementAnswersIn(BaseModel):
     ai: bool = False
     payments: bool = False
     include_edge_cases: bool = False
+    intake_features: dict[str, object] = Field(default_factory=dict)
 
 
 class ProjectCreate(BaseModel):
@@ -117,6 +119,7 @@ class AnswersOut(BaseModel):
     ai: bool
     payments: bool
     include_edge_cases: bool
+    intake_features: dict[str, object] = Field(default_factory=dict)
 
 
 class ProjectDetail(BaseModel):
@@ -136,6 +139,7 @@ class ProjectDetail(BaseModel):
     answers: AnswersOut | None = None
     components: list[ComponentOut] = []
     cost_estimates: list[CostEstimateOut] = []
+    cost_breakdown: CostBreakdownOut | None = None
 
 
 class ProjectTypeInfo(BaseModel):

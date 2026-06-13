@@ -16,6 +16,7 @@ from app.repositories.project_repository import ProjectRepository
 from app.services.architecture_guardrail_service import ArchitectureGuardrailService
 from app.services.component_mapper_service import ComponentMapperService
 from app.services.cost_estimator_service import CostEstimatorService
+from app.services.usage_profile_service import UsageProfileService
 from app.services.diagram_rules_service import DiagramRulesService
 from app.services.generation_storage_service import GenerationStorageService
 from app.services.prompt_builder_service import PromptBuilderService
@@ -56,6 +57,7 @@ class GenerationService:
         diagram_rules: DiagramRulesService | None = None,
         mapper: ComponentMapperService | None = None,
         cost_estimator: CostEstimatorService | None = None,
+        usage_profile: UsageProfileService | None = None,
         project_repo: ProjectRepository | None = None,
         request_repo: GenerationRequestRepository | None = None,
         generation_storage: GenerationStorageService | None = None,
@@ -69,6 +71,7 @@ class GenerationService:
         self._diagram_rules = diagram_rules or DiagramRulesService()
         self._mapper = mapper or ComponentMapperService()
         self._cost_estimator = cost_estimator or CostEstimatorService()
+        self._usage_profile = usage_profile or UsageProfileService()
         self._project_repo = project_repo or ProjectRepository(db)
         self._request_repo = request_repo or GenerationRequestRepository(db)
         self._generation_storage = generation_storage or GenerationStorageService()
@@ -322,20 +325,17 @@ class GenerationService:
         self._logger.log_step(
             "estimate_costs", project_id=project_id, request_id=request_id, status="started"
         )
-        flags = self._mapper.feature_flags_from_components(components)
-        costs = self._cost_estimator.estimate(
-            expected_users=project.expected_users,
-            stage=project.stage,
-            file_upload=flags["file_upload"],
-            ai=flags["ai"],
-            background_processing=flags["background_processing"],
-        )
+        usage = self._usage_profile.from_project(project)
+        costs = self._cost_estimator.estimate(components=components, usage=usage)
         self._logger.log_step(
             "estimate_costs",
             project_id=project_id,
             request_id=request_id,
             status="completed",
-            reason=f"estimates={len(costs)}",
+            reason=(
+                f"cloud_providers={len(costs.cloud_cost)} "
+                f"external={len(costs.external_services_cost)}"
+            ),
         )
         return costs
 

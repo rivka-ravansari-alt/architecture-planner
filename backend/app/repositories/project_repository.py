@@ -9,12 +9,12 @@ from sqlalchemy.orm import Session
 from app.models import (
     ArchitectureComponent,
     CloudMapping,
-    CostEstimate,
     Project,
     RequirementAnswers,
 )
 from app.repositories.base import BaseRepository
-from app.schemas.domain import MappedComponent, ProviderCost
+from app.schemas.cost import CostBreakdownOut
+from app.schemas.domain import MappedComponent
 from app.schemas.project import ProjectCreate
 
 
@@ -41,6 +41,7 @@ class ProjectRepository(BaseRepository):
     def clear_generated_content(self, project: Project) -> None:
         project.components.clear()
         project.cost_estimates.clear()
+        project.cost_breakdown = None
         project.risks.clear()
         project.recommendations.clear()
 
@@ -49,14 +50,14 @@ class ProjectRepository(BaseRepository):
         project: Project,
         *,
         components: list[MappedComponent],
-        costs: list[ProviderCost],
+        costs: CostBreakdownOut,
         main_flow: list[str],
         architecture_summary: str,
         architecture_diagrams: dict,
     ) -> None:
         self.clear_generated_content(project)
         self._add_components(project, components)
-        self._add_costs(project, costs)
+        project.cost_breakdown = costs.model_dump()
         project.main_flow = main_flow
         project.next_steps = []
         project.architecture_summary = architecture_summary
@@ -82,16 +83,4 @@ class ProjectRepository(BaseRepository):
                 azure=comp.cloud.get("azure", []),
             )
             project.components.append(component)
-
-    def _add_costs(self, project: Project, costs: list[ProviderCost]) -> None:
-        for cost in costs:
-            project.cost_estimates.append(
-                CostEstimate(
-                    provider=cost.provider,
-                    monthly_low=cost.monthly_low,
-                    monthly_high=cost.monthly_high,
-                    currency=cost.currency,
-                    notes=cost.notes,
-                )
-            )
 

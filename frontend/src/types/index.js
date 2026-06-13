@@ -55,6 +55,7 @@
  * @property {string} [architecture_summary]
  * @property {string[]} [main_flow]
  * @property {Object} [architecture_diagrams]
+ * @property {CostBreakdown} [cost_breakdown]
  */
 
 /** @typedef {Object} User
@@ -64,15 +65,35 @@
  * @property {string} [picture]
  */
 
-/** @typedef {Object} ProviderCost
- * @property {string} provider
- * @property {number} requiredLow
- * @property {number} requiredHigh
- * @property {number} optionalLow
- * @property {number} optionalHigh
- * @property {number} totalLow
- * @property {number} totalHigh
- * @property {string} currency
+/** @typedef {Object} CostRange
+ * @property {number} low
+ * @property {number} high
+ */
+
+/** @typedef {"low" | "medium" | "high"} CostConfidence */
+
+/** @typedef {Object} ProviderCostMatrix
+ * @property {CostRange} aws
+ * @property {CostRange} gcp
+ * @property {CostRange} azure
+ */
+
+/** @typedef {Object} CloudInfrastructureCost
+ * @property {Record<string, ProviderCostMatrix>} categories
+ * @property {Record<string, CostRange>} provider_totals
+ */
+
+/** @typedef {Object} CostBreakdown
+ * @property {CloudInfrastructureCost} [cloud_infrastructure]
+ * @property {Record<string, CostRange>} cloud_cost
+ * @property {Record<string, CostRange>} [ai_services_cost]
+ * @property {Record<string, CostRange>} external_services_cost
+ * @property {CostRange} total_monthly_cost
+ * @property {string[]} [assumptions]
+ * @property {string[]} [unknown_items]
+ * @property {CostConfidence} [confidence]
+ * @property {string} [disclaimer]
+ * @property {string} [currency]
  */
 
 export {};

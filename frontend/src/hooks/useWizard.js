@@ -22,10 +22,7 @@ export function useWizard() {
   const needsGeneration = project === null || generatedKey !== inputKey;
   const inWorkspace = step === 3 && project;
 
-  const derived = useMemo(
-    () => (project ? deriveArchitecture(project, components) : null),
-    [project, components]
-  );
+  const derived = useMemo(() => (project ? deriveArchitecture(project) : null), [project]);
 
   useEffect(() => {
     setSidebarCollapsed(Boolean(inWorkspace));
