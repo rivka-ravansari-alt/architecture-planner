@@ -44,6 +44,13 @@ class ProjectCreate(BaseModel):
             )
         return value
 
+    @field_validator("stage")
+    @classmethod
+    def reject_disabled_production_stage(cls, value: Stage) -> Stage:
+        if value == Stage.production:
+            raise ValueError("Production stage is not available yet. Use MVP for now.")
+        return value
+
 
 class CloudMappingOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)

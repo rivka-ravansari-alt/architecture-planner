@@ -31,7 +31,9 @@ export function validateBasicProduct(intakeForm) {
     errors.platforms = "Select at least one platform.";
   }
 
-  if (!String(product.stage || "").trim()) {
+  if (product.stage === "production") {
+    errors.stage = "Production stage is available later.";
+  } else if (!String(product.stage || "").trim()) {
     errors.stage = "Stage is required.";
   }
 
