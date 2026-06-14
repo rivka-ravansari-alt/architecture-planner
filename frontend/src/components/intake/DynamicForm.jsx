@@ -28,6 +28,10 @@ export default function DynamicForm({ section = "all", value, onChange, errors =
   const descriptionOverLimit = descriptionLength > DESCRIPTION_MAX_CHARS;
 
   const handleProductChange = (fieldKey, fieldValue) => {
+    if (fieldKey === "stage" && fieldValue === "production") {
+      return;
+    }
+
     onChange(setProductField(value, fieldKey, fieldValue));
   };
 

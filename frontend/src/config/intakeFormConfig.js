@@ -1,6 +1,6 @@
 /** @typedef {'text' | 'textarea' | 'select' | 'multi_select' | 'checkbox_group' | 'radio' | 'boolean'} FieldType */
 
-/** @typedef {{ value: string; label: string }} FieldOption */
+/** @typedef {{ value: string; label: string; disabled?: boolean }} FieldOption */
 
 /**
  * @typedef {Object} FormField
@@ -35,7 +35,7 @@ export const EXPECTED_USERS_OPTIONS = [
 
 export const STAGE_OPTIONS = [
   { value: "mvp", label: "MVP" },
-  { value: "production", label: "Production" },
+  { value: "production", label: "Production", disabled: true },
 ];
 
 /** @type {FormField[]} */
@@ -88,13 +88,7 @@ export const FEATURE_TOGGLES = [
   {
     key: "authentication",
     label: "Does the system require user accounts?",
-    fields: [
-      {
-        key: "enterprise_sso",
-        type: "boolean",
-        label: "Enterprise SSO?",
-      },
-    ],
+    fields: [],
   },
   {
     key: "file_uploads",
