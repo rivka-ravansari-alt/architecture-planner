@@ -355,8 +355,8 @@ class AIResponseValidator:
         seen_ids: tuple[set[str], list[dict[str, str]]],
     ) -> list[dict[str, str]]:
         node_ids, _ = seen_ids
-        if not isinstance(edges, list) or not edges:
-            raise AIValidationError(f"{field_path}.edges must be a non-empty list.")
+        if not isinstance(edges, list):
+            raise AIValidationError(f"{field_path}.edges must be a list.")
 
         normalized_edges: list[dict[str, str]] = []
         for index, edge in enumerate(edges):

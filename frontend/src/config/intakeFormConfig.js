@@ -88,13 +88,7 @@ export const FEATURE_TOGGLES = [
   {
     key: "authentication",
     label: "Does the system require user accounts?",
-    fields: [
-      {
-        key: "enterprise_sso",
-        type: "boolean",
-        label: "Enterprise SSO?",
-      },
-    ],
+    fields: [],
   },
   {
     key: "file_uploads",

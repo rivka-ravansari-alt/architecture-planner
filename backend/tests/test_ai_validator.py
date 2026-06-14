@@ -37,6 +37,13 @@ def test_preserves_diagram_group():
     assert result["diagrams"]["high_level"]["nodes"][0].get("group") == "experience"
 
 
+def test_allows_node_only_diagrams():
+    payload = json.loads(VALID_AI_RESPONSE_JSON)
+    payload["diagrams"]["high_level"]["edges"] = []
+    result = AIResponseValidator().validate(json.dumps(payload))
+    assert result["diagrams"]["high_level"]["edges"] == []
+
+
 def test_normalizes_compact_ai_schema():
     payload = {
         "stage": "MVP",
