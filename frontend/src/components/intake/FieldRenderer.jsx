@@ -97,18 +97,15 @@ export default function FieldRenderer({
             };
 
             return (
-              <div
+              <button
                 key={option.value}
+                type="button"
                 className={`chip ${selected ? "selected" : ""}`}
                 onClick={handleClick}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(event) =>
-                  (event.key === "Enter" || event.key === " ") && handleClick()
-                }
+                aria-pressed={selected}
               >
-                {option.label}
-              </div>
+                <span>{option.label}</span>
+              </button>
             );
           })}
         </div>

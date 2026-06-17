@@ -46,7 +46,7 @@ export default function ArchitectureDiagrams({ project, components }) {
         )}
         <div className="arch-diagram-workspace-canvas">
           {activeEntry.diagram.type === "mermaid" ? (
-            <MermaidDiagram diagram={activeEntry.diagram} />
+            <MermaidDiagram key={activeEntry.key} diagram={activeEntry.diagram} />
           ) : (
             <ArchitectureDiagram
               key={activeEntry.key}

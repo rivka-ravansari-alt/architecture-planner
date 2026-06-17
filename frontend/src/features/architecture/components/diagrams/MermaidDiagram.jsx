@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import mermaid from "mermaid";
 
 let mermaidInitialized = false;
@@ -15,24 +15,28 @@ function ensureMermaidInit() {
 }
 
 export default function MermaidDiagram({ diagram }) {
-  const containerRef = useRef(null);
   const renderId = useId().replace(/:/g, "");
+  const [svgMarkup, setSvgMarkup] = useState("");
   const [failed, setFailed] = useState(false);
 
   const content = diagram?.content?.trim();
 
   useEffect(() => {
-    if (!content) return undefined;
+    if (!content) {
+      setSvgMarkup("");
+      setFailed(false);
+      return undefined;
+    }
 
     let cancelled = false;
     setFailed(false);
+    setSvgMarkup("");
     ensureMermaidInit();
 
     (async () => {
       try {
         const { svg } = await mermaid.render(`mermaid-${renderId}`, content);
-        if (cancelled || !containerRef.current) return;
-        containerRef.current.innerHTML = svg;
+        if (!cancelled) setSvgMarkup(svg);
       } catch {
         if (!cancelled) setFailed(true);
       }
@@ -62,7 +66,11 @@ export default function MermaidDiagram({ diagram }) {
 
   return (
     <div className="mermaid-diagram-card">
-      <div className="mermaid-diagram-scroll" ref={containerRef} aria-label="Architecture diagram" />
+      <div
+        className="mermaid-diagram-scroll"
+        aria-label="Architecture diagram"
+        dangerouslySetInnerHTML={svgMarkup ? { __html: svgMarkup } : undefined}
+      />
     </div>
   );
 }
