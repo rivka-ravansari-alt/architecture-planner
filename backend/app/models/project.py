@@ -29,6 +29,7 @@ class Project(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
     generated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    workflow_status: Mapped[str] = mapped_column(String(40), default="DRAFT")
 
     main_flow: Mapped[list] = mapped_column(JSON, default=list)
     next_steps: Mapped[list] = mapped_column(JSON, default=list)
@@ -84,6 +85,7 @@ class ArchitectureComponent(Base):
     component_type: Mapped[str] = mapped_column(String(40), default="api")
     reason: Mapped[str] = mapped_column(Text, default="")
     category: Mapped[str] = mapped_column(String(20), default="core")
+    source: Mapped[str] = mapped_column(String(20), default="ai_generated")
     optional: Mapped[bool] = mapped_column(Boolean, default=False)
     order: Mapped[int] = mapped_column(Integer, default=0)
     implementation_options: Mapped[dict | None] = mapped_column(JSON, nullable=True)

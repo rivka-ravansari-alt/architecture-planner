@@ -53,7 +53,8 @@
 }
 
 .arch-doc-toc-item {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
   text-align: left;
   padding: 8px 10px;
@@ -134,6 +135,52 @@
   letter-spacing: -0.02em;
   color: var(--primary);
   line-height: 1.25;
+}
+
+.arch-doc-section-badge,
+.arch-doc-toc-pending {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+  background: var(--surface-muted, #f3f4f6);
+  border: 1px solid var(--border);
+}
+
+.arch-doc-toc-pending {
+  margin-left: auto;
+}
+
+.pricing-review-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pricing-review-providers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pricing-review-providers li {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--surface-muted, #f3f4f6);
+  border: 1px solid var(--border);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.pricing-review-cta {
+  align-self: flex-start;
 }
 
 .arch-doc-section-body {
@@ -230,11 +277,31 @@
   gap: 10px;
 }
 
+.doc-component-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
 .doc-component-title {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   min-width: 0;
+  flex: 1;
+}
+
+.doc-component-title-text {
+  min-width: 0;
+}
+
+.doc-component-type {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-soft);
+  line-height: 1.35;
 }
 
 .doc-component-icon {
@@ -382,14 +449,6 @@
   font-size: 0.85rem;
   line-height: 1.55;
   color: var(--text-soft);
-}
-
-.doc-component-actions {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: flex-end;
 }
 
 .doc-risk-group {

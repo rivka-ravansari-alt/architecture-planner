@@ -1,14 +1,24 @@
-"""Orchestrates AI architecture generation and persists the result."""
+"""Orchestrates staged AI architecture generation and persists results."""
 
 from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from typing import Callable
 
 from sqlalchemy.orm import Session
 
 from app.clients.ai_client import AIClientFactory, BaseAIClient
-from app.core.exceptions import AIClientError, AIValidationError, ArchitectureGenerationError
+from app.config.params import (
+    ERR_INVALID_WORKFLOW_STATUS,
+    WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+    WORKFLOW_STATUS_COMPONENTS_APPROVED,
+    WORKFLOW_STATUS_COMPONENTS_GENERATED,
+    WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+    WORKFLOW_STATUS_DRAFT,
+    WORKFLOW_STATUS_PRICING_GENERATED,
+)
+from app.core.exceptions import AIClientError, AIValidationError, ArchitectureGenerationError, BadRequestError
 from app.core.logging import GenerationLogger
 from app.models import ArchitectureGenerationRequest, Project
 from app.repositories.generation_request_repository import GenerationRequestRepository
@@ -45,6 +55,25 @@ class _GenerationRun:
 
 
 class GenerationService:
+    _COMPONENTS_ALLOWED_STATUSES = {
+        WORKFLOW_STATUS_DRAFT,
+        WORKFLOW_STATUS_COMPONENTS_GENERATED,
+        WORKFLOW_STATUS_COMPONENTS_APPROVED,
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+    _DIAGRAMS_ALLOWED_STATUSES = {
+        WORKFLOW_STATUS_COMPONENTS_APPROVED,
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+    _PRICING_ALLOWED_STATUSES = {
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+
     def __init__(
         self,
         db: Session,
@@ -75,12 +104,111 @@ class GenerationService:
         self._logger = logger or GenerationLogger()
 
     def generate(self, project: Project) -> Project:
+        """Legacy full pipeline: components, diagrams, and pricing in one operation."""
+        project = self.generate_components(project)
+        self._project_repo.replace_components(
+            project,
+            self._components_to_update_payload(project.components),
+        )
+        self._project_repo.commit()
+        self._project_repo.refresh(project)
+        project = self.generate_diagrams(project)
+        self._project_repo.approve_architecture(project)
+        self._project_repo.commit()
+        self._project_repo.refresh(project)
+        return self.generate_pricing(project)
+
+    def generate_components(self, project: Project) -> Project:
+        self._ensure_status(project, self._COMPONENTS_ALLOWED_STATUSES)
+        return self._run_stage(
+            project,
+            step_name="generate_components",
+            build_prompt=lambda current: self._prompt_builder.build_components(current),
+            validate=self._validate_components_response,
+            persist=self._persist_components_output,
+        )
+
+    def generate_diagrams(self, project: Project) -> Project:
+        self._ensure_status(project, self._DIAGRAMS_ALLOWED_STATUSES)
+        if not project.components:
+            raise BadRequestError("Approved components are required before generating diagrams.")
+        return self._run_stage(
+            project,
+            step_name="generate_diagrams",
+            build_prompt=lambda current: self._prompt_builder.build_diagrams(
+                current, list(current.components)
+            ),
+            validate=self._validate_diagrams_response,
+            persist=self._persist_diagrams_output,
+        )
+
+    def generate_pricing(self, project: Project) -> Project:
+        self._ensure_status(project, self._PRICING_ALLOWED_STATUSES)
+        if not project.components:
+            raise BadRequestError("Components are required before generating pricing.")
+        if not project.architecture_diagrams:
+            raise BadRequestError("Architecture diagrams are required before generating pricing.")
+
         run = self._start_generation(project)
         try:
-            self._execute_generation_pipeline(run)
+            run.current_step = "estimate_costs"
+            mapped_components = self._mapper.map_components_from_db(project.components)
+            costs = self._estimate_costs(
+                run.project,
+                mapped_components,
+                run.project_id,
+                run.request_id,
+            )
+            run.current_step = "persist_pricing"
+            self._project_repo.persist_pricing(run.project, costs)
+            self._complete_request(run.request, run.project_id, run.request_id)
+        except Exception as exc:
+            reason = f"{type(exc).__name__}: {exc}"
+            self._fail_generation(run, reason)
+            raise ArchitectureGenerationError(f"Pricing generation failed: {exc}") from exc
+
+        return self._finish_generation(project)
+
+    def _run_stage(
+        self,
+        project: Project,
+        *,
+        step_name: str,
+        build_prompt: Callable[[Project], str],
+        validate: Callable[[str, Project, str, str], dict],
+        persist: Callable[[_GenerationRun, dict], None],
+    ) -> Project:
+        run = self._start_generation(project)
+        try:
+            run.current_step = f"{step_name}_build_prompt"
+            prompt = build_prompt(run.project)
+
+            run.current_step = f"{step_name}_save_generation_request"
+            self._persist_request_artifact(run, prompt)
+            self._release_db_lock_for_ai(run)
+
+            run.current_step = f"{step_name}_call_ai"
+            self._call_ai_step(run, prompt)
+
+            run.current_step = f"{step_name}_validate_response"
+            validated = validate(
+                run.raw_response or "",
+                run.project,
+                run.project_id,
+                run.request_id,
+            )
+            run.parsed_response = validated
+            run.validation_result = {"valid": True}
+
+            self._record_successful_response(run)
+            persist(run, validated)
+            self._complete_request(run.request, run.project_id, run.request_id)
         except (AIClientError, AIValidationError) as exc:
             self._fail_generation(run, str(exc))
             raise ArchitectureGenerationError(str(exc)) from exc
+        except BadRequestError:
+            self._fail_generation(run, ERR_INVALID_WORKFLOW_STATUS)
+            raise
         except Exception as exc:
             reason = f"{type(exc).__name__}: {exc}"
             self._record_unexpected_error(run, reason)
@@ -88,6 +216,90 @@ class GenerationService:
             raise ArchitectureGenerationError(f"Architecture generation failed: {exc}") from exc
 
         return self._finish_generation(project)
+
+    def _ensure_status(self, project: Project, allowed: set[str]) -> None:
+        if project.workflow_status not in allowed:
+            raise BadRequestError(ERR_INVALID_WORKFLOW_STATUS)
+
+    def _validate_components_response(
+        self,
+        raw: str,
+        project: Project,
+        project_id: str,
+        request_id: str,
+    ) -> dict:
+        self._logger.log_step(
+            "validate_response", project_id=project_id, request_id=request_id, status="started"
+        )
+        validated = self._validator.validate_components(raw)
+        validated = self._guardrails.apply(validated, project)
+        self._logger.log_step(
+            "validate_response", project_id=project_id, request_id=request_id, status="completed"
+        )
+        return validated
+
+    def _validate_diagrams_response(
+        self,
+        raw: str,
+        project: Project,
+        project_id: str,
+        request_id: str,
+    ) -> dict:
+        self._logger.log_step(
+            "validate_response", project_id=project_id, request_id=request_id, status="started"
+        )
+        validated = self._validator.validate_diagrams(raw)
+        validated = self._diagram_rules.apply(validated)
+        self._logger.log_step(
+            "validate_response", project_id=project_id, request_id=request_id, status="completed"
+        )
+        return validated
+
+    def _persist_components_output(self, run: _GenerationRun, validated: dict) -> None:
+        run.current_step = "map_payload"
+        components, _, _ = self._mapper.map_payload(
+            {"components": validated["components"], "architecture": {"summary": "", "flow": []}}
+        )
+        run.current_step = "persist_components"
+        self._project_repo.persist_components(run.project, components)
+
+    def _persist_diagrams_output(self, run: _GenerationRun, validated: dict) -> None:
+        run.current_step = "map_payload"
+        _, summary, main_flow = self._mapper.map_payload(
+            {"components": [], "architecture": validated["architecture"]}
+        )
+        run.current_step = "persist_diagrams"
+        self._project_repo.persist_diagrams(
+            run.project,
+            main_flow=main_flow,
+            architecture_summary=summary,
+            architecture_diagrams=validated["diagrams"],
+        )
+
+    @staticmethod
+    def _components_to_update_payload(components):
+        from app.schemas.project import CloudMappingIn, ComponentUpdateIn
+
+        payload: list[ComponentUpdateIn] = []
+        for component in components:
+            cloud = component.cloud_mapping
+            payload.append(
+                ComponentUpdateIn(
+                    key=component.key,
+                    name=component.name,
+                    type=component.component_type,
+                    reason=component.reason,
+                    optional=component.optional,
+                    source=component.source or "ai_generated",
+                    cloud_mapping=CloudMappingIn(
+                        aws=cloud.aws if cloud else [],
+                        gcp=cloud.gcp if cloud else [],
+                        azure=cloud.azure if cloud else [],
+                    ),
+                    implementation_options=component.implementation_options,
+                )
+            )
+        return payload
 
     def _start_generation(self, project: Project) -> _GenerationRun:
         request = self._create_request(project)
@@ -97,26 +309,7 @@ class GenerationService:
             model_name=self._generation_storage.resolve_model_name(),
         )
 
-    def _execute_generation_pipeline(self, run: _GenerationRun) -> None:
-        run.current_step = "build_prompt"
-        prompt = self._build_prompt(run.project, run.request_id)
-
-        run.current_step = "save_generation_request"
-        self._persist_request_artifact(run, prompt)
-        self._release_db_lock_for_ai(run)
-
-        run.current_step = "call_ai"
-        self._call_ai_step(run, prompt)
-
-        run.current_step = "validate_response"
-        validated = self._validate_ai_step(run)
-
-        self._record_successful_response(run)
-        self._process_validated_output(run, validated)
-        self._complete_request(run.request, run.project_id, run.request_id)
-
     def _release_db_lock_for_ai(self, run: _GenerationRun) -> None:
-        """Commit pending writes before the long AI call so SQLite stays writable."""
         self._request_repo.commit()
         self._request_repo.refresh(run.request)
         self._project_repo.refresh(run.project)
@@ -144,46 +337,8 @@ class GenerationService:
             raise
         run.duration_seconds = time.monotonic() - ai_started
 
-    def _validate_ai_step(self, run: _GenerationRun) -> dict:
-        try:
-            validated = self._validate_response(
-                run.raw_response,
-                run.project,
-                run.project_id,
-                run.request_id,
-            )
-        except AIValidationError as exc:
-            run.errors.append(str(exc))
-            self._save_run_response(run)
-            raise
-
-        run.parsed_response = validated
-        run.validation_result = {"valid": True}
-        return validated
-
     def _record_successful_response(self, run: _GenerationRun) -> None:
         self._save_run_response(run, errors=run.errors or None)
-
-    def _process_validated_output(self, run: _GenerationRun, validated: dict) -> None:
-        run.current_step = "map_payload"
-        mapped = self._map_payload(validated, run.project_id, run.request_id)
-
-        run.current_step = "estimate_costs"
-        costs = self._estimate_costs(
-            run.project,
-            mapped["components"],
-            run.project_id,
-            run.request_id,
-        )
-
-        run.current_step = "persist_document"
-        self._persist_document(
-            run.project,
-            mapped,
-            costs,
-            validated["diagrams"],
-            run.request_id,
-        )
 
     def _record_unexpected_error(self, run: _GenerationRun, reason: str) -> None:
         if not run.request_saved:
@@ -258,16 +413,6 @@ class GenerationService:
         )
         return request
 
-    def _build_prompt(self, project: Project, request_id: str) -> str:
-        self._logger.log_step(
-            "build_prompt", project_id=project.id, request_id=request_id, status="started"
-        )
-        prompt = self._prompt_builder.build(project)
-        self._logger.log_step(
-            "build_prompt", project_id=project.id, request_id=request_id, status="completed"
-        )
-        return prompt
-
     def _call_ai(self, prompt: str, project_id: str, request_id: str) -> str:
         self._logger.log_step(
             "call_ai", project_id=project_id, request_id=request_id, status="started"
@@ -281,42 +426,6 @@ class GenerationService:
             reason=f"response_chars={len(raw_response)}",
         )
         return raw_response
-
-    def _validate_response(
-        self,
-        raw: str,
-        project: Project,
-        project_id: str,
-        request_id: str,
-    ) -> dict:
-        self._logger.log_step(
-            "validate_response", project_id=project_id, request_id=request_id, status="started"
-        )
-        validated = self._validator.validate(raw)
-        validated = self._guardrails.apply(validated, project)
-        validated = self._diagram_rules.apply(validated)
-        self._logger.log_step(
-            "validate_response", project_id=project_id, request_id=request_id, status="completed"
-        )
-        return validated
-
-    def _map_payload(self, validated: dict, project_id: str, request_id: str) -> dict:
-        self._logger.log_step(
-            "map_payload", project_id=project_id, request_id=request_id, status="started"
-        )
-        components, summary, main_flow = self._mapper.map_payload(validated)
-        self._logger.log_step(
-            "map_payload",
-            project_id=project_id,
-            request_id=request_id,
-            status="completed",
-            reason=f"components={len(components)}",
-        )
-        return {
-            "components": components,
-            "summary": summary,
-            "main_flow": main_flow,
-        }
 
     def _estimate_costs(self, project: Project, components, project_id: str, request_id: str):
         self._logger.log_step(
@@ -338,35 +447,6 @@ class GenerationService:
             reason=f"estimates={len(costs)}",
         )
         return costs
-
-    def _persist_document(
-        self,
-        project: Project,
-        mapped: dict,
-        costs,
-        diagrams: dict,
-        request_id: str,
-    ) -> None:
-        self._logger.log_step(
-            "persist_document",
-            project_id=project.id,
-            request_id=request_id,
-            status="started",
-        )
-        self._project_repo.persist_architecture(
-            project,
-            components=mapped["components"],
-            costs=costs,
-            main_flow=mapped["main_flow"],
-            architecture_summary=mapped["summary"],
-            architecture_diagrams=diagrams,
-        )
-        self._logger.log_step(
-            "persist_document",
-            project_id=project.id,
-            request_id=request_id,
-            status="completed",
-        )
 
     def _complete_request(
         self,
@@ -391,4 +471,3 @@ class GenerationService:
         )
         self._request_repo.mark_failed(request)
         self._request_repo.commit()
-

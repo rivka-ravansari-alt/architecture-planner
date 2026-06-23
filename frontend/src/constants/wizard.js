@@ -1,13 +1,15 @@
 export const WIZARD_STEPS = [
   "Product Info",
   "Architecture",
+  "Component Review",
   "Architecture Document",
 ];
 
 export const STEP_SUBTITLES = [
   "Basic product details that shape platform choice and scale.",
   "Toggle only the capabilities that affect infrastructure and cost.",
-  "Review your AI-generated architecture document and refine the plan.",
+  "Review, adjust, and approve the generated architecture components.",
+  "Review diagrams and flow, then generate cloud pricing when ready.",
 ];
 
 export const STAGES = [
@@ -52,8 +54,17 @@ export const EMPTY_ANSWERS = {
   include_edge_cases: false,
 };
 
+export const WORKFLOW_STATUS = {
+  DRAFT: "DRAFT",
+  COMPONENTS_GENERATED: "COMPONENTS_GENERATED",
+  COMPONENTS_APPROVED: "COMPONENTS_APPROVED",
+  DIAGRAMS_GENERATED: "DIAGRAMS_GENERATED",
+  ARCHITECTURE_APPROVED: "ARCHITECTURE_APPROVED",
+  PRICING_GENERATED: "PRICING_GENERATED",
+};
+
 export const STALE_NOTICE_TEXT =
-  "You've changed your inputs. The architecture, cloud mapping, and cost estimates will be regenerated when you open the Architecture Document.";
+  "You've changed your inputs. Save the project again and regenerate components when you continue.";
 
 export const AUTH_ROUTES = {
   googleLogin: "/api/auth/google",

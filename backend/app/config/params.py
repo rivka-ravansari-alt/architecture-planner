@@ -126,6 +126,41 @@ COMPONENT_TYPE_ALIASES: dict[str, str] = {
 DEFAULT_COMPONENT_TYPE = "api_gateway"
 VALID_COMPONENT_TAGS: frozenset[str] = frozenset({"required", "optional"})
 
+COMPONENT_SOURCE_AI = "ai_generated"
+COMPONENT_SOURCE_USER = "user_added"
+VALID_COMPONENT_SOURCES: frozenset[str] = frozenset(
+    {COMPONENT_SOURCE_AI, COMPONENT_SOURCE_USER}
+)
+
+# Canonical types exposed to the LLM and manual component creation UI.
+CATALOG_COMPONENT_TYPES: tuple[str, ...] = (
+    "user",
+    "web_app",
+    "mobile_app",
+    "admin_panel",
+    "cdn",
+    "load_balancer",
+    "api_gateway",
+    "service",
+    "worker",
+    "database",
+    "cache",
+    "queue",
+    "object_storage",
+    "search",
+    "external_api",
+    "ai_provider",
+    "payment",
+    "notification",
+    "analytics",
+    "secrets",
+    "config",
+    "monitoring",
+    "logging",
+    "tracing",
+    "alerting",
+)
+
 COMPONENT_TYPE_KEY_MAP: dict[str, str] = {
     "user": "user",
     "web_app": "client_web",
@@ -547,6 +582,103 @@ Generate exactly three diagrams under diagrams:
 Generate only the architecture for the requested stage ({stage_label}).
 """
 
+PROMPT_COMPONENTS_TEMPLATE = """You are a senior software architect.
+
+Using the product name, description, requirements, and stage (MVP or Production), identify the architecture components needed for this product.
+
+## Product
+
+- Product name: {product_name}
+- Product description: {description}
+- Stage: {stage_label}
+
+## Requirements
+
+{requirement_lines}
+
+{stage_guidance}
+
+## Component catalog
+
+Use only component types from this catalog:
+{component_type_list}
+
+Think about all required components and include only components justified by the requirements.
+
+Return JSON only.
+
+The JSON must contain:
+{{
+  "components": []
+}}
+
+Each component must include:
+- name
+- type (one of: {component_type_list})
+- tag (required or optional)
+- description
+- cloud_options with keys aws, gcp, and azure — concrete service names for each provider
+
+Do not include architecture summaries, flow steps, or diagrams.
+"""
+
+PROMPT_DIAGRAMS_TEMPLATE = """You are a senior software architect.
+
+Using the product description and the approved architecture components below, generate architecture diagrams and documentation.
+
+## Product
+
+- Product name: {product_name}
+- Product description: {description}
+- Stage: {stage_label}
+
+## Approved components
+
+{component_lines}
+
+Return JSON only.
+
+The JSON must contain:
+{{
+  "architecture": {{}},
+  "diagrams": {{}}
+}}
+
+architecture must include summary (string) and flow (array of strings).
+
+Generate exactly three diagrams under diagrams:
+
+1. high_level — High Level Design
+   - Business-level view.
+   - Show only core architecture components.
+   - Exclude operational components (secrets, config, monitoring, logging, tracing, alerting).
+   - Keep minimal and easy to understand.
+
+2. system_flow — System Flow
+   - Show request and data flow through the system.
+   - Include only components involved in the flow.
+   - Exclude operational components.
+
+3. technical_architecture — Technical Architecture
+   - Complete technical architecture.
+   - Include all relevant components.
+   - Include operational components when relevant.
+   - Show infrastructure, security, observability, and resilience patterns.
+
+Each diagram must contain:
+- title
+- nodes (id, name, optional group)
+- edges (source, target, optional label)
+
+Node groups:
+- experience
+- platform
+- data
+- operations
+
+Use only the approved components listed above. Do not add new components.
+"""
+
 
 # ---------------------------------------------------------------------------
 # Generation lifecycle
@@ -555,6 +687,15 @@ Generate only the architecture for the requested stage ({stage_label}).
 GENERATION_STATUS_PENDING = "pending"
 GENERATION_STATUS_COMPLETED = "completed"
 GENERATION_STATUS_FAILED = "failed"
+
+WORKFLOW_STATUS_DRAFT = "DRAFT"
+WORKFLOW_STATUS_COMPONENTS_GENERATED = "COMPONENTS_GENERATED"
+WORKFLOW_STATUS_COMPONENTS_APPROVED = "COMPONENTS_APPROVED"
+WORKFLOW_STATUS_DIAGRAMS_GENERATED = "DIAGRAMS_GENERATED"
+WORKFLOW_STATUS_ARCHITECTURE_APPROVED = "ARCHITECTURE_APPROVED"
+WORKFLOW_STATUS_PRICING_GENERATED = "PRICING_GENERATED"
+
+ERR_INVALID_WORKFLOW_STATUS = "Project is not in the correct workflow stage for this operation."
 
 GENERATION_STEPS: tuple[str, ...] = (
     "create_request",

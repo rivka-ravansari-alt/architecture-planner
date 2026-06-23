@@ -500,6 +500,18 @@
   border-color: var(--border-strong);
 }
 
+.badge.ai-generated {
+  background: #eef2ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
+
+.badge.user-added {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
 /* Section header with count + hint */
 .section-head {
   display: flex;

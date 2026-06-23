@@ -6,7 +6,7 @@ import logging
 
 from app.core.exceptions import ArchitectureGenerationError
 from app.models import User
-from app.schemas.project import ProjectCreate, ProjectDetail, ProjectTypeInfo
+from app.schemas.project import ComponentsUpdate, ProjectCreate, ProjectDetail, ProjectTypeInfo
 from app.services.catalog_service import CatalogService
 from app.services.generation_service import GenerationService
 from app.services.project_service import ProjectService
@@ -51,4 +51,41 @@ class ProjectController:
             "generate endpoint step=complete status=completed project_id=%s",
             project_id,
         )
+        return ProjectDetail.model_validate(result)
+
+    def generate_components(self, project_id: str, user: User) -> ProjectDetail:
+        project = self._projects.get_owned_project(project_id, user)
+        try:
+            result = self._generation.generate_components(project)
+        except ArchitectureGenerationError:
+            raise
+        return ProjectDetail.model_validate(result)
+
+    def update_components(
+        self,
+        project_id: str,
+        payload: ComponentsUpdate,
+        user: User,
+    ) -> ProjectDetail:
+        project = self._projects.update_components(project_id, payload, user)
+        return ProjectDetail.model_validate(project)
+
+    def generate_diagrams(self, project_id: str, user: User) -> ProjectDetail:
+        project = self._projects.get_owned_project(project_id, user)
+        try:
+            result = self._generation.generate_diagrams(project)
+        except ArchitectureGenerationError:
+            raise
+        return ProjectDetail.model_validate(result)
+
+    def approve_architecture(self, project_id: str, user: User) -> ProjectDetail:
+        project = self._projects.approve_architecture(project_id, user)
+        return ProjectDetail.model_validate(project)
+
+    def generate_pricing(self, project_id: str, user: User) -> ProjectDetail:
+        project = self._projects.get_owned_project(project_id, user)
+        try:
+            result = self._generation.generate_pricing(project)
+        except ArchitectureGenerationError:
+            raise
         return ProjectDetail.model_validate(result)

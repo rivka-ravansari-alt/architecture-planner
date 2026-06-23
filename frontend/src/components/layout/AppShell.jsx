@@ -5,6 +5,7 @@ import StaleNotice from "../wizard/StaleNotice.jsx";
 import WizardActions from "../wizard/WizardActions.jsx";
 import StepProjectDetails from "../wizard/StepProjectDetails.jsx";
 import StepRequirements from "../wizard/StepRequirements.jsx";
+import StepComponentReview from "../wizard/StepComponentReview.jsx";
 import ArchitectureWorkspace from "../../features/architecture/components/ArchitectureWorkspace.jsx";
 
 export default function AppShell({
@@ -25,6 +26,8 @@ export default function AppShell({
     loading,
     error,
     derived,
+    hasPricing,
+    canGeneratePricing,
     inWorkspace,
     sidebarCollapsed,
     setSidebarCollapsed,
@@ -33,8 +36,13 @@ export default function AppShell({
     goBack,
     reset,
     moveComponent,
+    removeComponent,
+    addComponent,
+    updateComponent,
     primaryLabel,
     showStaleNotice,
+    approveComponentsAndGenerateDiagrams,
+    generatePricing,
   } = wizard;
 
   return (
@@ -77,21 +85,36 @@ export default function AppShell({
             <StepRequirements intakeForm={intakeForm} setIntakeForm={setIntakeForm} />
           )}
 
+          {step === 3 && (
+            <StepComponentReview
+              components={components}
+              loading={loading}
+              onMove={moveComponent}
+              onRemove={removeComponent}
+              onAdd={addComponent}
+              onUpdate={updateComponent}
+              onGenerateArchitecture={approveComponentsAndGenerateDiagrams}
+            />
+          )}
+
           {inWorkspace && (
             <ArchitectureWorkspace
               project={project}
               projectTypes={projectTypes}
               components={components}
-              onMove={moveComponent}
-              costs={derived.costs}
-              onExit={() => goToStep(2)}
+              costs={derived?.costs}
+              hasPricing={hasPricing}
+              canGeneratePricing={canGeneratePricing}
+              loading={loading}
+              onGeneratePricing={generatePricing}
+              onExit={() => goToStep(3)}
               onReset={reset}
               onToggleAppSidebar={() => setSidebarCollapsed((collapsed) => !collapsed)}
               appSidebarCollapsed={sidebarCollapsed}
             />
           )}
 
-          {!inWorkspace && (
+          {step < 3 && (
             <WizardActions
               step={step}
               loading={loading}

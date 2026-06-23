@@ -1,7 +1,7 @@
 import ComponentCard from "./ComponentCard.jsx";
 import DocSubheading from "./DocSubheading.jsx";
 
-function ComponentGroup({ title, items, emptyMessage, onMove }) {
+function ComponentGroup({ title, items, emptyMessage, onMove, readOnly }) {
   return (
     <>
       <DocSubheading>{title}</DocSubheading>
@@ -10,7 +10,11 @@ function ComponentGroup({ title, items, emptyMessage, onMove }) {
       ) : (
         <div className="doc-component-grid">
           {items.map((component) => (
-            <ComponentCard key={component._i} component={component} onMove={onMove} />
+            <ComponentCard
+              key={component._i}
+              component={component}
+              onMove={readOnly ? null : onMove}
+            />
           ))}
         </div>
       )}
@@ -18,7 +22,7 @@ function ComponentGroup({ title, items, emptyMessage, onMove }) {
   );
 }
 
-export default function ComponentsSection({ required, optional, onMove }) {
+export default function ComponentsSection({ required, optional, onMove, readOnly = false }) {
   return (
     <>
       <ComponentGroup
@@ -26,12 +30,14 @@ export default function ComponentsSection({ required, optional, onMove }) {
         items={required}
         emptyMessage="No required components in the current plan."
         onMove={onMove}
+        readOnly={readOnly}
       />
       <ComponentGroup
         title="Optional Components"
         items={optional}
         emptyMessage="No optional components selected."
         onMove={onMove}
+        readOnly={readOnly}
       />
     </>
   );

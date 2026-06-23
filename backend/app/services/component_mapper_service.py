@@ -11,6 +11,7 @@ from app.config.params import (
     COMPONENT_CATEGORY_OPTIONAL,
     COMPONENT_KEY_HINTS,
     COMPONENT_ORDER_MULTIPLIER,
+    COMPONENT_SOURCE_AI,
     COMPONENT_TYPE_ALIASES,
     COMPONENT_TYPE_KEY_MAP,
     DEFAULT_COMPONENT_TYPE,
@@ -37,6 +38,30 @@ class ComponentMapperService:
             "ai": "ai_service" in keys or "ai_provider" in keys,
             "background_processing": "queue_worker" in keys or "queue" in keys,
         }
+
+    def map_components_from_db(self, components) -> list[MappedComponent]:
+        mapped: list[MappedComponent] = []
+        for component in components:
+            cloud_mapping = component.cloud_mapping
+            mapped.append(
+                MappedComponent(
+                    key=component.key,
+                    name=component.name,
+                    component_type=component.component_type,
+                    reason=component.reason,
+                    category=component.category,
+                    optional=component.optional,
+                    order=component.order,
+                    cloud={
+                        "aws": cloud_mapping.aws if cloud_mapping else [],
+                        "gcp": cloud_mapping.gcp if cloud_mapping else [],
+                        "azure": cloud_mapping.azure if cloud_mapping else [],
+                    },
+                    implementation_options=component.implementation_options or {},
+                    source=component.source or COMPONENT_SOURCE_AI,
+                )
+            )
+        return mapped
 
     def _map_components(self, items: list[dict[str, Any]]) -> list[MappedComponent]:
         used_keys: set[str] = set()
@@ -69,6 +94,7 @@ class ComponentMapperService:
             order=order * COMPONENT_ORDER_MULTIPLIER,
             cloud=cloud,
             implementation_options=implementation_options,
+            source=COMPONENT_SOURCE_AI,
         )
 
     def _resolve_component_type(self, item: dict[str, Any]) -> str:

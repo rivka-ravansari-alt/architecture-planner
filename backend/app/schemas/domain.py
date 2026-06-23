@@ -16,6 +16,7 @@ class MappedComponent:
     order: int
     cloud: dict[str, list[str]]
     implementation_options: dict[str, object]
+    source: str = "ai_generated"
 
 
 @dataclass

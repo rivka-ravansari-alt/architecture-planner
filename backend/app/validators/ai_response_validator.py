@@ -48,6 +48,21 @@ class AIResponseValidator:
         payload["diagrams"] = self._validate_diagrams(payload)
         return payload
 
+    def validate_components(self, raw: str) -> dict[str, Any]:
+        payload = self._parse_json(raw)
+        payload = self._normalize_ai_payload(payload)
+        if "components" not in payload:
+            raise AIValidationError("Missing required field: components")
+        self._validate_components(payload)
+        return payload
+
+    def validate_diagrams(self, raw: str) -> dict[str, Any]:
+        payload = self._parse_json(raw)
+        payload = self._normalize_ai_payload(payload)
+        self._validate_architecture(payload)
+        payload["diagrams"] = self._validate_diagrams(payload)
+        return payload
+
     def _parse_json(self, raw: str) -> dict[str, Any]:
         try:
             payload = json.loads(self._extract_json(raw))

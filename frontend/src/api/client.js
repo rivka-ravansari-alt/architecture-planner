@@ -1,6 +1,7 @@
 const BASE = "/api";
 const DEFAULT_TIMEOUT_MS = 30_000;
-const GENERATE_TIMEOUT_MS = 330_000;
+/** Keep in sync with vite proxy timeouts and backend OpenAI request timeout. */
+const GENERATE_TIMEOUT_MS = 600_000;
 
 export async function apiRequest(path, options = {}) {
   const { timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
@@ -32,7 +33,10 @@ export async function apiRequest(path, options = {}) {
     return response.json();
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Request timed out. The AI generation may still be running — try again in a moment.");
+      const minutes = Math.round(timeoutMs / 60_000);
+      throw new Error(
+        `Request timed out after ${minutes} minutes. The AI generation may still be running on the server — wait a moment, then refresh or try again.`
+      );
     }
     throw error;
   } finally {

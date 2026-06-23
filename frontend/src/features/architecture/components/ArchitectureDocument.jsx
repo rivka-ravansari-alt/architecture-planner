@@ -2,6 +2,7 @@ import DocSection from "./document/DocSection.jsx";
 import OverviewSection from "./document/OverviewSection.jsx";
 import ComponentsSection from "./document/ComponentsSection.jsx";
 import CloudCostsSection from "./document/CloudCostsSection.jsx";
+import PricingReviewSection from "./document/PricingReviewSection.jsx";
 import { FlowList } from "./document/DocumentLists.jsx";
 import ArchitectureDiagrams from "./diagrams/ArchitectureDiagrams.jsx";
 
@@ -9,8 +10,12 @@ export default function ArchitectureDocument({
   project,
   projectTypes,
   components,
-  onMove,
+  onMove = null,
   costs,
+  hasPricing,
+  canGeneratePricing,
+  loading,
+  onGeneratePricing,
   expandedSections,
   onToggleSection,
   sectionRef,
@@ -38,7 +43,12 @@ export default function ArchitectureDocument({
       </DocSection>
 
       <DocSection title="Components" {...sectionProps("components")}>
-        <ComponentsSection required={required} optional={optional} onMove={onMove} />
+        <ComponentsSection
+          required={required}
+          optional={optional}
+          onMove={onMove}
+          readOnly={!onMove}
+        />
       </DocSection>
 
       <DocSection title="Architecture Diagrams" {...sectionProps("diagrams")}>
@@ -53,8 +63,20 @@ export default function ArchitectureDocument({
         <FlowList steps={project.main_flow} emptyMessage="No architecture flow steps available." />
       </DocSection>
 
-      <DocSection title="Cloud & Costs" {...sectionProps("costs")}>
-        <CloudCostsSection components={components} costs={costs} />
+      <DocSection
+        title="Cloud & Costs"
+        {...sectionProps("costs")}
+        badge={hasPricing ? null : "Pending"}
+      >
+        {hasPricing ? (
+          <CloudCostsSection components={components} costs={costs} />
+        ) : canGeneratePricing ? (
+          <PricingReviewSection loading={loading} onGeneratePricing={onGeneratePricing} />
+        ) : (
+          <p className="muted doc-empty">
+            Complete architecture diagram generation before estimating cloud costs.
+          </p>
+        )}
       </DocSection>
     </article>
   );

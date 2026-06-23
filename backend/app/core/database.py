@@ -106,9 +106,19 @@ class DatabaseInitializer:
             "ALTER TABLE architecture_components ADD COLUMN implementation_options JSON",
         )
         self._ensure_column(
+            "architecture_components",
+            "source",
+            "ALTER TABLE architecture_components ADD COLUMN source VARCHAR(20) DEFAULT 'ai_generated'",
+        )
+        self._ensure_column(
             "projects",
             "user_id",
             "ALTER TABLE projects ADD COLUMN user_id VARCHAR(36) REFERENCES users(id)",
+        )
+        self._ensure_column(
+            "projects",
+            "workflow_status",
+            "ALTER TABLE projects ADD COLUMN workflow_status VARCHAR(40) DEFAULT 'DRAFT'",
         )
         for legacy_column in ("user_flow", "data_flow"):
             self._drop_column_if_exists("projects", legacy_column)
