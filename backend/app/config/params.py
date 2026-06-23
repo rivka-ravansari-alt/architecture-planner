@@ -39,6 +39,15 @@ PROJECT_TYPE_LABELS: dict[str, str] = {
     item["type"]: item["label"] for item in PROJECT_TYPES
 }
 
+APPLICATION_PLATFORM_WEB = "web_app"
+APPLICATION_PLATFORM_MOBILE = "mobile_app"
+
+APPLICATION_PLATFORM_LABELS: dict[str, str] = {
+    "web": "Web Application",
+    "mobile": "Mobile Application",
+    "both": "Both Web and Mobile",
+}
+
 EXPECTED_USERS_LABELS: dict[str, str] = {
     "100": "Up to 100",
     "1000": "Up to 1,000",
@@ -161,6 +170,43 @@ CATALOG_COMPONENT_TYPES: tuple[str, ...] = (
     "alerting",
 )
 
+# Default purpose text per component type (mirrors frontend COMPONENT_TYPE_DESCRIPTIONS).
+COMPONENT_TYPE_DESCRIPTIONS: dict[str, str] = {
+    "user": "End users who interact with the product through client applications.",
+    "web_app": "Browser-based application that delivers the primary user experience.",
+    "mobile_app": "Native or cross-platform mobile application for iOS and Android devices.",
+    "admin_panel": "Administrative interface for managing users, content, and configuration.",
+    "cdn": "Content delivery network that caches and serves static assets close to users.",
+    "load_balancer": (
+        "Distributes incoming traffic across service instances for availability and scale."
+    ),
+    "api_gateway": (
+        "Entry point for client requests, handling routing, authentication, and rate limiting."
+    ),
+    "service": (
+        "Core application service that implements business logic and orchestrates data access."
+    ),
+    "worker": "Background processor that handles asynchronous jobs and long-running tasks.",
+    "database": "Primary data store for structured application data and transactions.",
+    "cache": "In-memory store that reduces database load and improves read latency.",
+    "queue": "Message queue that decouples producers and consumers for reliable async processing.",
+    "object_storage": "Durable storage for files, images, uploads, and other unstructured data.",
+    "search": "Full-text search index for fast querying across application content.",
+    "external_api": "Integration with third-party services and partner APIs.",
+    "ai_provider": (
+        "External or managed AI/ML service for inference, embeddings, or generative features."
+    ),
+    "payment": "Payment processing for subscriptions, one-time purchases, and billing.",
+    "notification": "Delivers email, SMS, and push notifications to users.",
+    "analytics": "Collects usage data and supports reporting, dashboards, and product insights.",
+    "secrets": "Secure storage and rotation of API keys, credentials, and sensitive configuration.",
+    "config": "Centralized configuration management across environments and services.",
+    "monitoring": "Tracks health, performance metrics, and service-level indicators.",
+    "logging": "Aggregates application and infrastructure logs for troubleshooting.",
+    "tracing": "Distributed tracing to follow requests across services and diagnose latency.",
+    "alerting": "Routes monitoring signals to on-call channels when thresholds are breached.",
+}
+
 COMPONENT_TYPE_KEY_MAP: dict[str, str] = {
     "user": "user",
     "web_app": "client_web",
@@ -255,7 +301,6 @@ COMPONENT_REQUIRED_FIELDS: tuple[str, ...] = (
     "name",
     "type",
     "tag",
-    "reason",
     "implementation_options",
 )
 VALID_IMPLEMENTATION_MODELS: frozenset[str] = frozenset(
@@ -512,98 +557,37 @@ PROMPT_STAGE_GUIDANCE_MVP = """For MVP:
 PROMPT_STAGE_GUIDANCE_PRODUCTION = """For Production:
 - Consider scalability, performance, security, reliability, availability, and maintainability."""
 
-PROMPT_ARCHITECTURE_TEMPLATE = """You are a senior software architect.
-
-Using the product name, description, requirements, and stage (MVP or Production), design the most cost-effective architecture.
-
-## Product
-
-- Product name: {product_name}
-- Product description: {description}
-- Stage: {stage_label}
-
-## Requirements
-
-{requirement_lines}
-
-{stage_guidance}
-
-Think about all required components and include only components justified by the requirements.
-
-Return JSON only.
-
-The JSON must contain:
-{{
-  "stage": "{stage_label}",
-  "components": [],
-  "architecture": {{}},
-  "diagrams": {{}}
-}}
-
-Each component must include:
-- name
-- type (one of: {component_type_list})
-- tag (required or optional)
-- description
-- cloud_options with keys aws, gcp, and azure — concrete service names for each provider
-
-architecture must include summary (string) and flow (array of strings).
-
-Generate exactly three diagrams under diagrams:
-
-1. high_level — High Level Design
-   - Business-level view.
-   - Show only core architecture components.
-   - Exclude operational components (secrets, config, monitoring, logging, tracing, alerting).
-   - Keep minimal and easy to understand.
-
-2. system_flow — System Flow
-   - Show request and data flow through the system.
-   - Include only components involved in the flow.
-   - Exclude operational components.
-   
-3. technical_architecture — Technical Architecture
-   - Complete technical architecture.
-   - Include all relevant components.
-   - Include operational components when relevant.
-   - Show infrastructure, security, observability, and resilience patterns.
-
-    Each diagram must contain:
-    - title
-    - nodes (id, name, optional group)
-    - edges (source, target, optional label)
-    
-    Node groups:
-    - experience
-    - platform
-    - data
-    - operations
-    
-Generate only the architecture for the requested stage ({stage_label}).
-"""
-
 PROMPT_COMPONENTS_TEMPLATE = """You are a senior software architect.
 
-Using the product name, description, requirements, and stage (MVP or Production), identify the architecture components needed for this product.
+Using the product name, description, application platform, requirements, and stage (MVP or Production), identify the architecture components needed for this product.
 
 ## Product
 
 - Product name: {product_name}
 - Product description: {description}
+- Application platform: {platform_label}
 - Stage: {stage_label}
 
-## Requirements
+## Platform considerations
+            
+The application platform must influence component selection.
 
+When choosing components, consider:
+- How users access the product.
+- Platform-specific requirements and capabilities.
+- Services needed to support the selected platform.
+
+The return components should represent a complete runnable architecture.
+Include all components required for the system to function end-to-end, not only components explicitly mentioned in the requirements.
+
+## Requirements
 {requirement_lines}
 
 {stage_guidance}
 
 ## Component catalog
-
 Use only component types from this catalog:
 {component_type_list}
-
-Think about all required components and include only components justified by the requirements.
 
 Return JSON only.
 
@@ -616,10 +600,6 @@ Each component must include:
 - name
 - type (one of: {component_type_list})
 - tag (required or optional)
-- description
-- cloud_options with keys aws, gcp, and azure — concrete service names for each provider
-
-Do not include architecture summaries, flow steps, or diagrams.
 """
 
 PROMPT_DIAGRAMS_TEMPLATE = """You are a senior software architect.

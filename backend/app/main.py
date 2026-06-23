@@ -32,9 +32,7 @@ async def lifespan(_app: FastAPI):
     from app.config.settings import Settings
 
     runtime_settings = Settings()
-    if runtime_settings.use_static_ai_response:
-        logger.warning("AI generation uses static JSON (USE_STATIC_AI_RESPONSE=true).")
-    elif runtime_settings.openai_api_key:
+    if runtime_settings.openai_api_key:
         logger.info("AI generation uses OpenAI model %s.", runtime_settings.openai_model)
     else:
         logger.warning("OpenAI API key is not configured; /generate will fail.")

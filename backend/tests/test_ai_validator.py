@@ -74,8 +74,12 @@ def test_normalizes_compact_ai_schema():
         },
     }
     result = AIResponseValidator().validate(json.dumps(payload))
-    assert result["components"][0]["reason"] == "Browser-based user interface."
     assert result["components"][0]["cloud_options"]["aws"] == ["Amplify Hosting"]
+    assert result["components"][0]["cloud_options"]["gcp"] == ["Firebase Hosting"]
+    assert (
+        result["components"][0]["reason"]
+        == "Browser-based application that delivers the primary user experience."
+    )
     assert "high_level" in result["diagrams"]
     assert "system_flow" in result["diagrams"]
     assert "technical_architecture" in result["diagrams"]

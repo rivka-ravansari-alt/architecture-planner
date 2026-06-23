@@ -16,7 +16,6 @@ from app.config.params import (
     GENERATION_TYPE_ARCHITECTURE,
     REQUIREMENT_KEYS,
 )
-from app.config.settings import settings
 from app.models import Project
 
 
@@ -84,10 +83,7 @@ class GenerationStorageService:
     def resolve_model_name() -> str:
         from app.config.settings import Settings
 
-        runtime_settings = Settings()
-        if runtime_settings.use_static_ai_response:
-            return "static"
-        return runtime_settings.openai_model
+        return Settings().openai_model
 
     @staticmethod
     def _object_key(generation_id: str, filename: str) -> str:
@@ -105,7 +101,6 @@ class GenerationStorageService:
             "temperature": AI_TEMPERATURE,
             "response_format": AI_RESPONSE_FORMAT,
             "system_prompt": AI_SYSTEM_PROMPT,
-            "use_static_ai_response": settings.use_static_ai_response,
         }
 
     @staticmethod

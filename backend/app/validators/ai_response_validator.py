@@ -91,12 +91,6 @@ class AIResponseValidator:
         for component in payload.get("components", []):
             if not isinstance(component, dict):
                 continue
-            if "description" in component and "reason" not in component:
-                component["reason"] = component["description"]
-            for cloud_key in ("cloud_mappings", "cloud", "cloud_options"):
-                if cloud_key in component and "cloud_options" not in component:
-                    component["cloud_options"] = component[cloud_key]
-                    break
             if "implementation_options" not in component:
                 component["implementation_options"] = dict(_DEFAULT_IMPLEMENTATION_OPTIONS)
 
@@ -166,6 +160,7 @@ class AIResponseValidator:
                 f"components[{index}].tag must be 'required' or 'optional', got '{component['tag']}'."
             )
         component["tag"] = tag
+        component["reason"] = self._cloud_defaults.default_reason_for_type(component_type)
         component["cloud_options"] = self._cloud_defaults.normalize_cloud_options(component)
         component["implementation_options"] = self._normalize_implementation_options(
             component.get("implementation_options"),
