@@ -8,6 +8,11 @@
 #       https://${_WEB_SERVICE}-${PROJECT_NUMBER}.${_REGION}.run.app/api/auth/google/callback
 #     (exact URL is shown after first web deploy)
 #
+# Login latency: the API preloads Google OIDC metadata at startup, but the first
+# request after idle still pays a cold-start cost when min-instances=0. For faster
+# first login (especially /auth/google, /auth/google/callback, and /auth/me), set
+# --min-instances=1 on deploy-api so one API container stays warm.
+#
 # Trigger example:
 #   gcloud builds submit --config=cloudbuild.yaml \
 #     --substitutions=_REGION=us-central1,_CLOUD_SQL_CONNECTION=project:region:instance

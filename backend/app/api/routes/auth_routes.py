@@ -29,13 +29,10 @@ async def google_callback(request: Request, controller: AuthController = Depends
 
 
 @router.get("/me", response_model=UserOut | None)
-def auth_me(
-    user: User | None = Depends(get_optional_user),
-    controller: AuthController = Depends(_controller),
-):
+def auth_me(user: User | None = Depends(get_optional_user)):
     if user is None:
         return None
-    return controller.current_user(user)
+    return UserOut.model_validate(user)
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)

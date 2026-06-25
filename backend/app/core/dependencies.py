@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from functools import lru_cache
 
 from fastapi import Depends, Request
 from sqlalchemy.orm import Session
 
 from app.clients.ai_client import AIClientFactory, BaseAIClient
+from app.clients.google_oauth_client import GoogleOAuthClient
 from app.config.params import (
     ERR_INVALID_SESSION,
     ERR_NOT_AUTHENTICATED,
@@ -35,8 +37,16 @@ def get_ai_client() -> BaseAIClient:
     return AIClientFactory.create()
 
 
-def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
-    return AuthService(db)
+@lru_cache
+def get_google_oauth_client() -> GoogleOAuthClient:
+    return GoogleOAuthClient()
+
+
+def get_auth_service(
+    db: Session = Depends(get_db),
+    oauth_client: GoogleOAuthClient = Depends(get_google_oauth_client),
+) -> AuthService:
+    return AuthService(db, oauth_client=oauth_client)
 
 
 def get_component_catalog_repository(

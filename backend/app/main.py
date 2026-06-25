@@ -13,6 +13,7 @@ from app.api.routes import auth_router, health_router, project_router
 from app.config.params import OAUTH_SESSION_COOKIE, OAUTH_SESSION_MAX_AGE_SECONDS
 from app.config.settings import settings
 from app.core.database import init_db
+from app.core.dependencies import get_google_oauth_client
 from app.core.exceptions import (
     AIClientError,
     ArchitectureGenerationError,
@@ -36,6 +37,9 @@ async def lifespan(_app: FastAPI):
         logger.info("AI generation uses OpenAI model %s.", runtime_settings.openai_model)
     else:
         logger.warning("OpenAI API key is not configured; /generate will fail.")
+    if runtime_settings.oauth_configured:
+        await get_google_oauth_client().ensure_metadata_loaded()
+        logger.info("Google OAuth OIDC metadata cached.")
     yield
 
 
