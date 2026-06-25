@@ -39,6 +39,15 @@ PROJECT_TYPE_LABELS: dict[str, str] = {
     item["type"]: item["label"] for item in PROJECT_TYPES
 }
 
+APPLICATION_PLATFORM_WEB = "web_app"
+APPLICATION_PLATFORM_MOBILE = "mobile_app"
+
+APPLICATION_PLATFORM_LABELS: dict[str, str] = {
+    "web": "Web Application",
+    "mobile": "Mobile Application",
+    "both": "Both Web and Mobile",
+}
+
 EXPECTED_USERS_LABELS: dict[str, str] = {
     "100": "Up to 100",
     "1000": "Up to 1,000",
@@ -62,39 +71,10 @@ REQUIREMENT_KEYS: tuple[str, ...] = tuple(REQUIREMENT_LABELS.keys())
 # Component types
 # ---------------------------------------------------------------------------
 
-MAIN_ARCHITECTURE_COMPONENT_TYPES: frozenset[str] = frozenset(
-    {
-        "user",
-        "web_app",
-        "mobile_app",
-        "admin_panel",
-        "cdn",
-        "load_balancer",
-        "api_gateway",
-        "service",
-        "worker",
-        "database",
-        "cache",
-        "queue",
-        "object_storage",
-        "search",
-        "external_api",
-        "ai_provider",
-        "payment",
-        "notification",
-        "analytics",
-    }
-)
-
-SUPPORTING_INFRASTRUCTURE_COMPONENT_TYPES: frozenset[str] = frozenset(
-    {
-        "secrets",
-        "config",
-        "monitoring",
-        "logging",
-        "tracing",
-        "alerting",
-    }
+COMPONENT_CATEGORY_MAIN = "main_architecture"
+COMPONENT_CATEGORY_SUPPORTING = "supporting_infrastructure"
+VALID_COMPONENT_CATEGORIES: frozenset[str] = frozenset(
+    {COMPONENT_CATEGORY_MAIN, COMPONENT_CATEGORY_SUPPORTING}
 )
 
 # Legacy aliases and project-specific types kept for backward compatibility.
@@ -110,12 +90,6 @@ LEGACY_COMPONENT_TYPES: frozenset[str] = frozenset(
     }
 )
 
-VALID_COMPONENT_TYPES: frozenset[str] = (
-    MAIN_ARCHITECTURE_COMPONENT_TYPES
-    | SUPPORTING_INFRASTRUCTURE_COMPONENT_TYPES
-    | LEGACY_COMPONENT_TYPES
-)
-
 COMPONENT_TYPE_ALIASES: dict[str, str] = {
     "api": "api_gateway",
     "authentication": "auth",
@@ -125,6 +99,12 @@ COMPONENT_TYPE_ALIASES: dict[str, str] = {
 
 DEFAULT_COMPONENT_TYPE = "api_gateway"
 VALID_COMPONENT_TAGS: frozenset[str] = frozenset({"required", "optional"})
+
+COMPONENT_SOURCE_AI = "ai_generated"
+COMPONENT_SOURCE_USER = "user_added"
+VALID_COMPONENT_SOURCES: frozenset[str] = frozenset(
+    {COMPONENT_SOURCE_AI, COMPONENT_SOURCE_USER}
+)
 
 COMPONENT_TYPE_KEY_MAP: dict[str, str] = {
     "user": "user",
@@ -201,11 +181,6 @@ DEFAULT_DIAGRAM_TITLES: dict[str, str] = {
     "technical_architecture": "Technical Architecture",
 }
 
-DIAGRAM_EXCLUDED_TYPES: dict[str, frozenset[str]] = {
-    "high_level": SUPPORTING_INFRASTRUCTURE_COMPONENT_TYPES,
-    "system_flow": SUPPORTING_INFRASTRUCTURE_COMPONENT_TYPES,
-}
-
 VALID_DIAGRAM_GROUPS: frozenset[str] = frozenset(
     {"experience", "platform", "data", "operations"}
 )
@@ -220,7 +195,6 @@ COMPONENT_REQUIRED_FIELDS: tuple[str, ...] = (
     "name",
     "type",
     "tag",
-    "reason",
     "implementation_options",
 )
 VALID_IMPLEMENTATION_MODELS: frozenset[str] = frozenset(
@@ -250,156 +224,6 @@ CLOUD_PROVIDER_ALIASES: dict[str, tuple[str, ...]] = {
     "aws": ("aws", "amazon", "amazon web services"),
     "gcp": ("gcp", "google", "google cloud", "google cloud platform"),
     "azure": ("azure", "microsoft azure"),
-}
-
-
-def _cloud_defaults(
-    *,
-    aws: list[str],
-    gcp: list[str],
-    azure: list[str],
-) -> dict[str, list[str]]:
-    return {"aws": list(aws), "gcp": list(gcp), "azure": list(azure)}
-
-
-def _uniform_cloud_defaults(*options: str) -> dict[str, list[str]]:
-    return {provider: list(options) for provider in CLOUD_PROVIDERS}
-
-
-_HOSTING_DEFAULTS = _cloud_defaults(
-    aws=["Amplify Hosting"],
-    gcp=["Firebase Hosting"],
-    azure=["Azure Static Web Apps"],
-)
-_API_GATEWAY_DEFAULTS = _cloud_defaults(
-    aws=["API Gateway"],
-    gcp=["API Gateway"],
-    azure=["API Management"],
-)
-_AUTH_DEFAULTS = _cloud_defaults(
-    aws=["Cognito"],
-    gcp=["Firebase Authentication", "Identity Platform"],
-    azure=["Entra ID B2C"],
-)
-_AI_DEFAULTS = _cloud_defaults(
-    aws=["Bedrock"],
-    gcp=["Gemini API", "Vertex AI"],
-    azure=["Azure OpenAI Service"],
-)
-
-CLOUD_DEFAULTS_BY_TYPE: dict[str, dict[str, list[str]]] = {
-    "user": _uniform_cloud_defaults("N/A"),
-    "web_app": _HOSTING_DEFAULTS,
-    "admin_panel": _HOSTING_DEFAULTS,
-    "mobile_app": _cloud_defaults(
-        aws=["Amplify"],
-        gcp=["Firebase"],
-        azure=["Azure App Center"],
-    ),
-    "browser_extension": _HOSTING_DEFAULTS,
-    "cdn": _cloud_defaults(
-        aws=["CloudFront"],
-        gcp=["Cloud CDN"],
-        azure=["Azure CDN"],
-    ),
-    "api_gateway": _API_GATEWAY_DEFAULTS,
-    "api": _API_GATEWAY_DEFAULTS,
-    "load_balancer": _cloud_defaults(
-        aws=["Application Load Balancer"],
-        gcp=["Cloud Load Balancing"],
-        azure=["Application Gateway"],
-    ),
-    "service": _cloud_defaults(
-        aws=["Lambda", "ECS Fargate"],
-        gcp=["Cloud Run", "Cloud Functions"],
-        azure=["Azure Functions", "Container Apps"],
-    ),
-    "worker": _cloud_defaults(
-        aws=["Lambda", "ECS Fargate"],
-        gcp=["Cloud Run Jobs", "Cloud Functions"],
-        azure=["Azure Functions", "Container Apps Jobs"],
-    ),
-    "database": _cloud_defaults(
-        aws=["DynamoDB", "RDS"],
-        gcp=["Firestore", "Cloud SQL"],
-        azure=["Cosmos DB", "Azure SQL Database"],
-    ),
-    "object_storage": _cloud_defaults(
-        aws=["S3"],
-        gcp=["Cloud Storage"],
-        azure=["Blob Storage"],
-    ),
-    "queue": _cloud_defaults(
-        aws=["SQS"],
-        gcp=["Pub/Sub", "Cloud Tasks"],
-        azure=["Service Bus", "Queue Storage"],
-    ),
-    "cache": _cloud_defaults(
-        aws=["ElastiCache"],
-        gcp=["Memorystore"],
-        azure=["Azure Cache for Redis"],
-    ),
-    "search": _cloud_defaults(
-        aws=["OpenSearch Service"],
-        gcp=["Vertex AI Search"],
-        azure=["Azure AI Search"],
-    ),
-    "authentication": _AUTH_DEFAULTS,
-    "auth": _AUTH_DEFAULTS,
-    "secrets": _cloud_defaults(
-        aws=["Secrets Manager", "SSM Parameter Store"],
-        gcp=["Secret Manager"],
-        azure=["Key Vault"],
-    ),
-    "config": _cloud_defaults(
-        aws=["AppConfig", "SSM Parameter Store"],
-        gcp=["Secret Manager", "Firestore"],
-        azure=["App Configuration"],
-    ),
-    "monitoring": _cloud_defaults(
-        aws=["CloudWatch"],
-        gcp=["Cloud Monitoring"],
-        azure=["Azure Monitor"],
-    ),
-    "logging": _cloud_defaults(
-        aws=["CloudWatch Logs"],
-        gcp=["Cloud Logging"],
-        azure=["Azure Monitor Logs", "Log Analytics"],
-    ),
-    "tracing": _cloud_defaults(
-        aws=["X-Ray"],
-        gcp=["Cloud Trace"],
-        azure=["Application Insights"],
-    ),
-    "alerting": _cloud_defaults(
-        aws=["CloudWatch Alarms", "SNS"],
-        gcp=["Cloud Monitoring Alerts"],
-        azure=["Azure Monitor Alerts", "Action Groups"],
-    ),
-    "analytics": _cloud_defaults(
-        aws=["CloudWatch Dashboards", "Athena", "QuickSight"],
-        gcp=["Looker Studio", "BigQuery"],
-        azure=["Application Insights", "Power BI"],
-    ),
-    "notification": _cloud_defaults(
-        aws=["SNS", "SES"],
-        gcp=["Firebase Cloud Messaging", "SendGrid"],
-        azure=["Notification Hubs", "Communication Services"],
-    ),
-    "payment": _uniform_cloud_defaults("Stripe", "Paddle"),
-    "external_api": _uniform_cloud_defaults("Third-party API"),
-    "integration": _cloud_defaults(
-        aws=["EventBridge", "API Gateway"],
-        gcp=["Pub/Sub", "Workflows"],
-        azure=["Logic Apps", "Service Bus"],
-    ),
-    "ai_provider": _AI_DEFAULTS,
-    "ai_service": _AI_DEFAULTS,
-    "backup": _cloud_defaults(
-        aws=["AWS Backup", "S3 Versioning"],
-        gcp=["Backup and DR", "Cloud Storage Versioning"],
-        azure=["Azure Backup", "Recovery Services Vault"],
-    ),
 }
 
 CLOUD_DEFAULTS_FALLBACK_TYPE = "api_gateway"
@@ -463,13 +287,6 @@ AI_SYSTEM_PROMPT = (
     "matched to the requested stage and requirements. Return only valid JSON."
 )
 
-PROMPT_COMPONENT_TYPE_LIST = (
-    "user, web_app, mobile_app, admin_panel, cdn, load_balancer, api_gateway, "
-    "service, worker, database, cache, queue, object_storage, search, "
-    "external_api, ai_provider, payment, notification, analytics, "
-    "secrets, config, monitoring, logging, tracing, alerting"
-)
-
 PROMPT_STAGE_GUIDANCE_MVP = """For MVP:
 - Prefer simple, managed, and serverless services.
 - Avoid over-engineering."""
@@ -477,9 +294,56 @@ PROMPT_STAGE_GUIDANCE_MVP = """For MVP:
 PROMPT_STAGE_GUIDANCE_PRODUCTION = """For Production:
 - Consider scalability, performance, security, reliability, availability, and maintainability."""
 
-PROMPT_ARCHITECTURE_TEMPLATE = """You are a senior software architect.
+PROMPT_COMPONENTS_TEMPLATE = """You are a senior software architect.
 
-Using the product name, description, requirements, and stage (MVP or Production), design the most cost-effective architecture.
+Using the product name, description, application platform, requirements, and stage (MVP or Production), identify the architecture components needed for this product.
+
+## Product
+
+- Product name: {product_name}
+- Product description: {description}
+- Application platform: {platform_label}
+- Stage: {stage_label}
+
+## Platform considerations
+            
+The application platform must influence component selection.
+
+When choosing components, consider:
+- How users access the product.
+- Platform-specific requirements and capabilities.
+- Services needed to support the selected platform.
+
+The return components should represent a complete runnable architecture.
+Include all components required for the system to function end-to-end, not only components explicitly mentioned in the requirements.
+
+## Requirements
+{requirement_lines}
+
+{stage_guidance}
+
+## Component catalog
+Use only component types from this catalog. Each entry shows the type name followed by its description:
+{component_catalog}
+
+Return JSON only.
+
+The JSON must contain:
+{{
+  "components": []
+}}
+
+Each component must include:
+- name
+- type (one of: {component_type_list})
+- tag (required or optional)
+
+
+"""
+
+PROMPT_DIAGRAMS_TEMPLATE = """You are a senior software architect.
+
+Using the product description and the approved architecture components below, generate architecture diagrams and documentation.
 
 ## Product
 
@@ -487,30 +351,17 @@ Using the product name, description, requirements, and stage (MVP or Production)
 - Product description: {description}
 - Stage: {stage_label}
 
-## Requirements
+## Approved components
 
-{requirement_lines}
-
-{stage_guidance}
-
-Think about all required components and include only components justified by the requirements.
+{component_lines}
 
 Return JSON only.
 
 The JSON must contain:
 {{
-  "stage": "{stage_label}",
-  "components": [],
   "architecture": {{}},
   "diagrams": {{}}
 }}
-
-Each component must include:
-- name
-- type (one of: {component_type_list})
-- tag (required or optional)
-- description
-- cloud_options with keys aws, gcp, and azure — concrete service names for each provider
 
 architecture must include summary (string) and flow (array of strings).
 
@@ -526,25 +377,25 @@ Generate exactly three diagrams under diagrams:
    - Show request and data flow through the system.
    - Include only components involved in the flow.
    - Exclude operational components.
-   
+
 3. technical_architecture — Technical Architecture
    - Complete technical architecture.
    - Include all relevant components.
    - Include operational components when relevant.
    - Show infrastructure, security, observability, and resilience patterns.
 
-    Each diagram must contain:
-    - title
-    - nodes (id, name, optional group)
-    - edges (source, target, optional label)
-    
-    Node groups:
-    - experience
-    - platform
-    - data
-    - operations
-    
-Generate only the architecture for the requested stage ({stage_label}).
+Each diagram must contain:
+- title
+- nodes (id, name, optional group)
+- edges (source, target, optional label)
+
+Node groups:
+- experience
+- platform
+- data
+- operations
+
+Use only the approved components listed above. Do not add new components.
 """
 
 
@@ -555,6 +406,74 @@ Generate only the architecture for the requested stage ({stage_label}).
 GENERATION_STATUS_PENDING = "pending"
 GENERATION_STATUS_COMPLETED = "completed"
 GENERATION_STATUS_FAILED = "failed"
+
+WORKFLOW_STATUS_DRAFT = "DRAFT"
+WORKFLOW_STATUS_COMPONENTS_GENERATED = "COMPONENTS_GENERATED"
+WORKFLOW_STATUS_COMPONENTS_APPROVED = "COMPONENTS_APPROVED"
+WORKFLOW_STATUS_DIAGRAMS_GENERATED = "DIAGRAMS_GENERATED"
+WORKFLOW_STATUS_ARCHITECTURE_APPROVED = "ARCHITECTURE_APPROVED"
+WORKFLOW_STATUS_PRICING_GENERATED = "PRICING_GENERATED"
+
+WORKFLOW_ALLOWED_FOR_UPDATE_COMPONENTS: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_COMPONENTS_GENERATED,
+        WORKFLOW_STATUS_COMPONENTS_APPROVED,
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_REQUIRES_DIAGRAM_CLEAR_ON_COMPONENT_UPDATE: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_ALLOWED_FOR_GENERATE_COMPONENTS: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_DRAFT,
+        WORKFLOW_STATUS_COMPONENTS_GENERATED,
+        WORKFLOW_STATUS_COMPONENTS_APPROVED,
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_ALLOWED_FOR_GENERATE_DIAGRAMS: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_COMPONENTS_APPROVED,
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_ALLOWED_FOR_GENERATE_PRICING: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_ALLOWED_FOR_APPROVE_ARCHITECTURE: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_ALLOWED_FOR_SKIP_ARCHITECTURE: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_COMPONENTS_APPROVED,
+    }
+)
+
+ERR_INVALID_WORKFLOW_STATUS = "Project is not in the correct workflow stage for this operation."
 
 GENERATION_STEPS: tuple[str, ...] = (
     "create_request",

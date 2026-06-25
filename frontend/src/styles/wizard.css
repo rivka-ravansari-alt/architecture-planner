@@ -10,4 +10,78 @@
   line-height: 1.5;
 }
 
+/* Step panels */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.panel-head {
+  margin-bottom: 24px;
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.panel-sub {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  line-height: 1.5;
+  max-width: 62ch;
+}
+
+.panel-wide {
+  max-width: none;
+}
+
+.content-wide {
+  max-width: 1280px;
+}
+
+.wizard-section-title {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.wizard-section-sub {
+  margin: 0 0 16px;
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+.wizard-architecture-body,
+.wizard-pricing-body,
+.summary-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.wizard-architecture-section,
+.summary-step-section {
+  padding-top: 4px;
+}
+
+.summary-requirements-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.summary-item-wide {
+  grid-column: 1 / -1;
+}
+
 /* ------------------------------------------------------------------ */

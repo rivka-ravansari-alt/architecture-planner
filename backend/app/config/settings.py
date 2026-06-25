@@ -27,9 +27,8 @@ class Settings(BaseSettings):
 
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
-    openai_request_timeout_seconds: float = 300.0
+    openai_request_timeout_seconds: float = 600.0
     openai_max_output_tokens: int = 8000
-    use_static_ai_response: bool = False
 
     object_storage_provider: str = "gcs"
     object_storage_local_root: str = "./object-storage"

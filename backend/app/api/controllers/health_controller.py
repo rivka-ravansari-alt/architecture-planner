@@ -9,6 +9,5 @@ class HealthController:
     def check(self) -> dict[str, str | bool]:
         return {
             "status": "ok",
-            "use_static_ai_response": settings.use_static_ai_response,
             "openai_configured": bool(settings.openai_api_key),
         }

@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 import { DOCUMENT_SECTIONS } from "../../../constants/document.js";
 import { STAGES } from "../../../constants/wizard.js";
 import { useDocumentSections } from "../../../hooks/useDocumentSections.js";
@@ -8,8 +10,11 @@ export default function ArchitectureWorkspace({
   project,
   projectTypes,
   components,
-  onMove,
   costs,
+  hasPricing,
+  canGeneratePricing,
+  loading,
+  onGeneratePricing,
   onExit,
   onReset,
   onToggleAppSidebar,
@@ -23,6 +28,22 @@ export default function ArchitectureWorkspace({
     scrollToSection,
     toggleSection,
   } = useDocumentSections();
+
+  const hadPricingRef = useRef(hasPricing);
+
+  useEffect(() => {
+    if (hasPricing && !hadPricingRef.current) {
+      scrollToSection("costs");
+    }
+    hadPricingRef.current = hasPricing;
+  }, [hasPricing, scrollToSection]);
+
+  const handleGeneratePricing = async () => {
+    const result = await onGeneratePricing();
+    if (result) {
+      scrollToSection("costs");
+    }
+  };
 
   return (
     <div className="focus-workspace">
@@ -40,7 +61,7 @@ export default function ArchitectureWorkspace({
             >
               <path d="M19 12H5 M12 19l-7-7 7-7" />
             </svg>
-            Back to project setup
+            Back to component review
           </button>
         </div>
         <div className="focus-workspace-bar-center">
@@ -49,10 +70,21 @@ export default function ArchitectureWorkspace({
             {project.name}
             <span className="focus-workspace-meta">
               · {labelFor(STAGES, project.stage)}
+              {hasPricing ? " · Pricing generated" : canGeneratePricing ? " · Review architecture" : ""}
             </span>
           </p>
         </div>
         <div className="focus-workspace-bar-end">
+          {canGeneratePricing && !hasPricing && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleGeneratePricing}
+              disabled={loading}
+            >
+              {loading ? "Generating pricing…" : "Generate Pricing"}
+            </button>
+          )}
           <button
             type="button"
             className="btn btn-ghost focus-sidebar-toggle"
@@ -79,6 +111,9 @@ export default function ArchitectureWorkspace({
                 aria-current={activeSection === section.id ? "location" : undefined}
               >
                 {section.label}
+                {section.id === "costs" && !hasPricing && canGeneratePricing && (
+                  <span className="arch-doc-toc-pending">Pending</span>
+                )}
               </button>
             ))}
           </nav>
@@ -90,8 +125,11 @@ export default function ArchitectureWorkspace({
               project={project}
               projectTypes={projectTypes}
               components={components}
-              onMove={onMove}
               costs={costs}
+              hasPricing={hasPricing}
+              canGeneratePricing={canGeneratePricing}
+              loading={loading}
+              onGeneratePricing={handleGeneratePricing}
               expandedSections={expandedSections}
               onToggleSection={toggleSection}
               sectionRef={registerSection}

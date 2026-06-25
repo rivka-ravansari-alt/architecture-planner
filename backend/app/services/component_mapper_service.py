@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import Any
 
 from app.config.params import (
@@ -11,16 +10,18 @@ from app.config.params import (
     COMPONENT_CATEGORY_OPTIONAL,
     COMPONENT_KEY_HINTS,
     COMPONENT_ORDER_MULTIPLIER,
-    COMPONENT_TYPE_ALIASES,
+    COMPONENT_SOURCE_AI,
     COMPONENT_TYPE_KEY_MAP,
     DEFAULT_COMPONENT_TYPE,
-    SLUG_MAX_LENGTH,
-    VALID_COMPONENT_TYPES,
 )
 from app.schemas.domain import MappedComponent
+from app.services.catalog_service import CatalogService
+from app.utils.slug import slugify
 
 
 class ComponentMapperService:
+    def __init__(self, catalog_service: CatalogService) -> None:
+        self._catalog = catalog_service
     def map_payload(
         self,
         payload: dict[str, Any],
@@ -37,6 +38,30 @@ class ComponentMapperService:
             "ai": "ai_service" in keys or "ai_provider" in keys,
             "background_processing": "queue_worker" in keys or "queue" in keys,
         }
+
+    def map_components_from_db(self, components) -> list[MappedComponent]:
+        mapped: list[MappedComponent] = []
+        for component in components:
+            cloud_mapping = component.cloud_mapping
+            mapped.append(
+                MappedComponent(
+                    key=component.key,
+                    name=component.name,
+                    component_type=component.component_type,
+                    reason=component.reason,
+                    category=component.category,
+                    optional=component.optional,
+                    order=component.order,
+                    cloud={
+                        "aws": cloud_mapping.aws if cloud_mapping else [],
+                        "gcp": cloud_mapping.gcp if cloud_mapping else [],
+                        "azure": cloud_mapping.azure if cloud_mapping else [],
+                    },
+                    implementation_options=component.implementation_options or {},
+                    source=component.source or COMPONENT_SOURCE_AI,
+                )
+            )
+        return mapped
 
     def _map_components(self, items: list[dict[str, Any]]) -> list[MappedComponent]:
         used_keys: set[str] = set()
@@ -69,12 +94,14 @@ class ComponentMapperService:
             order=order * COMPONENT_ORDER_MULTIPLIER,
             cloud=cloud,
             implementation_options=implementation_options,
+            source=COMPONENT_SOURCE_AI,
         )
 
     def _resolve_component_type(self, item: dict[str, Any]) -> str:
-        component_type = str(item.get("type", DEFAULT_COMPONENT_TYPE)).strip().lower()
-        component_type = COMPONENT_TYPE_ALIASES.get(component_type, component_type)
-        if component_type not in VALID_COMPONENT_TYPES:
+        component_type = self._catalog.normalize_component_type(
+            str(item.get("type", DEFAULT_COMPONENT_TYPE))
+        )
+        if component_type not in self._catalog.valid_component_types():
             return DEFAULT_COMPONENT_TYPE
         return component_type
 
@@ -113,7 +140,7 @@ class ComponentMapperService:
         used_keys: set[str],
         component_type: str | None = None,
     ) -> str:
-        if component_type and component_type in VALID_COMPONENT_TYPES:
+        if component_type and component_type in self._catalog.valid_component_types():
             mapped = COMPONENT_TYPE_KEY_MAP.get(component_type)
             if mapped and mapped not in used_keys:
                 return mapped
@@ -124,15 +151,10 @@ class ComponentMapperService:
         return self._unique_slug(name, used_keys)
 
     def _unique_slug(self, name: str, used_keys: set[str]) -> str:
-        base = self._slugify(name)
+        base = slugify(name)
         candidate = base
         suffix = 2
         while candidate in used_keys:
             candidate = f"{base}_{suffix}"
             suffix += 1
         return candidate
-
-    @staticmethod
-    def _slugify(name: str) -> str:
-        slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
-        return slug[:SLUG_MAX_LENGTH] or "component"

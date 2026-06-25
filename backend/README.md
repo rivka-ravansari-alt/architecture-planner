@@ -39,7 +39,7 @@ app/
 | **validators** | Structural validation | `AIResponseValidator.validate` |
 | **schemas** | Request/response shapes | `ProjectCreate`, `ProjectDetail` |
 | **models** | Database tables | `Project`, `User` |
-| **params** | Shared constants | `VALID_COMPONENT_TYPES`, cost bands |
+| **params** | Shared constants | `COMPONENT_CATEGORY_*`, cost bands |
 
 ## Generation pipeline
 
@@ -140,7 +140,7 @@ To work offline without GCS, set `OBJECT_STORAGE_PROVIDER=local` and `OBJECT_STO
 cd backend
 pip install -r requirements.txt
 cp .env.example .env
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --reload-dir app --port 8000
 ```
 
 ## Tests

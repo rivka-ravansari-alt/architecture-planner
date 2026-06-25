@@ -1,18 +1,21 @@
-import Sidebar from "./Sidebar.jsx";
-import Topbar from "./Topbar.jsx";
-import ErrorBanner from "../ui/ErrorBanner.jsx";
-import StaleNotice from "../wizard/StaleNotice.jsx";
-import WizardActions from "../wizard/WizardActions.jsx";
+import StepArchitecture from "../wizard/StepArchitecture.jsx";
+import StepComponentReview from "../wizard/StepComponentReview.jsx";
+import StepPricing from "../wizard/StepPricing.jsx";
 import StepProjectDetails from "../wizard/StepProjectDetails.jsx";
 import StepRequirements from "../wizard/StepRequirements.jsx";
-import ArchitectureWorkspace from "../../features/architecture/components/ArchitectureWorkspace.jsx";
+import StepSummary from "../wizard/StepSummary.jsx";
+import StaleNotice from "../wizard/StaleNotice.jsx";
+import WizardActions from "../wizard/WizardActions.jsx";
+import ErrorBanner from "../ui/ErrorBanner.jsx";
+import Sidebar from "./Sidebar.jsx";
+import Topbar from "./Topbar.jsx";
 
 export default function AppShell({
   user,
   wizard,
   projectTypes,
+  componentCatalog,
   onLogout,
-  children,
 }) {
   const {
     step,
@@ -25,43 +28,46 @@ export default function AppShell({
     loading,
     error,
     derived,
-    inWorkspace,
-    sidebarCollapsed,
-    setSidebarCollapsed,
+    hasPricing,
     goToStep,
     goNext,
     goBack,
     reset,
     moveComponent,
+    removeComponent,
+    addComponent,
+    updateComponent,
     primaryLabel,
+    primaryDisabled,
+    showPrimaryAction,
     showStaleNotice,
+    showSkipArchitecture,
+    canSkipArchitecture,
+    skipArchitecture,
   } = wizard;
 
+  const isWideStep = step >= 4;
+
   return (
-    <div className={`app-shell ${inWorkspace ? "focus-mode" : ""}`}>
+    <div className="app-shell">
       <Sidebar
         current={step}
         maxStep={maxStep}
         onStepClick={goToStep}
         loading={loading}
-        collapsed={inWorkspace && sidebarCollapsed}
-        focusMode={inWorkspace}
-        onToggleCollapse={() => setSidebarCollapsed((collapsed) => !collapsed)}
       />
 
       <main className="main">
-        {!inWorkspace && (
-          <Topbar
-            step={step}
-            user={user}
-            loading={loading}
-            onReset={reset}
-            onLogout={onLogout}
-            showReset={project !== null || step > 1}
-          />
-        )}
+        <Topbar
+          step={step}
+          user={user}
+          loading={loading}
+          onReset={reset}
+          onLogout={onLogout}
+          showReset={project !== null || step > 1}
+        />
 
-        <div className={`content ${inWorkspace ? "content-workspace content-focus" : ""}`}>
+        <div className={`content ${isWideStep ? "content-wide" : ""}`}>
           <ErrorBanner message={error} />
           {showStaleNotice && <StaleNotice />}
 
@@ -77,31 +83,54 @@ export default function AppShell({
             <StepRequirements intakeForm={intakeForm} setIntakeForm={setIntakeForm} />
           )}
 
-          {inWorkspace && (
-            <ArchitectureWorkspace
+          {step === 3 && (
+            <StepComponentReview
+              components={components}
+              componentCatalog={componentCatalog}
+              loading={loading}
+              onMove={moveComponent}
+              onRemove={removeComponent}
+              onAdd={addComponent}
+              onUpdate={updateComponent}
+            />
+          )}
+
+          {step === 4 && project && (
+            <StepArchitecture project={project} components={components} />
+          )}
+
+          {step === 5 && (
+            <StepPricing
+              components={components}
+              costs={derived?.costs}
+              hasPricing={hasPricing}
+            />
+          )}
+
+          {step === 6 && project && (
+            <StepSummary
+              intakeForm={intakeForm}
               project={project}
               projectTypes={projectTypes}
               components={components}
-              onMove={moveComponent}
-              costs={derived.costs}
-              onExit={() => goToStep(2)}
-              onReset={reset}
-              onToggleAppSidebar={() => setSidebarCollapsed((collapsed) => !collapsed)}
-              appSidebarCollapsed={sidebarCollapsed}
+              costs={derived?.costs}
+              hasPricing={hasPricing}
             />
           )}
 
-          {!inWorkspace && (
-            <WizardActions
-              step={step}
-              loading={loading}
-              primaryLabel={primaryLabel}
-              onBack={goBack}
-              onNext={goNext}
-            />
-          )}
-
-          {children}
+          <WizardActions
+            step={step}
+            loading={loading}
+            primaryLabel={primaryLabel}
+            primaryDisabled={primaryDisabled}
+            showPrimary={showPrimaryAction}
+            showSecondary={showSkipArchitecture}
+            secondaryLabel="Skip Architecture"
+            secondaryDisabled={!canSkipArchitecture}
+            onBack={goBack}
+            onNext={goNext}
+            onSecondary={skipArchitecture}
+          />
         </div>
       </main>
     </div>

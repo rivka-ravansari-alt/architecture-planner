@@ -5,5 +5,3 @@ export const api = {
   ...authApi,
   ...projectApi,
 };
-
-export { authApi, projectApi };

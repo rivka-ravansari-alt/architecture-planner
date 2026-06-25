@@ -40,6 +40,7 @@ def test_generate_endpoint_returns_ai_architecture(api_client, mock_ai_success):
     assert body["architecture_summary"]
     assert len(body["components"]) == 4
     assert body["cost_estimates"]
+    assert body["workflow_status"] == "PRICING_GENERATED"
     assert body["architecture_diagrams"]["high_level"]["title"] == "High Level Design"
     assert len(body["architecture_diagrams"]["system_flow"]["nodes"]) >= 1
     assert "technical_flow" not in body["architecture_diagrams"]

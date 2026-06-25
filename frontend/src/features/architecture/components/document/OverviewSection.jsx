@@ -1,4 +1,4 @@
-import { EXPECTED_USERS, STAGES } from "../../../../constants/wizard.js";
+import { EXPECTED_USERS, STAGES, WORKFLOW_STATUS_LABELS } from "../../../../constants/wizard.js";
 import { labelFor, truncateToSentences } from "../../../../utils/text.js";
 import DocSubheading from "./DocSubheading.jsx";
 
@@ -39,9 +39,9 @@ export default function OverviewSection({ project, projectTypes, requiredCount, 
       <DocSubheading>Generation Status</DocSubheading>
       <div className="doc-status-grid">
         <div className="doc-status-item">
-          <span className="doc-status-label">Status</span>
-          <span className={`doc-status-value ${project.generated_at ? "is-ok" : ""}`}>
-            {project.generated_at ? "Generated" : "Pending"}
+          <span className="doc-status-label">Workflow</span>
+          <span className="doc-status-value">
+            {WORKFLOW_STATUS_LABELS[project.workflow_status] || project.workflow_status}
           </span>
         </div>
         <div className="doc-status-item">

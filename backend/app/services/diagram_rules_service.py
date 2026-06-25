@@ -6,23 +6,31 @@ import re
 from typing import Any
 
 from app.config.params import (
-    COMPONENT_TYPE_ALIASES,
     DEFAULT_DIAGRAM_TITLES,
-    DIAGRAM_EXCLUDED_TYPES,
     DIAGRAM_KEYS,
-    MAIN_ARCHITECTURE_COMPONENT_TYPES,
-    SUPPORTING_INFRASTRUCTURE_COMPONENT_TYPES,
 )
+from app.utils.component_type import normalize_component_type
+from app.utils.diagram_migration import migrate_diagram_keys
+from app.utils.slug import slugify
 
 
 class DiagramRulesService:
+    def __init__(
+        self,
+        *,
+        supporting_infrastructure_types: frozenset[str] | None = None,
+        main_architecture_types: frozenset[str] | None = None,
+    ) -> None:
+        self._supporting_infrastructure_types = supporting_infrastructure_types or frozenset()
+        self._main_architecture_types = main_architecture_types or frozenset()
+
     def apply(self, payload: dict[str, Any]) -> dict[str, Any]:
         components = payload.get("components")
         diagrams = payload.get("diagrams")
         if not isinstance(components, list) or not isinstance(diagrams, dict):
             return payload
 
-        diagrams = self._migrate_diagram_keys(diagrams)
+        diagrams = migrate_diagram_keys(diagrams)
         payload["diagrams"] = diagrams
 
         component_index = self._build_component_index(components)
@@ -35,8 +43,11 @@ class DiagramRulesService:
             if key == "technical_architecture":
                 normalized[key] = self._prepare_technical_diagram(diagram, component_index)
             else:
-                excluded = DIAGRAM_EXCLUDED_TYPES.get(key, frozenset())
-                normalized[key] = self._filter_diagram(diagram, component_index, excluded)
+                normalized[key] = self._filter_diagram(
+                    diagram,
+                    component_index,
+                    self._supporting_infrastructure_types,
+                )
 
         payload["diagrams"] = self._ensure_all_diagrams(normalized, component_index)
         return payload
@@ -67,8 +78,11 @@ class DiagramRulesService:
             if key == "technical_architecture":
                 result[key] = self._prepare_technical_diagram(clone, component_index)
             else:
-                excluded = DIAGRAM_EXCLUDED_TYPES.get(key, frozenset())
-                result[key] = self._filter_diagram(clone, component_index, excluded)
+                result[key] = self._filter_diagram(
+                    clone,
+                    component_index,
+                    self._supporting_infrastructure_types,
+                )
         return result
 
     def _prepare_technical_diagram(
@@ -83,7 +97,7 @@ class DiagramRulesService:
             normalized = dict(node)
             component_type = self._resolve_node_type(normalized, component_index)
             if (
-                component_type in SUPPORTING_INFRASTRUCTURE_COMPONENT_TYPES
+                component_type in self._supporting_infrastructure_types
                 and not normalized.get("group")
             ):
                 normalized["group"] = "operations"
@@ -151,7 +165,7 @@ class DiagramRulesService:
             name = str(component.get("name", "")).strip().lower()
             if name:
                 index[name] = component_type
-            slug = self._slugify(name)
+            slug = slugify(name, max_length=0, fallback="")
             if slug:
                 index[slug] = component_type
         return index
@@ -163,7 +177,7 @@ class DiagramRulesService:
 
         node_id = str(node.get("id", "")).strip().lower()
         node_name = str(node.get("name", "")).strip().lower()
-        for key in (node_id, node_name, self._slugify(node_name), self._slugify(node_id)):
+        for key in (node_id, node_name, slugify(node_name, max_length=0, fallback=""), slugify(node_id, max_length=0, fallback="")):
             if key and key in component_index:
                 return component_index[key]
         return self._infer_type_from_name(node_name or node_id)
@@ -172,14 +186,9 @@ class DiagramRulesService:
     def _normalize_type(component_type: str) -> str:
         if not component_type:
             return ""
-        return COMPONENT_TYPE_ALIASES.get(component_type, component_type)
+        return normalize_component_type(component_type)
 
-    @staticmethod
-    def _slugify(value: str) -> str:
-        return re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
-
-    @staticmethod
-    def _infer_type_from_name(name: str) -> str:
+    def _infer_type_from_name(self, name: str) -> str:
         if not name:
             return ""
         if re.search(r"\b(end\s+)?user\b", name) or name == "user":
@@ -232,18 +241,6 @@ class DiagramRulesService:
             return "web_app"
         if "service" in name and "api" not in name:
             return "service"
-        if name in MAIN_ARCHITECTURE_COMPONENT_TYPES:
+        if name in self._main_architecture_types:
             return name
         return ""
-
-    @staticmethod
-    def _migrate_diagram_keys(diagrams: dict[str, Any]) -> dict[str, Any]:
-        from app.config.params import LEGACY_DIAGRAM_KEY_ALIASES
-
-        migrated = dict(diagrams)
-        for legacy_key, current_key in LEGACY_DIAGRAM_KEY_ALIASES.items():
-            if legacy_key in migrated and current_key not in migrated:
-                migrated[current_key] = migrated.pop(legacy_key)
-            elif legacy_key in migrated:
-                migrated.pop(legacy_key, None)
-        return migrated

@@ -29,6 +29,7 @@ class Project(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
     generated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    workflow_status: Mapped[str] = mapped_column(String(40), default="DRAFT")
 
     main_flow: Mapped[list] = mapped_column(JSON, default=list)
     next_steps: Mapped[list] = mapped_column(JSON, default=list)
@@ -39,10 +40,10 @@ class Project(Base):
     answers: Mapped[RequirementAnswers | None] = relationship(
         back_populates="project", cascade="all, delete-orphan", uselist=False
     )
-    components: Mapped[list[ArchitectureComponent]] = relationship(
+    components: Mapped[list[ProjectComponent]] = relationship(
         back_populates="project",
         cascade="all, delete-orphan",
-        order_by="ArchitectureComponent.order",
+        order_by="ProjectComponent.order",
     )
     cost_estimates: Mapped[list[CostEstimate]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
@@ -73,8 +74,8 @@ class RequirementAnswers(Base):
     project: Mapped[Project] = relationship(back_populates="answers")
 
 
-class ArchitectureComponent(Base):
-    __tablename__ = "architecture_components"
+class ProjectComponent(Base):
+    __tablename__ = "project_components"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
     project_id: Mapped[str] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"))
@@ -84,6 +85,7 @@ class ArchitectureComponent(Base):
     component_type: Mapped[str] = mapped_column(String(40), default="api")
     reason: Mapped[str] = mapped_column(Text, default="")
     category: Mapped[str] = mapped_column(String(20), default="core")
+    source: Mapped[str] = mapped_column(String(20), default="ai_generated")
     optional: Mapped[bool] = mapped_column(Boolean, default=False)
     order: Mapped[int] = mapped_column(Integer, default=0)
     implementation_options: Mapped[dict | None] = mapped_column(JSON, nullable=True)
@@ -99,14 +101,14 @@ class CloudMapping(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
     component_id: Mapped[str] = mapped_column(
-        ForeignKey("architecture_components.id", ondelete="CASCADE")
+        ForeignKey("project_components.id", ondelete="CASCADE")
     )
 
     aws: Mapped[list] = mapped_column(JSON, default=list)
     gcp: Mapped[list] = mapped_column(JSON, default=list)
     azure: Mapped[list] = mapped_column(JSON, default=list)
 
-    component: Mapped[ArchitectureComponent] = relationship(back_populates="cloud_mapping")
+    component: Mapped[ProjectComponent] = relationship(back_populates="cloud_mapping")
 
 
 class CostEstimate(Base):

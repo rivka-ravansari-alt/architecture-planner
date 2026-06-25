@@ -17,9 +17,11 @@ from app.config.settings import settings
 from app.core.database import get_db
 from app.core.exceptions import UnauthorizedError
 from app.models import User
+from app.repositories.component_catalog_repository import ComponentCatalogRepository
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
 from app.services.catalog_service import CatalogService
+from app.services.cloud_defaults_service import CloudDefaultsService
 from app.services.generation_service import GenerationService
 from app.services.project_service import ProjectService
 from app.utils.jwt import JwtService
@@ -37,19 +39,42 @@ def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
     return AuthService(db)
 
 
-def get_project_service(db: Session = Depends(get_db)) -> ProjectService:
-    return ProjectService(db)
+def get_component_catalog_repository(
+    db: Session = Depends(get_db),
+) -> ComponentCatalogRepository:
+    return ComponentCatalogRepository(db)
+
+
+def get_catalog_service(db: Session = Depends(get_db)) -> CatalogService:
+    return CatalogService(db)
+
+
+def get_cloud_defaults_service(
+    catalog_repo: ComponentCatalogRepository = Depends(get_component_catalog_repository),
+) -> CloudDefaultsService:
+    return CloudDefaultsService(catalog_repo)
+
+
+def get_project_service(
+    db: Session = Depends(get_db),
+    catalog_service: CatalogService = Depends(get_catalog_service),
+    cloud_defaults: CloudDefaultsService = Depends(get_cloud_defaults_service),
+) -> ProjectService:
+    return ProjectService(db, catalog_service=catalog_service, cloud_defaults=cloud_defaults)
 
 
 def get_generation_service(
     db: Session = Depends(get_db),
     ai_client: BaseAIClient = Depends(get_ai_client),
+    catalog_service: CatalogService = Depends(get_catalog_service),
+    cloud_defaults: CloudDefaultsService = Depends(get_cloud_defaults_service),
 ) -> GenerationService:
-    return GenerationService(db, ai_client=ai_client)
-
-
-def get_catalog_service() -> CatalogService:
-    return CatalogService()
+    return GenerationService(
+        db,
+        ai_client=ai_client,
+        catalog_service=catalog_service,
+        cloud_defaults=cloud_defaults,
+    )
 
 
 def get_optional_user(

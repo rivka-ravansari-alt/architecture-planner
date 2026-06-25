@@ -4,8 +4,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.config.params import DESCRIPTION_MAX_CHARS
-from app.schemas.enums import ExpectedUsers, ProjectType, Stage
+from app.config.params import COMPONENT_SOURCE_AI, DESCRIPTION_MAX_CHARS
+from app.schemas.enums import ExpectedUsers, ProjectType, Stage, WorkflowStatus
 
 
 class RequirementAnswersIn(BaseModel):
@@ -52,6 +52,27 @@ class ProjectCreate(BaseModel):
         return value
 
 
+class CloudMappingIn(BaseModel):
+    aws: list[str] = []
+    gcp: list[str] = []
+    azure: list[str] = []
+
+
+class ComponentUpdateIn(BaseModel):
+    key: str = Field(min_length=1, max_length=60)
+    name: str = Field(min_length=1, max_length=120)
+    type: str = Field(min_length=1, max_length=40)
+    reason: str = ""
+    optional: bool = False
+    source: str = COMPONENT_SOURCE_AI
+    cloud_mapping: CloudMappingIn | None = None
+    implementation_options: dict[str, object] | None = None
+
+
+class ComponentsUpdate(BaseModel):
+    components: list[ComponentUpdateIn] = Field(min_length=1)
+
+
 class CloudMappingOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     aws: list[str]
@@ -68,6 +89,7 @@ class ComponentOut(BaseModel):
     )
     reason: str
     category: str
+    source: str = COMPONENT_SOURCE_AI
     optional: bool
     order: int
     cloud_mapping: CloudMappingOut | None = None
@@ -136,6 +158,7 @@ class ProjectDetail(BaseModel):
     expected_users: str
     created_at: datetime
     generated_at: datetime | None = None
+    workflow_status: WorkflowStatus = WorkflowStatus.draft
     main_flow: list[str] = []
     architecture_summary: str = ""
     architecture_diagram: ArchitectureDiagramOut | None = None
@@ -149,3 +172,15 @@ class ProjectTypeInfo(BaseModel):
     id: str
     label: str
     description: str
+
+
+class ComponentCatalogOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    name: str
+    category: str
+    description: str
+    aws_options: list[str]
+    gcp_options: list[str]
+    azure_options: list[str]
+    is_active: bool

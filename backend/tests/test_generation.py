@@ -25,6 +25,7 @@ def test_success_persists_ai_output(db_session, sample_project, mock_ai_client, 
     result = GenerationService(db_session, ai_client=mock_ai_client).generate(sample_project)
 
     assert result.generated_at is not None
+    assert result.workflow_status == "PRICING_GENERATED"
     assert len(result.components) == 4
     assert result.architecture_summary.startswith("A browser client")
     assert len(result.cost_estimates) == 3

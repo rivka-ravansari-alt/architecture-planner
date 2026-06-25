@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from abc import ABC, abstractmethod
 
 from openai import OpenAI
 
-from app.clients.static_payload import STATIC_AI_PAYLOAD
 from app.config.params import (
     AI_RESPONSE_FORMAT,
     AI_SYSTEM_PROMPT,
@@ -35,17 +33,6 @@ class BaseAIClient(ABC):
     @abstractmethod
     def generate(self, prompt: str) -> str:
         """Return raw JSON text from the AI provider."""
-
-
-class StaticAIClient(BaseAIClient):
-    def __init__(self, logger: AIClientLogger | None = None) -> None:
-        self._logger = logger or AIClientLogger()
-
-    def generate(self, prompt: str) -> str:
-        self._logger.log_started("load_static")
-        content = json.dumps(STATIC_AI_PAYLOAD)
-        self._logger.log_completed("load_static", response_chars=len(content))
-        return content
 
 
 class OpenAIClient(BaseAIClient):
@@ -97,10 +84,6 @@ class AIClientFactory:
         from app.config.settings import Settings
 
         runtime_settings = Settings()
-
-        if runtime_settings.use_static_ai_response:
-            logger.info("Using static AI client (USE_STATIC_AI_RESPONSE=true).")
-            return StaticAIClient()
         if not runtime_settings.openai_api_key:
             raise AIClientError(ERR_OPENAI_KEY_MISSING)
         logger.info("Using OpenAI client model=%s.", runtime_settings.openai_model)

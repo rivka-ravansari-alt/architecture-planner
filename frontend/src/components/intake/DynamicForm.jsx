@@ -19,8 +19,15 @@ const SCALE_FIELD_KEYS = new Set(["stage", "expected_users"]);
  * @param {ReturnType<import("../../utils/intakeFormState.js").createEmptyIntakeForm>} props.value
  * @param {(next: ReturnType<import("../../utils/intakeFormState.js").createEmptyIntakeForm>) => void} props.onChange
  * @param {Record<string, string>} [props.errors]
+ * @param {boolean} [props.showHeader]
  */
-export default function DynamicForm({ section = "all", value, onChange, errors = {} }) {
+export default function DynamicForm({
+  section = "all",
+  value,
+  onChange,
+  errors = {},
+  showHeader = true,
+}) {
   const showBasic = section === "basic" || section === "all";
   const showFeatures = section === "features" || section === "all";
 
@@ -71,8 +78,12 @@ export default function DynamicForm({ section = "all", value, onChange, errors =
     <div className="dynamic-form">
       {showBasic && (
         <div className="card">
-          <h2>{productSection.title}</h2>
-          <p className="subtitle">{productSection.subtitle}</p>
+          {showHeader && (
+            <>
+              <h2>{productSection.title}</h2>
+              <p className="subtitle">{productSection.subtitle}</p>
+            </>
+          )}
 
           {primaryFields.map(renderProductField)}
 
@@ -82,8 +93,12 @@ export default function DynamicForm({ section = "all", value, onChange, errors =
 
       {showFeatures && (
         <div className="card intake-features-card">
-          <h2>{architectureSection.title}</h2>
-          <p className="subtitle">{architectureSection.subtitle}</p>
+          {showHeader && (
+            <>
+              <h2>{architectureSection.title}</h2>
+              <p className="subtitle">{architectureSection.subtitle}</p>
+            </>
+          )}
 
           {architectureSection.toggles.map((toggle) => (
             <ToggleSection

@@ -1,4 +1,4 @@
-export default function DocSection({ id, title, expanded, onToggle, sectionRef, children }) {
+export default function DocSection({ id, title, badge, expanded, onToggle, sectionRef, children }) {
   return (
     <section className="arch-doc-section" id={id} ref={(node) => sectionRef?.(id, node)}>
       <button
@@ -12,6 +12,7 @@ export default function DocSection({ id, title, expanded, onToggle, sectionRef, 
           {expanded ? "▼" : "▶"}
         </span>
         <h2 className="arch-doc-section-title">{title}</h2>
+        {badge && <span className="arch-doc-section-badge">{badge}</span>}
       </button>
       {expanded && (
         <div className="arch-doc-section-body" id={`${id}-panel`}>

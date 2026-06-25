@@ -9,26 +9,16 @@ import pytest
 from app.clients.ai_client import (
     AIClientError,
     OpenAIClient,
-    StaticAIClient,
     _completion_limit_kwargs,
 )
 
 
 def test_raises_when_api_key_missing(monkeypatch):
-    monkeypatch.setenv("USE_STATIC_AI_RESPONSE", "false")
     monkeypatch.setenv("OPENAI_API_KEY", "")
     from app.clients.ai_client import AIClientFactory
 
     with pytest.raises(AIClientError, match="OPENAI_API_KEY"):
         AIClientFactory.create().generate("prompt")
-
-
-def test_returns_static_response_when_enabled():
-    client = StaticAIClient()
-    result = client.generate("any prompt")
-    assert '"components"' in result
-    assert '"cloud_options"' in result
-    assert '"diagrams"' in result
 
 
 def test_completion_limit_kwargs_for_gpt5():
