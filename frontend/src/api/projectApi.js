@@ -22,6 +22,8 @@ export const projectApi = {
     }),
   approveArchitecture: (projectId) =>
     apiRequest(`/projects/${projectId}/approve-architecture`, { method: "POST" }),
+  skipArchitecture: (projectId) =>
+    apiRequest(`/projects/${projectId}/skip-architecture`, { method: "POST" }),
   generatePricing: (projectId) =>
     apiRequest(`/projects/${projectId}/generate-pricing`, {
       method: "POST",

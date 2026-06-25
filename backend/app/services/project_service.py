@@ -11,6 +11,7 @@ from app.config.params import (
     ERR_PROJECT_NOT_FOUND,
     VALID_COMPONENT_SOURCES,
     WORKFLOW_ALLOWED_FOR_APPROVE_ARCHITECTURE,
+    WORKFLOW_ALLOWED_FOR_SKIP_ARCHITECTURE,
     WORKFLOW_ALLOWED_FOR_UPDATE_COMPONENTS,
     WORKFLOW_REQUIRES_DIAGRAM_CLEAR_ON_COMPONENT_UPDATE,
 )
@@ -122,6 +123,15 @@ class ProjectService:
     def approve_architecture(self, project_id: str, user: User) -> Project:
         project = self.get_owned_project(project_id, user)
         if project.workflow_status not in WORKFLOW_ALLOWED_FOR_APPROVE_ARCHITECTURE:
+            raise BadRequestError(ERR_INVALID_WORKFLOW_STATUS)
+        self._repo.approve_architecture(project)
+        self._repo.commit()
+        self._repo.refresh(project)
+        return project
+
+    def skip_architecture(self, project_id: str, user: User) -> Project:
+        project = self.get_owned_project(project_id, user)
+        if project.workflow_status not in WORKFLOW_ALLOWED_FOR_SKIP_ARCHITECTURE:
             raise BadRequestError(ERR_INVALID_WORKFLOW_STATUS)
         self._repo.approve_architecture(project)
         self._repo.commit()

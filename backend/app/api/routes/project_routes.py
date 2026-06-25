@@ -100,6 +100,15 @@ def approve_architecture(
     return controller.approve_architecture(project_id, user)
 
 
+@router.post("/projects/{project_id}/skip-architecture", response_model=ProjectDetail)
+def skip_architecture(
+    project_id: str,
+    user: User = Depends(get_current_user),
+    controller: ProjectController = Depends(_controller),
+):
+    return controller.skip_architecture(project_id, user)
+
+
 @router.post("/projects/{project_id}/generate-pricing", response_model=ProjectDetail)
 def generate_pricing(
     project_id: str,

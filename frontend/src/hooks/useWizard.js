@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { api } from "../api/index.js";
 import { deriveArchitecture } from "../features/architecture/utils/deriveArchitecture.js";
@@ -7,6 +7,8 @@ import { componentsToApiPayload } from "../utils/componentPayload.js";
 import { EMPTY_INTAKE_FORM } from "../utils/intakeFormState.js";
 import { toLegacyPayload } from "../utils/intakeFormMapper.js";
 import { buildInputKey, validateBasicProduct } from "../utils/validation.js";
+
+const TOTAL_STEPS = 6;
 
 function cloneComponents(components) {
   return components.map((component) => ({ ...component }));
@@ -22,11 +24,9 @@ export function useWizard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [savedKey, setSavedKey] = useState(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const inputKey = useMemo(() => buildInputKey(intakeForm), [intakeForm]);
   const needsSave = project === null || savedKey !== inputKey;
-  const inWorkspace = step === 4 && project;
   const hasPricing =
     project?.workflow_status === WORKFLOW_STATUS.PRICING_GENERATED ||
     (project?.cost_estimates?.length ?? 0) > 0;
@@ -39,10 +39,6 @@ export function useWizard() {
     () => (project ? deriveArchitecture(project, components) : null),
     [project, components]
   );
-
-  useEffect(() => {
-    setSidebarCollapsed(Boolean(inWorkspace));
-  }, [inWorkspace]);
 
   const validateStep1 = useCallback(() => {
     const nextErrors = validateBasicProduct(intakeForm);
@@ -79,7 +75,6 @@ export function useWizard() {
       const generated = await api.generateComponents(current.id);
       syncProject(generated);
       unlockAndGo(3);
-      setStep(3);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -87,10 +82,32 @@ export function useWizard() {
     }
   }, [project, needsSave, saveProject, syncProject, unlockAndGo]);
 
-  const approveComponentsAndGenerateDiagrams = useCallback(async () => {
+  const approveComponents = useCallback(async () => {
+    if (!project || components.length === 0) {
+      setError("Add at least one component before continuing.");
+      return false;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const payload = componentsToApiPayload(components);
+      const approved = await api.updateComponents(project.id, payload);
+      syncProject(approved);
+      unlockAndGo(4);
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [project, components, syncProject, unlockAndGo]);
+
+  const generateArchitecture = useCallback(async () => {
     if (!project || components.length === 0) {
       setError("Add at least one component before generating architecture.");
-      return;
+      return false;
     }
 
     setLoading(true);
@@ -101,17 +118,50 @@ export function useWizard() {
       syncProject(approved);
       const withDiagrams = await api.generateDiagrams(approved.id);
       syncProject(withDiagrams);
-      unlockAndGo(4);
-      setStep(4);
+      unlockAndGo(5);
+      return true;
     } catch (err) {
       setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [project, components, syncProject, unlockAndGo]);
+
+  const skipArchitecture = useCallback(async () => {
+    if (!project || components.length === 0) {
+      setError("Add at least one component before continuing.");
+      return false;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      let current = project;
+      if (current.workflow_status === WORKFLOW_STATUS.COMPONENTS_GENERATED) {
+        const approved = await api.updateComponents(
+          project.id,
+          componentsToApiPayload(components)
+        );
+        syncProject(approved);
+        current = approved;
+      }
+      if (current.workflow_status === WORKFLOW_STATUS.COMPONENTS_APPROVED) {
+        current = await api.skipArchitecture(project.id);
+        syncProject(current);
+      }
+      unlockAndGo(5);
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
     } finally {
       setLoading(false);
     }
   }, [project, components, syncProject, unlockAndGo]);
 
   const generatePricing = useCallback(async () => {
-    if (!project || !canGeneratePricing) return;
+    if (!project || !canGeneratePricing) return false;
 
     setLoading(true);
     setError(null);
@@ -126,14 +176,15 @@ export function useWizard() {
       }
       const withPricing = await api.generatePricing(current.id);
       syncProject(withPricing);
-      return withPricing;
+      unlockAndGo(5);
+      return true;
     } catch (err) {
       setError(err.message);
-      return null;
+      return false;
     } finally {
       setLoading(false);
     }
-  }, [project, canGeneratePricing, syncProject]);
+  }, [project, canGeneratePricing, syncProject, unlockAndGo]);
 
   const goToStep = useCallback(
     async (target) => {
@@ -167,8 +218,38 @@ export function useWizard() {
         return;
       }
       await generateComponents();
+      return;
     }
-  }, [step, loading, validateStep1, unlockAndGo, generateComponents]);
+
+    if (step === 3) {
+      await approveComponents();
+      return;
+    }
+
+    if (step === 4) {
+      await generateArchitecture();
+      return;
+    }
+
+    if (step === 5) {
+      if (hasPricing) {
+        unlockAndGo(6);
+        return;
+      }
+      await generatePricing();
+      return;
+    }
+  }, [
+    step,
+    loading,
+    hasPricing,
+    validateStep1,
+    unlockAndGo,
+    generateComponents,
+    approveComponents,
+    generateArchitecture,
+    generatePricing,
+  ]);
 
   const goBack = useCallback(() => {
     if (step > 1) goToStep(step - 1);
@@ -241,18 +322,51 @@ export function useWizard() {
     );
   }, []);
 
-  const primaryLabel =
-    loading && step === 2
-      ? "Generating components… (may take a few seconds)"
-      : step === 2
-        ? "Generate Components"
-        : "Continue";
+  const primaryLabel = useMemo(() => {
+    if (loading) {
+      if (step === 2) return "Generating components… (may take a few seconds)";
+      if (step === 4) return "Generating architecture… (may take a few seconds)";
+      if (step === 5) return "Generating pricing… (may take a few seconds)";
+    }
 
+    switch (step) {
+      case 1:
+        return "Continue";
+      case 2:
+        return "Generate Components";
+      case 3:
+        return "Continue";
+      case 4:
+        return "Generate Architecture";
+      case 5:
+        return hasPricing ? "View Summary" : "Generate Pricing";
+      case 6:
+        return "View Summary";
+      default:
+        return "Continue";
+    }
+  }, [step, loading, hasPricing]);
+
+  const primaryDisabled = useMemo(() => {
+    if (loading) return true;
+    if (step === 3 && components.length === 0) return true;
+    if (step === 4 && components.length === 0) return true;
+    if (step === 5 && !hasPricing && !canGeneratePricing) return true;
+    return false;
+  }, [loading, step, components.length, canGeneratePricing, hasPricing]);
+
+  const canSkipArchitecture =
+    project?.workflow_status === WORKFLOW_STATUS.COMPONENTS_APPROVED ||
+    project?.workflow_status === WORKFLOW_STATUS.COMPONENTS_GENERATED;
+  const showSkipArchitecture = step === 4;
+
+  const showPrimaryAction = step < TOTAL_STEPS;
   const showStaleNotice = step < 3 && project !== null && needsSave;
 
   return {
     step,
     maxStep,
+    totalSteps: TOTAL_STEPS,
     intakeForm,
     setIntakeForm,
     errors,
@@ -263,9 +377,6 @@ export function useWizard() {
     derived,
     hasPricing,
     canGeneratePricing,
-    inWorkspace,
-    sidebarCollapsed,
-    setSidebarCollapsed,
     goToStep,
     goNext,
     goBack,
@@ -275,8 +386,11 @@ export function useWizard() {
     addComponent,
     updateComponent,
     primaryLabel,
+    primaryDisabled,
+    showPrimaryAction,
     showStaleNotice,
-    approveComponentsAndGenerateDiagrams,
-    generatePricing,
+    showSkipArchitecture,
+    canSkipArchitecture,
+    skipArchitecture,
   };
 }

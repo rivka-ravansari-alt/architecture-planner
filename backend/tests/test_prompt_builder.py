@@ -47,6 +47,14 @@ def test_components_prompt_includes_both_platforms(db_session, test_user, prompt
     assert "Platform-specific requirements and capabilities" in prompt
 
 
+def test_components_prompt_includes_catalog_descriptions(sample_project, prompt_builder):
+    prompt = prompt_builder.build_components(sample_project)
+    assert "service:\n" in prompt
+    assert "Backend execution component that implements business logic" in prompt
+    assert "api_gateway:\n" in prompt
+    assert "Routes traffic to backend services" in prompt
+
+
 def test_handles_missing_answers(db_session, test_user, prompt_builder):
     from app.models import Project
 

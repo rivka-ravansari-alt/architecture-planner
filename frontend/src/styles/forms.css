@@ -276,6 +276,13 @@
   gap: 12px;
 }
 
+.actions-primary-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
 .btn {
   border: 1px solid transparent;
   border-radius: var(--radius-sm);

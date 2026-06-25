@@ -91,6 +91,10 @@ class ProjectController:
         project = self._projects.approve_architecture(project_id, user)
         return ProjectDetail.model_validate(project)
 
+    def skip_architecture(self, project_id: str, user: User) -> ProjectDetail:
+        project = self._projects.skip_architecture(project_id, user)
+        return ProjectDetail.model_validate(project)
+
     def generate_pricing(self, project_id: str, user: User) -> ProjectDetail:
         project = self._projects.get_owned_project(project_id, user)
         try:

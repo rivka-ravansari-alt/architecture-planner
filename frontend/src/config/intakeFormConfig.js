@@ -235,14 +235,14 @@ export const LEGACY_ANSWER_MAPPING = {
 export const INTAKE_FORM_CONFIG = {
   productSection: {
     id: "product",
-    title: "Product Information",
+    title: "Product",
     subtitle: "Basic details that shape platform choice and scale.",
     fields: BASIC_PRODUCT_FIELDS,
     validation: INTAKE_VALIDATION.product,
   },
   architectureSection: {
-    id: "architecture",
-    title: "Architecture Capabilities",
+    id: "requirements",
+    title: "Architecture Questionnaire",
     subtitle:
       "Enable only what affects infrastructure, cloud services, and monthly cost estimates.",
     toggles: FEATURE_TOGGLES,

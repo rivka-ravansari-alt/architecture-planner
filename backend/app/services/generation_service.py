@@ -12,6 +12,7 @@ from app.clients.ai_client import AIClientFactory, BaseAIClient
 from app.config.params import (
     ERR_INVALID_WORKFLOW_STATUS,
     WORKFLOW_ALLOWED_FOR_GENERATE_COMPONENTS,
+    WORKFLOW_ALLOWED_FOR_GENERATE_DIAGRAMS,
     WORKFLOW_ALLOWED_FOR_GENERATE_PRICING,
 )
 from app.core.exceptions import AIClientError, AIValidationError, ArchitectureGenerationError, BadRequestError
@@ -115,7 +116,7 @@ class GenerationService:
         )
 
     def generate_diagrams(self, project: Project) -> Project:
-        # self._ensure_status(project, self._DIAGRAMS_ALLOWED_STATUSES)
+        self._ensure_status(project, WORKFLOW_ALLOWED_FOR_GENERATE_DIAGRAMS)
         if not project.components:
             raise BadRequestError("Approved components are required before generating diagrams.")
         return self._run_stage(
@@ -132,8 +133,6 @@ class GenerationService:
         self._ensure_status(project, WORKFLOW_ALLOWED_FOR_GENERATE_PRICING)
         if not project.components:
             raise BadRequestError("Components are required before generating pricing.")
-        if not project.architecture_diagrams:
-            raise BadRequestError("Architecture diagrams are required before generating pricing.")
 
         run = self._start_generation(project)
         try:

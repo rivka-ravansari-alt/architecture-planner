@@ -56,7 +56,7 @@ _COMPONENTS: list[tuple[str, str, str, list[str], list[str], list[str]]] = [
     (
         "api_gateway",
         COMPONENT_CATEGORY_MAIN,
-        "Entry point for client requests, handling routing, authentication, and rate limiting.",
+        "Entry point for client requests. Routes traffic to backend services and may apply authentication or rate limiting. It does not execute business logic, access databases, or replace a backend service.",
         ["API Gateway"],
         ["API Gateway"],
         ["API Management"],
@@ -64,7 +64,7 @@ _COMPONENTS: list[tuple[str, str, str, list[str], list[str], list[str]]] = [
     (
         "service",
         COMPONENT_CATEGORY_MAIN,
-        "Core application service that implements business logic and orchestrates data access.",
+        "Backend execution component that implements business logic, exposes application APIs, processes user requests, and reads/writes application data.",
         ["Lambda", "ECS Fargate"],
         ["Cloud Run", "Cloud Functions"],
         ["Azure Functions", "Container Apps"],

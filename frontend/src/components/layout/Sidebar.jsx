@@ -16,20 +16,9 @@ function NavIcon({ children }) {
   );
 }
 
-export default function Sidebar({
-  current,
-  maxStep,
-  onStepClick,
-  loading,
-  collapsed = false,
-  focusMode = false,
-  onToggleCollapse,
-}) {
+export default function Sidebar({ current, maxStep, onStepClick, loading }) {
   return (
-    <aside
-      className={`sidebar ${collapsed ? "is-collapsed" : ""} ${focusMode ? "in-focus-mode" : ""}`}
-      aria-label="Application navigation"
-    >
+    <aside className="sidebar" aria-label="Application navigation">
       <div className="brand">
         <div className="brand-mark">
           <svg
@@ -48,34 +37,6 @@ export default function Sidebar({
           <span className="brand-sub">Architecture Before Code</span>
         </div>
       </div>
-
-      {focusMode && (
-        <button
-          type="button"
-          className="sidebar-focus-toggle"
-          onClick={onToggleCollapse}
-          aria-expanded={!collapsed}
-          title={collapsed ? "Expand application menu" : "Collapse application menu"}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            {collapsed ? (
-              <path d="M9 18l6-6-6-6 M15 6h4 M15 12h4 M15 18h4" />
-            ) : (
-              <path d="M15 18l-6-6 6-6 M9 6H5 M9 12H5 M9 18H5" />
-            )}
-          </svg>
-          <span className="sidebar-focus-toggle-label">
-            {collapsed ? "Expand menu" : "Collapse menu"}
-          </span>
-        </button>
-      )}
 
       <nav className="side-nav">
         <span className="side-nav-label">Planning</span>

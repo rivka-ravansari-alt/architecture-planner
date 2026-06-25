@@ -323,8 +323,8 @@ Include all components required for the system to function end-to-end, not only 
 {stage_guidance}
 
 ## Component catalog
-Use only component types from this catalog:
-{component_type_list}
+Use only component types from this catalog. Each entry shows the type name followed by its description:
+{component_catalog}
 
 Return JSON only.
 
@@ -337,6 +337,8 @@ Each component must include:
 - name
 - type (one of: {component_type_list})
 - tag (required or optional)
+
+
 """
 
 PROMPT_DIAGRAMS_TEMPLATE = """You are a senior software architect.
@@ -462,6 +464,12 @@ WORKFLOW_ALLOWED_FOR_APPROVE_ARCHITECTURE: frozenset[str] = frozenset(
         WORKFLOW_STATUS_DIAGRAMS_GENERATED,
         WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
         WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_ALLOWED_FOR_SKIP_ARCHITECTURE: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_COMPONENTS_APPROVED,
     }
 )
 

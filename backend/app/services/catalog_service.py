@@ -40,6 +40,13 @@ class CatalogService:
     def prompt_component_type_list(self) -> str:
         return ", ".join(self.component_type_names())
 
+    def prompt_component_catalog(self) -> str:
+        blocks: list[str] = []
+        for entry in self._catalog_repo.list_active():
+            description = entry.description.strip() if entry.description else "(no description)"
+            blocks.append(f"{entry.name}:\n{description}")
+        return "\n\n".join(blocks)
+
     def valid_component_types(self) -> frozenset[str]:
         return self._catalog_repo.active_type_names() | LEGACY_COMPONENT_TYPES
 

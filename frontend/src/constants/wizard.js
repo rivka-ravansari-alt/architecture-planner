@@ -1,15 +1,19 @@
 export const WIZARD_STEPS = [
-  "Product Info",
+  "Product",
+  "Requirements",
+  "Components",
   "Architecture",
-  "Component Review",
-  "Architecture Document",
+  "Pricing",
+  "Summary",
 ];
 
 export const STEP_SUBTITLES = [
-  "Basic product details that shape platform choice and scale.",
-  "Toggle only the capabilities that affect infrastructure and cost.",
-  "Review, adjust, and approve the generated architecture components.",
-  "Review diagrams and flow, then generate cloud pricing when ready.",
+  "Product name, description, platform, and stage.",
+  "Answer the architecture questionnaire, then generate components.",
+  "Review, add, remove, or edit the generated components.",
+  "Generate architecture diagrams or skip to pricing.",
+  "Compare monthly cost estimates across AWS, GCP, and Azure.",
+  "Complete overview of your architecture plan.",
 ];
 
 export const STAGES = [

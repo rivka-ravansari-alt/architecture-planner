@@ -7,6 +7,7 @@ export default function StepProjectDetails({ intakeForm, setIntakeForm, errors }
       value={intakeForm}
       onChange={setIntakeForm}
       errors={errors}
+      showHeader={false}
     />
   );
 }

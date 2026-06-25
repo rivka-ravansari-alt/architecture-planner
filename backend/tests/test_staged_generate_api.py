@@ -80,3 +80,22 @@ def test_generate_pricing_requires_architecture_approval(api_client, mock_ai_suc
 
     response = api_client.post(f"/api/projects/{project_id}/generate-pricing")
     assert response.status_code == 400
+
+
+def test_skip_architecture_allows_pricing_without_diagrams(api_client, mock_ai_success):
+    project_id = _create_project(api_client)
+    generated = api_client.post(f"/api/projects/{project_id}/generate-components").json()
+    api_client.put(
+        f"/api/projects/{project_id}/components",
+        json=_components_payload_from_response(generated["components"]),
+    )
+
+    skipped = api_client.post(f"/api/projects/{project_id}/skip-architecture")
+    assert skipped.status_code == 200
+    assert skipped.json()["workflow_status"] == "ARCHITECTURE_APPROVED"
+    assert skipped.json()["architecture_diagrams"] is None
+
+    pricing = api_client.post(f"/api/projects/{project_id}/generate-pricing")
+    assert pricing.status_code == 200
+    assert pricing.json()["workflow_status"] == "PRICING_GENERATED"
+    assert pricing.json()["cost_estimates"]

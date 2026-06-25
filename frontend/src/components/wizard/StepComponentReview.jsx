@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 
 import ComponentGroup from "../../features/architecture/components/document/ComponentGroup.jsx";
-import { Spinner } from "../ui/Spinner.jsx";
 import { partitionIndexedComponents } from "../../utils/components.js";
 import ComponentFormPanel from "./ComponentFormPanel.jsx";
 
@@ -14,7 +13,6 @@ export default function StepComponentReview({
   onRemove,
   onAdd,
   onUpdate,
-  onGenerateArchitecture,
 }) {
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelMode, setPanelMode] = useState("create");
@@ -56,14 +54,6 @@ export default function StepComponentReview({
 
   return (
     <section className="panel">
-      <header className="panel-head">
-        <h2 className="panel-title">Component Review</h2>
-        <p className="panel-sub">
-          Approve the generated components, remove anything unnecessary, adjust required/optional
-          status, or add your own. When ready, generate the architecture diagrams.
-        </p>
-      </header>
-
       <div className="component-review-body">
         <ComponentGroup
           title="Required Components"
@@ -93,19 +83,6 @@ export default function StepComponentReview({
             Add Component
           </button>
         </div>
-      </div>
-
-      <div className="actions component-review-actions">
-        <span />
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={onGenerateArchitecture}
-          disabled={loading || components.length === 0}
-        >
-          {loading && <Spinner />}
-          {loading ? "Generating architecture… (may take a few seconds)" : "Generate Architecture"}
-        </button>
       </div>
 
       <ComponentFormPanel

@@ -29,6 +29,7 @@ class PromptBuilderService:
         stage_label = STAGE_LABELS.get(project.stage, project.stage)
         platform_label = self._format_application_platform(project.project_types)
         component_type_list = self._catalog.prompt_component_type_list()
+        component_catalog = self._catalog.prompt_component_catalog()
         return PROMPT_COMPONENTS_TEMPLATE.format(
             product_name=project.name,
             description=project.description or "(not provided)",
@@ -36,6 +37,7 @@ class PromptBuilderService:
             stage_label=stage_label,
             requirement_lines="\n".join(requirement_lines),
             stage_guidance=self._stage_guidance(project.stage),
+            component_catalog=component_catalog,
             component_type_list=component_type_list,
         )
 
