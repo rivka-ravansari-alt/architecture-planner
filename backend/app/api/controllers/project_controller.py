@@ -6,7 +6,13 @@ import logging
 
 from app.core.exceptions import ArchitectureGenerationError
 from app.models import User
-from app.schemas.project import ComponentsUpdate, ProjectCreate, ProjectDetail, ProjectTypeInfo
+from app.schemas.project import (
+    ComponentCatalogOut,
+    ComponentsUpdate,
+    ProjectCreate,
+    ProjectDetail,
+    ProjectTypeInfo,
+)
 from app.services.catalog_service import CatalogService
 from app.services.generation_service import GenerationService
 from app.services.project_service import ProjectService
@@ -27,6 +33,9 @@ class ProjectController:
 
     def list_project_types(self) -> list[ProjectTypeInfo]:
         return self._catalog.list_project_types()
+
+    def list_component_catalog(self) -> list[ComponentCatalogOut]:
+        return self._catalog.list_component_catalog()
 
     def create_project(self, payload: ProjectCreate, user: User) -> ProjectDetail:
         project = self._projects.create(payload, user)

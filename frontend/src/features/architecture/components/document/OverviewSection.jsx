@@ -1,15 +1,6 @@
-import { EXPECTED_USERS, STAGES } from "../../../../constants/wizard.js";
+import { EXPECTED_USERS, STAGES, WORKFLOW_STATUS_LABELS } from "../../../../constants/wizard.js";
 import { labelFor, truncateToSentences } from "../../../../utils/text.js";
 import DocSubheading from "./DocSubheading.jsx";
-
-const WORKFLOW_LABELS = {
-  DRAFT: "Draft",
-  COMPONENTS_GENERATED: "Components generated",
-  COMPONENTS_APPROVED: "Components approved",
-  DIAGRAMS_GENERATED: "Diagrams generated",
-  ARCHITECTURE_APPROVED: "Architecture approved",
-  PRICING_GENERATED: "Pricing generated",
-};
 
 export default function OverviewSection({ project, projectTypes, requiredCount, optionalCount }) {
   const typeLabels = project.project_types
@@ -50,7 +41,7 @@ export default function OverviewSection({ project, projectTypes, requiredCount, 
         <div className="doc-status-item">
           <span className="doc-status-label">Workflow</span>
           <span className="doc-status-value">
-            {WORKFLOW_LABELS[project.workflow_status] || project.workflow_status}
+            {WORKFLOW_STATUS_LABELS[project.workflow_status] || project.workflow_status}
           </span>
         </div>
         <div className="doc-status-item">

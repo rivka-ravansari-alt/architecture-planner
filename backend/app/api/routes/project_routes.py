@@ -12,7 +12,13 @@ from app.core.dependencies import (
     get_project_service,
 )
 from app.models import User
-from app.schemas.project import ComponentsUpdate, ProjectCreate, ProjectDetail, ProjectTypeInfo
+from app.schemas.project import (
+    ComponentCatalogOut,
+    ComponentsUpdate,
+    ProjectCreate,
+    ProjectDetail,
+    ProjectTypeInfo,
+)
 from app.services.catalog_service import CatalogService
 from app.services.generation_service import GenerationService
 from app.services.project_service import ProjectService
@@ -32,6 +38,11 @@ router = APIRouter(tags=["projects"])
 @router.get("/project-types", response_model=list[ProjectTypeInfo])
 def list_project_types(controller: ProjectController = Depends(_controller)):
     return controller.list_project_types()
+
+
+@router.get("/component-catalog", response_model=list[ComponentCatalogOut])
+def list_component_catalog(controller: ProjectController = Depends(_controller)):
+    return controller.list_component_catalog()
 
 
 @router.post("/projects", response_model=ProjectDetail, status_code=status.HTTP_201_CREATED)

@@ -172,3 +172,15 @@ class ProjectTypeInfo(BaseModel):
     id: str
     label: str
     description: str
+
+
+class ComponentCatalogOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    name: str
+    category: str
+    description: str
+    aws_options: list[str]
+    gcp_options: list[str]
+    azure_options: list[str]
+    is_active: bool

@@ -6,7 +6,6 @@ from app.config.params import (
     APPLICATION_PLATFORM_LABELS,
     APPLICATION_PLATFORM_MOBILE,
     APPLICATION_PLATFORM_WEB,
-    PROMPT_COMPONENT_TYPE_LIST,
     PROMPT_COMPONENTS_TEMPLATE,
     PROMPT_DIAGRAMS_TEMPLATE,
     PROMPT_STAGE_GUIDANCE_MVP,
@@ -16,15 +15,20 @@ from app.config.params import (
     REQUIREMENT_LABELS,
     STAGE_LABELS,
 )
-from app.models import ArchitectureComponent, Project
+from app.models import Project, ProjectComponent
+from app.services.catalog_service import CatalogService
 
 
 class PromptBuilderService:
+    def __init__(self, catalog_service: CatalogService) -> None:
+        self._catalog = catalog_service
+
     def build_components(self, project: Project) -> str:
         answers_dict = self._build_answers_dict(project)
         requirement_lines = self._format_requirements(answers_dict)
         stage_label = STAGE_LABELS.get(project.stage, project.stage)
         platform_label = self._format_application_platform(project.project_types)
+        component_type_list = self._catalog.prompt_component_type_list()
         return PROMPT_COMPONENTS_TEMPLATE.format(
             product_name=project.name,
             description=project.description or "(not provided)",
@@ -32,10 +36,10 @@ class PromptBuilderService:
             stage_label=stage_label,
             requirement_lines="\n".join(requirement_lines),
             stage_guidance=self._stage_guidance(project.stage),
-            component_type_list=PROMPT_COMPONENT_TYPE_LIST,
+            component_type_list=component_type_list,
         )
 
-    def build_diagrams(self, project: Project, components: list[ArchitectureComponent]) -> str:
+    def build_diagrams(self, project: Project, components: list[ProjectComponent]) -> str:
         stage_label = STAGE_LABELS.get(project.stage, project.stage)
         component_lines = self._format_components(components)
         return PROMPT_DIAGRAMS_TEMPLATE.format(
@@ -55,7 +59,7 @@ class PromptBuilderService:
             for key, value in answers_dict.items()
         ]
 
-    def _format_components(self, components: list[ArchitectureComponent]) -> str:
+    def _format_components(self, components: list[ProjectComponent]) -> str:
         if not components:
             return "- (no components)"
         lines: list[str] = []

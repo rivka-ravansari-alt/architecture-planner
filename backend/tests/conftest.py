@@ -13,7 +13,26 @@ from app.config.settings import settings
 from app.core.database import Base, get_db
 from app.core.dependencies import get_ai_client, get_current_user
 from app.main import app
+from app.repositories.component_catalog_repository import ComponentCatalogRepository
+from app.services.catalog_service import CatalogService
+from app.services.cloud_defaults_service import CloudDefaultsService
+from app.services.component_mapper_service import ComponentMapperService
+from app.services.prompt_builder_service import PromptBuilderService
+from app.validators.ai_response_validator import AIResponseValidator
 from tests.fixtures import VALID_AI_RESPONSE_JSON
+
+
+def seed_component_catalog(db_session: Session) -> ComponentCatalogRepository:
+    repo = ComponentCatalogRepository(db_session)
+    repo.seed_if_empty()
+    return repo
+
+
+def build_catalog_services(db_session: Session) -> tuple[CatalogService, CloudDefaultsService]:
+    repo = seed_component_catalog(db_session)
+    catalog = CatalogService(db_session, repo)
+    cloud = CloudDefaultsService(repo)
+    return catalog, cloud
 
 
 class MockAIClient(BaseAIClient):
@@ -48,10 +67,37 @@ def db_engine():
 def db_session(db_engine):
     session_factory = sessionmaker(bind=db_engine, autoflush=False, autocommit=False)
     session = session_factory()
+    seed_component_catalog(session)
     try:
         yield session
     finally:
         session.close()
+
+
+@pytest.fixture
+def catalog_service(db_session):
+    return CatalogService(db_session)
+
+
+@pytest.fixture
+def cloud_defaults_service(db_session):
+    _, cloud = build_catalog_services(db_session)
+    return cloud
+
+
+@pytest.fixture
+def ai_validator(catalog_service, cloud_defaults_service):
+    return AIResponseValidator(cloud_defaults_service, catalog_service)
+
+
+@pytest.fixture
+def prompt_builder(catalog_service):
+    return PromptBuilderService(catalog_service)
+
+
+@pytest.fixture
+def component_mapper(catalog_service):
+    return ComponentMapperService(catalog_service)
 
 
 @pytest.fixture

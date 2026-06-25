@@ -3,48 +3,47 @@ import json
 import pytest
 
 from app.core.exceptions import AIValidationError
-from app.validators.ai_response_validator import AIResponseValidator
 from tests.fixtures import VALID_AI_RESPONSE_JSON
 
 
-def test_valid_response_passes():
-    result = AIResponseValidator().validate(VALID_AI_RESPONSE_JSON)
+def test_valid_response_passes(ai_validator):
+    result = ai_validator.validate(VALID_AI_RESPONSE_JSON)
     assert len(result["components"]) == 4
 
 
-def test_strips_markdown_fence():
+def test_strips_markdown_fence(ai_validator):
     wrapped = f"```json\n{VALID_AI_RESPONSE_JSON}\n```"
-    result = AIResponseValidator().validate(wrapped)
+    result = ai_validator.validate(wrapped)
     assert result["architecture"]["summary"]
 
 
-def test_rejects_empty_response():
+def test_rejects_empty_response(ai_validator):
     with pytest.raises(AIValidationError, match="empty"):
-        AIResponseValidator().validate("   ")
+        ai_validator.validate("   ")
 
 
-def test_rejects_missing_components():
+def test_rejects_missing_components(ai_validator):
     payload = json.loads(VALID_AI_RESPONSE_JSON)
     del payload["components"]
     with pytest.raises(AIValidationError, match="Missing required field"):
-        AIResponseValidator().validate(json.dumps(payload))
+        ai_validator.validate(json.dumps(payload))
 
 
-def test_preserves_diagram_group():
+def test_preserves_diagram_group(ai_validator):
     payload = json.loads(VALID_AI_RESPONSE_JSON)
     payload["diagrams"]["high_level"]["nodes"][0]["group"] = "experience"
-    result = AIResponseValidator().validate(json.dumps(payload))
+    result = ai_validator.validate(json.dumps(payload))
     assert result["diagrams"]["high_level"]["nodes"][0].get("group") == "experience"
 
 
-def test_allows_node_only_diagrams():
+def test_allows_node_only_diagrams(ai_validator):
     payload = json.loads(VALID_AI_RESPONSE_JSON)
     payload["diagrams"]["high_level"]["edges"] = []
-    result = AIResponseValidator().validate(json.dumps(payload))
+    result = ai_validator.validate(json.dumps(payload))
     assert result["diagrams"]["high_level"]["edges"] == []
 
 
-def test_normalizes_compact_ai_schema():
+def test_normalizes_compact_ai_schema(ai_validator):
     payload = {
         "stage": "MVP",
         "components": [
@@ -73,7 +72,7 @@ def test_normalizes_compact_ai_schema():
             "edges": [{"source": "client", "target": "api"}],
         },
     }
-    result = AIResponseValidator().validate(json.dumps(payload))
+    result = ai_validator.validate(json.dumps(payload))
     assert result["components"][0]["cloud_options"]["aws"] == ["Amplify Hosting"]
     assert result["components"][0]["cloud_options"]["gcp"] == ["Firebase Hosting"]
     assert (

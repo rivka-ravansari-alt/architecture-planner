@@ -9,20 +9,20 @@ from typing import Any
 from app.config.params import (
     AI_RESPONSE_TOP_LEVEL_FIELDS,
     COMPONENT_REQUIRED_FIELDS,
-    COMPONENT_TYPE_ALIASES,
     DEFAULT_DIAGRAM_TITLES,
     DIAGRAM_KEYS,
     ERR_AI_NO_JSON_OBJECT,
     ERR_AI_RESPONSE_EMPTY,
     IMPLEMENTATION_MODEL_LABELS,
-    LEGACY_DIAGRAM_KEY_ALIASES,
     VALID_COMPONENT_TAGS,
-    VALID_COMPONENT_TYPES,
     VALID_DIAGRAM_GROUPS,
     VALID_IMPLEMENTATION_MODELS,
 )
 from app.core.exceptions import AIValidationError
+from app.services.catalog_service import CatalogService
 from app.services.cloud_defaults_service import CloudDefaultsService
+from app.utils.component_type import normalize_component_type
+from app.utils.diagram_migration import migrate_diagram_keys
 
 _DEFAULT_IMPLEMENTATION_OPTIONS: dict[str, object] = {
     "recommended": "managed_service",
@@ -36,8 +36,13 @@ _DEFAULT_IMPLEMENTATION_OPTIONS: dict[str, object] = {
 
 
 class AIResponseValidator:
-    def __init__(self, cloud_defaults: CloudDefaultsService | None = None) -> None:
-        self._cloud_defaults = cloud_defaults or CloudDefaultsService()
+    def __init__(
+        self,
+        cloud_defaults: CloudDefaultsService,
+        catalog_service: CatalogService,
+    ) -> None:
+        self._cloud_defaults = cloud_defaults
+        self._catalog = catalog_service
 
     def validate(self, raw: str) -> dict[str, Any]:
         payload = self._parse_json(raw)
@@ -121,7 +126,7 @@ class AIResponseValidator:
         diagrams = payload.get("diagrams")
         if isinstance(diagrams, dict):
             diagrams.pop("technical_flow", None)
-            payload["diagrams"] = self._migrate_diagram_keys(diagrams)
+            payload["diagrams"] = migrate_diagram_keys(diagrams)
 
         return payload
 
@@ -145,12 +150,11 @@ class AIResponseValidator:
             if key not in component or not str(component[key]).strip():
                 raise AIValidationError(f"components[{index}] is missing {key}.")
 
-        component_type = str(component["type"]).strip().lower()
-        component_type = COMPONENT_TYPE_ALIASES.get(component_type, component_type)
-        if component_type not in VALID_COMPONENT_TYPES:
+        component_type = self._catalog.normalize_component_type(component["type"])
+        if component_type not in self._catalog.valid_component_types():
             raise AIValidationError(
                 f"components[{index}].type must be one of: "
-                f"{', '.join(sorted(VALID_COMPONENT_TYPES))}, got '{component['type']}'."
+                f"{', '.join(sorted(self._catalog.valid_component_types()))}, got '{component['type']}'."
             )
         component["type"] = component_type
 
@@ -352,10 +356,7 @@ class AIResponseValidator:
                 normalized["group"] = group_value
         node_type = node.get("type")
         if node_type is not None and str(node_type).strip():
-            normalized["type"] = COMPONENT_TYPE_ALIASES.get(
-                str(node_type).strip().lower(),
-                str(node_type).strip().lower(),
-            )
+            normalized["type"] = normalize_component_type(str(node_type))
         return normalized
 
     def _validate_edges(
@@ -400,13 +401,3 @@ class AIResponseValidator:
         if label is not None and str(label).strip():
             normalized["label"] = str(label).strip()
         return normalized
-
-    @staticmethod
-    def _migrate_diagram_keys(diagrams: dict[str, Any]) -> dict[str, Any]:
-        migrated = dict(diagrams)
-        for legacy_key, current_key in LEGACY_DIAGRAM_KEY_ALIASES.items():
-            if legacy_key in migrated and current_key not in migrated:
-                migrated[current_key] = migrated.pop(legacy_key)
-            elif legacy_key in migrated:
-                migrated.pop(legacy_key, None)
-        return migrated

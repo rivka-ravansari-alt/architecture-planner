@@ -12,8 +12,8 @@ export default function AppShell({
   user,
   wizard,
   projectTypes,
+  componentCatalog,
   onLogout,
-  children,
 }) {
   const {
     step,
@@ -88,6 +88,7 @@ export default function AppShell({
           {step === 3 && (
             <StepComponentReview
               components={components}
+              componentCatalog={componentCatalog}
               loading={loading}
               onMove={moveComponent}
               onRemove={removeComponent}
@@ -123,8 +124,6 @@ export default function AppShell({
               onNext={goNext}
             />
           )}
-
-          {children}
         </div>
       </main>
     </div>

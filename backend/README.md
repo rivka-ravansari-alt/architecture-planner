@@ -39,7 +39,7 @@ app/
 | **validators** | Structural validation | `AIResponseValidator.validate` |
 | **schemas** | Request/response shapes | `ProjectCreate`, `ProjectDetail` |
 | **models** | Database tables | `Project`, `User` |
-| **params** | Shared constants | `VALID_COMPONENT_TYPES`, cost bands |
+| **params** | Shared constants | `COMPONENT_CATEGORY_*`, cost bands |
 
 ## Generation pipeline
 

@@ -24,16 +24,6 @@ export const EXPECTED_USERS = [
   { id: "100000+", label: "100,000+" },
 ];
 
-export const REQUIREMENTS = [
-  { key: "auth", label: "Does the system need authentication?" },
-  { key: "file_upload", label: "Does the system upload files?" },
-  { key: "background_processing", label: "Does the system need background processing?" },
-  { key: "dashboards", label: "Does the system need dashboards or reports?" },
-  { key: "ai", label: "Does the system use AI?" },
-  { key: "payments", label: "Does the system need payments?" },
-  { key: "include_edge_cases", label: "Should edge cases be included?" },
-];
-
 export const DESCRIPTION_MAX_CHARS = 1200;
 
 export const EMPTY_FORM = {
@@ -61,6 +51,15 @@ export const WORKFLOW_STATUS = {
   DIAGRAMS_GENERATED: "DIAGRAMS_GENERATED",
   ARCHITECTURE_APPROVED: "ARCHITECTURE_APPROVED",
   PRICING_GENERATED: "PRICING_GENERATED",
+};
+
+export const WORKFLOW_STATUS_LABELS = {
+  [WORKFLOW_STATUS.DRAFT]: "Draft",
+  [WORKFLOW_STATUS.COMPONENTS_GENERATED]: "Components generated",
+  [WORKFLOW_STATUS.COMPONENTS_APPROVED]: "Components approved",
+  [WORKFLOW_STATUS.DIAGRAMS_GENERATED]: "Diagrams generated",
+  [WORKFLOW_STATUS.ARCHITECTURE_APPROVED]: "Architecture approved",
+  [WORKFLOW_STATUS.PRICING_GENERATED]: "Pricing generated",
 };
 
 export const STALE_NOTICE_TEXT =

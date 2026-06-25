@@ -71,39 +71,10 @@ REQUIREMENT_KEYS: tuple[str, ...] = tuple(REQUIREMENT_LABELS.keys())
 # Component types
 # ---------------------------------------------------------------------------
 
-MAIN_ARCHITECTURE_COMPONENT_TYPES: frozenset[str] = frozenset(
-    {
-        "user",
-        "web_app",
-        "mobile_app",
-        "admin_panel",
-        "cdn",
-        "load_balancer",
-        "api_gateway",
-        "service",
-        "worker",
-        "database",
-        "cache",
-        "queue",
-        "object_storage",
-        "search",
-        "external_api",
-        "ai_provider",
-        "payment",
-        "notification",
-        "analytics",
-    }
-)
-
-SUPPORTING_INFRASTRUCTURE_COMPONENT_TYPES: frozenset[str] = frozenset(
-    {
-        "secrets",
-        "config",
-        "monitoring",
-        "logging",
-        "tracing",
-        "alerting",
-    }
+COMPONENT_CATEGORY_MAIN = "main_architecture"
+COMPONENT_CATEGORY_SUPPORTING = "supporting_infrastructure"
+VALID_COMPONENT_CATEGORIES: frozenset[str] = frozenset(
+    {COMPONENT_CATEGORY_MAIN, COMPONENT_CATEGORY_SUPPORTING}
 )
 
 # Legacy aliases and project-specific types kept for backward compatibility.
@@ -117,12 +88,6 @@ LEGACY_COMPONENT_TYPES: frozenset[str] = frozenset(
         "integration",
         "backup",
     }
-)
-
-VALID_COMPONENT_TYPES: frozenset[str] = (
-    MAIN_ARCHITECTURE_COMPONENT_TYPES
-    | SUPPORTING_INFRASTRUCTURE_COMPONENT_TYPES
-    | LEGACY_COMPONENT_TYPES
 )
 
 COMPONENT_TYPE_ALIASES: dict[str, str] = {
@@ -140,72 +105,6 @@ COMPONENT_SOURCE_USER = "user_added"
 VALID_COMPONENT_SOURCES: frozenset[str] = frozenset(
     {COMPONENT_SOURCE_AI, COMPONENT_SOURCE_USER}
 )
-
-# Canonical types exposed to the LLM and manual component creation UI.
-CATALOG_COMPONENT_TYPES: tuple[str, ...] = (
-    "user",
-    "web_app",
-    "mobile_app",
-    "admin_panel",
-    "cdn",
-    "load_balancer",
-    "api_gateway",
-    "service",
-    "worker",
-    "database",
-    "cache",
-    "queue",
-    "object_storage",
-    "search",
-    "external_api",
-    "ai_provider",
-    "payment",
-    "notification",
-    "analytics",
-    "secrets",
-    "config",
-    "monitoring",
-    "logging",
-    "tracing",
-    "alerting",
-)
-
-# Default purpose text per component type (mirrors frontend COMPONENT_TYPE_DESCRIPTIONS).
-COMPONENT_TYPE_DESCRIPTIONS: dict[str, str] = {
-    "user": "End users who interact with the product through client applications.",
-    "web_app": "Browser-based application that delivers the primary user experience.",
-    "mobile_app": "Native or cross-platform mobile application for iOS and Android devices.",
-    "admin_panel": "Administrative interface for managing users, content, and configuration.",
-    "cdn": "Content delivery network that caches and serves static assets close to users.",
-    "load_balancer": (
-        "Distributes incoming traffic across service instances for availability and scale."
-    ),
-    "api_gateway": (
-        "Entry point for client requests, handling routing, authentication, and rate limiting."
-    ),
-    "service": (
-        "Core application service that implements business logic and orchestrates data access."
-    ),
-    "worker": "Background processor that handles asynchronous jobs and long-running tasks.",
-    "database": "Primary data store for structured application data and transactions.",
-    "cache": "In-memory store that reduces database load and improves read latency.",
-    "queue": "Message queue that decouples producers and consumers for reliable async processing.",
-    "object_storage": "Durable storage for files, images, uploads, and other unstructured data.",
-    "search": "Full-text search index for fast querying across application content.",
-    "external_api": "Integration with third-party services and partner APIs.",
-    "ai_provider": (
-        "External or managed AI/ML service for inference, embeddings, or generative features."
-    ),
-    "payment": "Payment processing for subscriptions, one-time purchases, and billing.",
-    "notification": "Delivers email, SMS, and push notifications to users.",
-    "analytics": "Collects usage data and supports reporting, dashboards, and product insights.",
-    "secrets": "Secure storage and rotation of API keys, credentials, and sensitive configuration.",
-    "config": "Centralized configuration management across environments and services.",
-    "monitoring": "Tracks health, performance metrics, and service-level indicators.",
-    "logging": "Aggregates application and infrastructure logs for troubleshooting.",
-    "tracing": "Distributed tracing to follow requests across services and diagnose latency.",
-    "alerting": "Routes monitoring signals to on-call channels when thresholds are breached.",
-}
 
 COMPONENT_TYPE_KEY_MAP: dict[str, str] = {
     "user": "user",
@@ -282,11 +181,6 @@ DEFAULT_DIAGRAM_TITLES: dict[str, str] = {
     "technical_architecture": "Technical Architecture",
 }
 
-DIAGRAM_EXCLUDED_TYPES: dict[str, frozenset[str]] = {
-    "high_level": SUPPORTING_INFRASTRUCTURE_COMPONENT_TYPES,
-    "system_flow": SUPPORTING_INFRASTRUCTURE_COMPONENT_TYPES,
-}
-
 VALID_DIAGRAM_GROUPS: frozenset[str] = frozenset(
     {"experience", "platform", "data", "operations"}
 )
@@ -330,156 +224,6 @@ CLOUD_PROVIDER_ALIASES: dict[str, tuple[str, ...]] = {
     "aws": ("aws", "amazon", "amazon web services"),
     "gcp": ("gcp", "google", "google cloud", "google cloud platform"),
     "azure": ("azure", "microsoft azure"),
-}
-
-
-def _cloud_defaults(
-    *,
-    aws: list[str],
-    gcp: list[str],
-    azure: list[str],
-) -> dict[str, list[str]]:
-    return {"aws": list(aws), "gcp": list(gcp), "azure": list(azure)}
-
-
-def _uniform_cloud_defaults(*options: str) -> dict[str, list[str]]:
-    return {provider: list(options) for provider in CLOUD_PROVIDERS}
-
-
-_HOSTING_DEFAULTS = _cloud_defaults(
-    aws=["Amplify Hosting"],
-    gcp=["Firebase Hosting"],
-    azure=["Azure Static Web Apps"],
-)
-_API_GATEWAY_DEFAULTS = _cloud_defaults(
-    aws=["API Gateway"],
-    gcp=["API Gateway"],
-    azure=["API Management"],
-)
-_AUTH_DEFAULTS = _cloud_defaults(
-    aws=["Cognito"],
-    gcp=["Firebase Authentication", "Identity Platform"],
-    azure=["Entra ID B2C"],
-)
-_AI_DEFAULTS = _cloud_defaults(
-    aws=["Bedrock"],
-    gcp=["Gemini API", "Vertex AI"],
-    azure=["Azure OpenAI Service"],
-)
-
-CLOUD_DEFAULTS_BY_TYPE: dict[str, dict[str, list[str]]] = {
-    "user": _uniform_cloud_defaults("N/A"),
-    "web_app": _HOSTING_DEFAULTS,
-    "admin_panel": _HOSTING_DEFAULTS,
-    "mobile_app": _cloud_defaults(
-        aws=["Amplify"],
-        gcp=["Firebase"],
-        azure=["Azure App Center"],
-    ),
-    "browser_extension": _HOSTING_DEFAULTS,
-    "cdn": _cloud_defaults(
-        aws=["CloudFront"],
-        gcp=["Cloud CDN"],
-        azure=["Azure CDN"],
-    ),
-    "api_gateway": _API_GATEWAY_DEFAULTS,
-    "api": _API_GATEWAY_DEFAULTS,
-    "load_balancer": _cloud_defaults(
-        aws=["Application Load Balancer"],
-        gcp=["Cloud Load Balancing"],
-        azure=["Application Gateway"],
-    ),
-    "service": _cloud_defaults(
-        aws=["Lambda", "ECS Fargate"],
-        gcp=["Cloud Run", "Cloud Functions"],
-        azure=["Azure Functions", "Container Apps"],
-    ),
-    "worker": _cloud_defaults(
-        aws=["Lambda", "ECS Fargate"],
-        gcp=["Cloud Run Jobs", "Cloud Functions"],
-        azure=["Azure Functions", "Container Apps Jobs"],
-    ),
-    "database": _cloud_defaults(
-        aws=["DynamoDB", "RDS"],
-        gcp=["Firestore", "Cloud SQL"],
-        azure=["Cosmos DB", "Azure SQL Database"],
-    ),
-    "object_storage": _cloud_defaults(
-        aws=["S3"],
-        gcp=["Cloud Storage"],
-        azure=["Blob Storage"],
-    ),
-    "queue": _cloud_defaults(
-        aws=["SQS"],
-        gcp=["Pub/Sub", "Cloud Tasks"],
-        azure=["Service Bus", "Queue Storage"],
-    ),
-    "cache": _cloud_defaults(
-        aws=["ElastiCache"],
-        gcp=["Memorystore"],
-        azure=["Azure Cache for Redis"],
-    ),
-    "search": _cloud_defaults(
-        aws=["OpenSearch Service"],
-        gcp=["Vertex AI Search"],
-        azure=["Azure AI Search"],
-    ),
-    "authentication": _AUTH_DEFAULTS,
-    "auth": _AUTH_DEFAULTS,
-    "secrets": _cloud_defaults(
-        aws=["Secrets Manager", "SSM Parameter Store"],
-        gcp=["Secret Manager"],
-        azure=["Key Vault"],
-    ),
-    "config": _cloud_defaults(
-        aws=["AppConfig", "SSM Parameter Store"],
-        gcp=["Secret Manager", "Firestore"],
-        azure=["App Configuration"],
-    ),
-    "monitoring": _cloud_defaults(
-        aws=["CloudWatch"],
-        gcp=["Cloud Monitoring"],
-        azure=["Azure Monitor"],
-    ),
-    "logging": _cloud_defaults(
-        aws=["CloudWatch Logs"],
-        gcp=["Cloud Logging"],
-        azure=["Azure Monitor Logs", "Log Analytics"],
-    ),
-    "tracing": _cloud_defaults(
-        aws=["X-Ray"],
-        gcp=["Cloud Trace"],
-        azure=["Application Insights"],
-    ),
-    "alerting": _cloud_defaults(
-        aws=["CloudWatch Alarms", "SNS"],
-        gcp=["Cloud Monitoring Alerts"],
-        azure=["Azure Monitor Alerts", "Action Groups"],
-    ),
-    "analytics": _cloud_defaults(
-        aws=["CloudWatch Dashboards", "Athena", "QuickSight"],
-        gcp=["Looker Studio", "BigQuery"],
-        azure=["Application Insights", "Power BI"],
-    ),
-    "notification": _cloud_defaults(
-        aws=["SNS", "SES"],
-        gcp=["Firebase Cloud Messaging", "SendGrid"],
-        azure=["Notification Hubs", "Communication Services"],
-    ),
-    "payment": _uniform_cloud_defaults("Stripe", "Paddle"),
-    "external_api": _uniform_cloud_defaults("Third-party API"),
-    "integration": _cloud_defaults(
-        aws=["EventBridge", "API Gateway"],
-        gcp=["Pub/Sub", "Workflows"],
-        azure=["Logic Apps", "Service Bus"],
-    ),
-    "ai_provider": _AI_DEFAULTS,
-    "ai_service": _AI_DEFAULTS,
-    "backup": _cloud_defaults(
-        aws=["AWS Backup", "S3 Versioning"],
-        gcp=["Backup and DR", "Cloud Storage Versioning"],
-        azure=["Azure Backup", "Recovery Services Vault"],
-    ),
 }
 
 CLOUD_DEFAULTS_FALLBACK_TYPE = "api_gateway"
@@ -541,13 +285,6 @@ OPENAI_MAX_OUTPUT_TOKENS = 8000
 AI_SYSTEM_PROMPT = (
     "You are a senior software architect. Design cost-effective, high-level cloud architectures "
     "matched to the requested stage and requirements. Return only valid JSON."
-)
-
-PROMPT_COMPONENT_TYPE_LIST = (
-    "user, web_app, mobile_app, admin_panel, cdn, load_balancer, api_gateway, "
-    "service, worker, database, cache, queue, object_storage, search, "
-    "external_api, ai_provider, payment, notification, analytics, "
-    "secrets, config, monitoring, logging, tracing, alerting"
 )
 
 PROMPT_STAGE_GUIDANCE_MVP = """For MVP:
@@ -674,6 +411,59 @@ WORKFLOW_STATUS_COMPONENTS_APPROVED = "COMPONENTS_APPROVED"
 WORKFLOW_STATUS_DIAGRAMS_GENERATED = "DIAGRAMS_GENERATED"
 WORKFLOW_STATUS_ARCHITECTURE_APPROVED = "ARCHITECTURE_APPROVED"
 WORKFLOW_STATUS_PRICING_GENERATED = "PRICING_GENERATED"
+
+WORKFLOW_ALLOWED_FOR_UPDATE_COMPONENTS: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_COMPONENTS_GENERATED,
+        WORKFLOW_STATUS_COMPONENTS_APPROVED,
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_REQUIRES_DIAGRAM_CLEAR_ON_COMPONENT_UPDATE: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_ALLOWED_FOR_GENERATE_COMPONENTS: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_DRAFT,
+        WORKFLOW_STATUS_COMPONENTS_GENERATED,
+        WORKFLOW_STATUS_COMPONENTS_APPROVED,
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_ALLOWED_FOR_GENERATE_DIAGRAMS: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_COMPONENTS_APPROVED,
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_ALLOWED_FOR_GENERATE_PRICING: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
+
+WORKFLOW_ALLOWED_FOR_APPROVE_ARCHITECTURE: frozenset[str] = frozenset(
+    {
+        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
+        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
+        WORKFLOW_STATUS_PRICING_GENERATED,
+    }
+)
 
 ERR_INVALID_WORKFLOW_STATUS = "Project is not in the correct workflow stage for this operation."
 

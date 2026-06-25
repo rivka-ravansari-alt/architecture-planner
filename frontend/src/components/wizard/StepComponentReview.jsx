@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 
-import ComponentCard from "../../features/architecture/components/document/ComponentCard.jsx";
-import DocSubheading from "../../features/architecture/components/document/DocSubheading.jsx";
+import ComponentGroup from "../../features/architecture/components/document/ComponentGroup.jsx";
 import { Spinner } from "../ui/Spinner.jsx";
+import { partitionIndexedComponents } from "../../utils/components.js";
 import ComponentFormPanel from "./ComponentFormPanel.jsx";
 
 export default function StepComponentReview({
   components,
+  componentCatalog = [],
   loading,
   onMove,
   onRemove,
@@ -19,9 +20,7 @@ export default function StepComponentReview({
   const [panelMode, setPanelMode] = useState("create");
   const [editingIndex, setEditingIndex] = useState(null);
 
-  const indexed = components.map((component, index) => ({ ...component, _i: index }));
-  const required = indexed.filter((component) => !component.optional);
-  const optional = indexed.filter((component) => component.optional);
+  const { required, optional } = partitionIndexedComponents(components);
 
   const existingKeys = useMemo(
     () => new Set(components.map((component) => component.key)),
@@ -114,32 +113,10 @@ export default function StepComponentReview({
         mode={panelMode}
         initialComponent={editingComponent}
         existingKeys={existingKeys}
+        componentCatalog={componentCatalog}
         onClose={closePanel}
         onSubmit={handleSubmit}
       />
     </section>
-  );
-}
-
-function ComponentGroup({ title, items, emptyMessage, onMove, onRemove, onEdit }) {
-  return (
-    <>
-      <DocSubheading>{title}</DocSubheading>
-      {items.length === 0 ? (
-        <p className="muted doc-empty">{emptyMessage}</p>
-      ) : (
-        <div className="doc-component-grid">
-          {items.map((component) => (
-            <ComponentCard
-              key={component._i}
-              component={component}
-              onMove={onMove}
-              onRemove={onRemove}
-              onEdit={() => onEdit(component._i)}
-            />
-          ))}
-        </div>
-      )}
-    </>
   );
 }

@@ -6,22 +6,19 @@ from sqlalchemy.orm import Session
 
 from app.config.params import (
     COMPONENT_SOURCE_AI,
-    COMPONENT_TYPE_ALIASES,
     ERR_INVALID_WORKFLOW_STATUS,
     ERR_PROJECT_FORBIDDEN,
     ERR_PROJECT_NOT_FOUND,
     VALID_COMPONENT_SOURCES,
-    VALID_COMPONENT_TYPES,
-    WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
-    WORKFLOW_STATUS_COMPONENTS_APPROVED,
-    WORKFLOW_STATUS_COMPONENTS_GENERATED,
-    WORKFLOW_STATUS_DIAGRAMS_GENERATED,
-    WORKFLOW_STATUS_PRICING_GENERATED,
+    WORKFLOW_ALLOWED_FOR_APPROVE_ARCHITECTURE,
+    WORKFLOW_ALLOWED_FOR_UPDATE_COMPONENTS,
+    WORKFLOW_REQUIRES_DIAGRAM_CLEAR_ON_COMPONENT_UPDATE,
 )
 from app.core.exceptions import BadRequestError, ForbiddenError, NotFoundError
 from app.models import Project, User
 from app.repositories.project_repository import ProjectRepository
 from app.schemas.project import CloudMappingIn, ComponentUpdateIn, ComponentsUpdate, ProjectCreate
+from app.services.catalog_service import CatalogService
 from app.services.cloud_defaults_service import CloudDefaultsService
 
 
@@ -31,9 +28,11 @@ class ProjectService:
         db: Session,
         repository: ProjectRepository | None = None,
         cloud_defaults: CloudDefaultsService | None = None,
+        catalog_service: CatalogService | None = None,
     ) -> None:
         self._repo = repository or ProjectRepository(db)
-        self._cloud_defaults = cloud_defaults or CloudDefaultsService()
+        self._catalog = catalog_service or CatalogService(db)
+        self._cloud_defaults = cloud_defaults or CloudDefaultsService(self._catalog._catalog_repo)
 
     def create(self, payload: ProjectCreate, user: User) -> Project:
         project = self._repo.create(payload, user.id)
@@ -56,20 +55,9 @@ class ProjectService:
         user: User,
     ) -> Project:
         project = self.get_owned_project(project_id, user)
-        allowed_statuses = {
-            WORKFLOW_STATUS_COMPONENTS_GENERATED,
-            WORKFLOW_STATUS_COMPONENTS_APPROVED,
-            WORKFLOW_STATUS_DIAGRAMS_GENERATED,
-            WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
-            WORKFLOW_STATUS_PRICING_GENERATED,
-        }
-        if project.workflow_status not in allowed_statuses:
+        if project.workflow_status not in WORKFLOW_ALLOWED_FOR_UPDATE_COMPONENTS:
             raise BadRequestError(ERR_INVALID_WORKFLOW_STATUS)
-        if project.workflow_status in {
-            WORKFLOW_STATUS_DIAGRAMS_GENERATED,
-            WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
-            WORKFLOW_STATUS_PRICING_GENERATED,
-        }:
+        if project.workflow_status in WORKFLOW_REQUIRES_DIAGRAM_CLEAR_ON_COMPONENT_UPDATE:
             self._repo.clear_diagrams(project)
             self._repo.clear_pricing(project)
         normalized = self._normalize_component_updates(payload.components)
@@ -84,12 +72,11 @@ class ProjectService:
     ) -> list[ComponentUpdateIn]:
         normalized: list[ComponentUpdateIn] = []
         for item in items:
-            component_type = str(item.type).strip().lower()
-            component_type = COMPONENT_TYPE_ALIASES.get(component_type, component_type)
-            if component_type not in VALID_COMPONENT_TYPES:
+            component_type = self._catalog.normalize_component_type(item.type)
+            if component_type not in self._catalog.valid_component_types():
                 raise BadRequestError(
                     f"Component '{item.name}' has invalid type '{item.type}'. "
-                    f"Choose one of: {', '.join(sorted(VALID_COMPONENT_TYPES))}."
+                    f"Choose one of: {', '.join(sorted(self._catalog.valid_component_types()))}."
                 )
 
             source = item.source or COMPONENT_SOURCE_AI
@@ -134,12 +121,7 @@ class ProjectService:
 
     def approve_architecture(self, project_id: str, user: User) -> Project:
         project = self.get_owned_project(project_id, user)
-        allowed_statuses = {
-            WORKFLOW_STATUS_DIAGRAMS_GENERATED,
-            WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
-            WORKFLOW_STATUS_PRICING_GENERATED,
-        }
-        if project.workflow_status not in allowed_statuses:
+        if project.workflow_status not in WORKFLOW_ALLOWED_FOR_APPROVE_ARCHITECTURE:
             raise BadRequestError(ERR_INVALID_WORKFLOW_STATUS)
         self._repo.approve_architecture(project)
         self._repo.commit()

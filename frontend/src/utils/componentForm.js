@@ -1,10 +1,10 @@
 import {
-  CATALOG_COMPONENT_TYPES,
   COMPONENT_SOURCE_USER,
-  DEFAULT_COMPONENT_TYPE,
   formatComponentTypeLabel,
   getComponentTypeDescription,
+  normalizeComponentType,
 } from "../constants/componentTypes.js";
+import { getCatalogTypeNames, getDefaultCatalogType } from "../constants/componentCatalog.js";
 
 export function slugifyComponentName(name) {
   return (
@@ -31,10 +31,11 @@ export function uniqueComponentKey(name, existingKeys, currentKey = null) {
 }
 
 export function emptyComponentForm() {
+  const defaultType = getDefaultCatalogType();
   return {
-    name: formatComponentTypeLabel(DEFAULT_COMPONENT_TYPE),
-    type: DEFAULT_COMPONENT_TYPE,
-    reason: getComponentTypeDescription(DEFAULT_COMPONENT_TYPE),
+    name: formatComponentTypeLabel(defaultType),
+    type: defaultType,
+    reason: getComponentTypeDescription(defaultType),
     optional: false,
   };
 }
@@ -66,7 +67,7 @@ export function applyTypeDescription(form, nextType) {
 export function componentToForm(component) {
   return {
     name: component?.name || "",
-    type: component?.type || DEFAULT_COMPONENT_TYPE,
+    type: component?.type || getDefaultCatalogType(),
     reason: component?.reason || "",
     optional: Boolean(component?.optional),
   };
@@ -75,8 +76,9 @@ export function componentToForm(component) {
 export function validateComponentForm(form) {
   const errors = {};
   const reason = form.reason.trim();
+  const catalogTypes = getCatalogTypeNames();
 
-  if (!form.type || !CATALOG_COMPONENT_TYPES.includes(form.type)) {
+  if (!form.type || !catalogTypes.includes(form.type)) {
     errors.type = "Select a component type.";
   }
   if (!reason) {

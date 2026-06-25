@@ -1,11 +1,12 @@
 """SQLAlchemy ORM entity definitions."""
 
+from app.models.component_catalog import ComponentCatalog
 from app.models.generation_request import ArchitectureGenerationRequest
 from app.models.project import (
-    ArchitectureComponent,
     CloudMapping,
     CostEstimate,
     Project,
+    ProjectComponent,
     Recommendation,
     RequirementAnswers,
     Risk,
@@ -13,11 +14,12 @@ from app.models.project import (
 from app.models.user import User
 
 __all__ = [
-    "ArchitectureComponent",
     "ArchitectureGenerationRequest",
     "CloudMapping",
+    "ComponentCatalog",
     "CostEstimate",
     "Project",
+    "ProjectComponent",
     "Recommendation",
     "RequirementAnswers",
     "Risk",

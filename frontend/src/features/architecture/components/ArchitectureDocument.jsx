@@ -5,6 +5,7 @@ import CloudCostsSection from "./document/CloudCostsSection.jsx";
 import PricingReviewSection from "./document/PricingReviewSection.jsx";
 import { FlowList } from "./document/DocumentLists.jsx";
 import ArchitectureDiagrams from "./diagrams/ArchitectureDiagrams.jsx";
+import { partitionIndexedComponents } from "../../../utils/components.js";
 
 export default function ArchitectureDocument({
   project,
@@ -20,9 +21,7 @@ export default function ArchitectureDocument({
   onToggleSection,
   sectionRef,
 }) {
-  const indexed = components.map((component, index) => ({ ...component, _i: index }));
-  const required = indexed.filter((component) => !component.optional);
-  const optional = indexed.filter((component) => component.optional);
+  const { required, optional } = partitionIndexedComponents(components);
 
   const sectionProps = (id) => ({
     id,

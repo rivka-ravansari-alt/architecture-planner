@@ -23,134 +23,22 @@ import {
   Workflow,
 } from "lucide-react";
 
-export const COMPONENT_TYPES = [
-  "user",
-  "web_app",
-  "mobile_app",
-  "admin_panel",
+import {
+  getCatalogDescription,
+  getCatalogTypeNames,
+  getDefaultCatalogType,
+} from "./componentCatalog.js";
+
+/** Legacy types kept for normalizing existing project components (mirrors backend LEGACY_COMPONENT_TYPES). */
+export const LEGACY_COMPONENT_TYPES = new Set([
   "browser_extension",
-  "cdn",
-  "load_balancer",
   "api",
-  "api_gateway",
   "authentication",
   "auth",
-  "service",
-  "database",
-  "object_storage",
-  "queue",
-  "worker",
-  "cache",
-  "search",
   "ai_service",
-  "ai_provider",
-  "monitoring",
-  "logging",
-  "tracing",
-  "alerting",
-  "secrets",
-  "config",
-  "analytics",
-  "notification",
-  "payment",
-  "external_api",
   "integration",
-];
-
-/** Canonical types from the LLM component catalog (manual add form). */
-export const CATALOG_COMPONENT_TYPES = [
-  "user",
-  "web_app",
-  "mobile_app",
-  "admin_panel",
-  "cdn",
-  "load_balancer",
-  "api_gateway",
-  "service",
-  "worker",
-  "database",
-  "cache",
-  "queue",
-  "object_storage",
-  "search",
-  "external_api",
-  "ai_provider",
-  "payment",
-  "notification",
-  "analytics",
-  "secrets",
-  "config",
-  "monitoring",
-  "logging",
-  "tracing",
-  "alerting",
-];
-
-export const COMPONENT_TYPE_LABELS = {
-  user: "User",
-  web_app: "Web App",
-  mobile_app: "Mobile App",
-  admin_panel: "Admin Panel",
-  browser_extension: "Browser Extension",
-  cdn: "CDN",
-  load_balancer: "Load Balancer",
-  api: "API",
-  api_gateway: "API Gateway",
-  authentication: "Authentication",
-  auth: "Auth",
-  service: "Service",
-  database: "Database",
-  object_storage: "Object Storage",
-  queue: "Queue",
-  worker: "Worker",
-  cache: "Cache",
-  search: "Search",
-  ai_service: "AI Service",
-  ai_provider: "AI Provider",
-  monitoring: "Monitoring",
-  logging: "Logging",
-  tracing: "Tracing",
-  alerting: "Alerting",
-  secrets: "Secrets",
-  config: "Config",
-  analytics: "Analytics",
-  notification: "Notification",
-  payment: "Payment",
-  external_api: "External API",
-  integration: "Integration",
-};
-
-/** Default purpose text shown when a catalog type is selected. */
-export const COMPONENT_TYPE_DESCRIPTIONS = {
-  user: "End users who interact with the product through client applications.",
-  web_app: "Browser-based application that delivers the primary user experience.",
-  mobile_app: "Native or cross-platform mobile application for iOS and Android devices.",
-  admin_panel: "Administrative interface for managing users, content, and configuration.",
-  cdn: "Content delivery network that caches and serves static assets close to users.",
-  load_balancer:
-    "Distributes incoming traffic across service instances for availability and scale.",
-  api_gateway:
-    "Entry point for client requests, handling routing, authentication, and rate limiting.",
-  service: "Core application service that implements business logic and orchestrates data access.",
-  worker: "Background processor that handles asynchronous jobs and long-running tasks.",
-  database: "Primary data store for structured application data and transactions.",
-  cache: "In-memory store that reduces database load and improves read latency.",
-  queue: "Message queue that decouples producers and consumers for reliable async processing.",
-  object_storage: "Durable storage for files, images, uploads, and other unstructured data.",
-  search: "Full-text search index for fast querying across application content.",
-  external_api: "Integration with third-party services and partner APIs.",
-  ai_provider:
-    "External or managed AI/ML service for inference, embeddings, or generative features.",
-  payment: "Payment processing for subscriptions, one-time purchases, and billing.",
-  notification: "Delivers email, SMS, and push notifications to users.",
-  analytics: "Collects usage data and supports reporting, dashboards, and product insights.",
-  secrets: "Secure storage and rotation of API keys, credentials, and sensitive configuration.",
-  config: "Centralized configuration management across environments and services.",
-  monitoring: "Tracks health, performance metrics, and service-level indicators.",
-  logging: "Aggregates application and infrastructure logs for troubleshooting.",
-  tracing: "Distributed tracing to follow requests across services and diagnose latency.",
-  alerting: "Routes monitoring signals to on-call channels when thresholds are breached.",
-};
+  "backup",
+]);
 
 export const COMPONENT_SOURCE_AI = "ai_generated";
 export const COMPONENT_SOURCE_USER = "user_added";
@@ -162,11 +50,21 @@ export const COMPONENT_SOURCE_LABELS = {
 
 export const DEFAULT_COMPONENT_TYPE = "api_gateway";
 
+/** Mirrors backend COMPONENT_TYPE_ALIASES. */
 const TYPE_ALIASES = {
   api: "api_gateway",
   authentication: "auth",
   ai_service: "ai_provider",
   integration: "external_api",
+};
+
+const TYPE_LABEL_OVERRIDES = {
+  cdn: "CDN",
+  api: "API",
+  api_gateway: "API Gateway",
+  ai_provider: "AI Provider",
+  ai_service: "AI Service",
+  external_api: "External API",
 };
 
 const ICON_MAP = {
@@ -201,7 +99,12 @@ const ICON_MAP = {
   payment: CreditCard,
   external_api: Globe,
   integration: Globe,
+  backup: HardDrive,
 };
+
+function titleCaseType(type) {
+  return type.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
 
 export function getComponentIcon(type) {
   const normalized = normalizeComponentType(type);
@@ -210,13 +113,13 @@ export function getComponentIcon(type) {
 
 export function formatComponentTypeLabel(type) {
   const normalized = normalizeComponentType(type);
-  return COMPONENT_TYPE_LABELS[normalized] || normalized.replace(/_/g, " ");
+  return TYPE_LABEL_OVERRIDES[normalized] || titleCaseType(normalized);
 }
 
 export function getComponentTypeDescription(type) {
   const normalized = normalizeComponentType(type);
   return (
-    COMPONENT_TYPE_DESCRIPTIONS[normalized] ||
+    getCatalogDescription(normalized) ||
     `Provides ${formatComponentTypeLabel(normalized).toLowerCase()} capabilities for this architecture.`
   );
 }
@@ -231,11 +134,15 @@ export function isUserAddedComponent(component) {
 
 export function normalizeComponentType(type) {
   if (!type) {
-    return DEFAULT_COMPONENT_TYPE;
+    return getDefaultCatalogType();
   }
   const aliased = TYPE_ALIASES[type] || type;
-  if (COMPONENT_TYPES.includes(aliased)) {
+  const catalogTypes = getCatalogTypeNames();
+  if (catalogTypes.includes(aliased)) {
     return aliased;
   }
-  return DEFAULT_COMPONENT_TYPE;
+  if (LEGACY_COMPONENT_TYPES.has(aliased)) {
+    return aliased;
+  }
+  return getDefaultCatalogType();
 }

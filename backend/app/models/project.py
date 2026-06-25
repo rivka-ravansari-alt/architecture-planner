@@ -40,10 +40,10 @@ class Project(Base):
     answers: Mapped[RequirementAnswers | None] = relationship(
         back_populates="project", cascade="all, delete-orphan", uselist=False
     )
-    components: Mapped[list[ArchitectureComponent]] = relationship(
+    components: Mapped[list[ProjectComponent]] = relationship(
         back_populates="project",
         cascade="all, delete-orphan",
-        order_by="ArchitectureComponent.order",
+        order_by="ProjectComponent.order",
     )
     cost_estimates: Mapped[list[CostEstimate]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
@@ -74,8 +74,8 @@ class RequirementAnswers(Base):
     project: Mapped[Project] = relationship(back_populates="answers")
 
 
-class ArchitectureComponent(Base):
-    __tablename__ = "architecture_components"
+class ProjectComponent(Base):
+    __tablename__ = "project_components"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
     project_id: Mapped[str] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"))
@@ -101,14 +101,14 @@ class CloudMapping(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
     component_id: Mapped[str] = mapped_column(
-        ForeignKey("architecture_components.id", ondelete="CASCADE")
+        ForeignKey("project_components.id", ondelete="CASCADE")
     )
 
     aws: Mapped[list] = mapped_column(JSON, default=list)
     gcp: Mapped[list] = mapped_column(JSON, default=list)
     azure: Mapped[list] = mapped_column(JSON, default=list)
 
-    component: Mapped[ArchitectureComponent] = relationship(back_populates="cloud_mapping")
+    component: Mapped[ProjectComponent] = relationship(back_populates="cloud_mapping")
 
 
 class CostEstimate(Base):

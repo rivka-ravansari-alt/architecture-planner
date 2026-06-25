@@ -1,3 +1,5 @@
+import { EXPECTED_USERS, STAGES } from "../constants/wizard.js";
+
 /** @typedef {'text' | 'textarea' | 'select' | 'multi_select' | 'checkbox_group' | 'radio' | 'boolean'} FieldType */
 
 /** @typedef {{ value: string; label: string; disabled?: boolean }} FieldOption */
@@ -26,17 +28,16 @@ export const PLATFORM_OPTIONS = [
   { value: "both", label: "Both" },
 ];
 
-export const EXPECTED_USERS_OPTIONS = [
-  { value: "100", label: "Up to 100" },
-  { value: "1000", label: "Up to 1,000" },
-  { value: "10000", label: "Up to 10,000" },
-  { value: "100000+", label: "100,000+" },
-];
+export const EXPECTED_USERS_OPTIONS = EXPECTED_USERS.map(({ id, label }) => ({
+  value: id,
+  label,
+}));
 
-export const STAGE_OPTIONS = [
-  { value: "mvp", label: "MVP" },
-  { value: "production", label: "Production", disabled: true },
-];
+export const STAGE_OPTIONS = STAGES.map(({ id, label }) => ({
+  value: id,
+  label,
+  ...(id === "production" ? { disabled: true } : {}),
+}));
 
 /** @type {FormField[]} */
 export const BASIC_PRODUCT_FIELDS = [

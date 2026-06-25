@@ -18,10 +18,10 @@ from app.config.params import (
     WORKFLOW_STATUS_PRICING_GENERATED,
 )
 from app.models import (
-    ArchitectureComponent,
     CloudMapping,
     CostEstimate,
     Project,
+    ProjectComponent,
     RequirementAnswers,
 )
 from app.repositories.base import BaseRepository
@@ -80,7 +80,7 @@ class ProjectRepository(BaseRepository):
         self.clear_components(project)
         for order, item in enumerate(payload):
             category = COMPONENT_CATEGORY_OPTIONAL if item.optional else COMPONENT_CATEGORY_CORE
-            component = ArchitectureComponent(
+            component = ProjectComponent(
                 key=item.key,
                 name=item.name,
                 component_type=item.type,
@@ -149,7 +149,7 @@ class ProjectRepository(BaseRepository):
 
     def _add_components(self, project: Project, components: list[MappedComponent]) -> None:
         for comp in components:
-            component = ArchitectureComponent(
+            component = ProjectComponent(
                 key=comp.key,
                 name=comp.name,
                 component_type=comp.component_type,

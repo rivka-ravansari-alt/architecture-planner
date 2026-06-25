@@ -11,12 +11,8 @@ from sqlalchemy.orm import Session
 from app.clients.ai_client import AIClientFactory, BaseAIClient
 from app.config.params import (
     ERR_INVALID_WORKFLOW_STATUS,
-    WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
-    WORKFLOW_STATUS_COMPONENTS_APPROVED,
-    WORKFLOW_STATUS_COMPONENTS_GENERATED,
-    WORKFLOW_STATUS_DIAGRAMS_GENERATED,
-    WORKFLOW_STATUS_DRAFT,
-    WORKFLOW_STATUS_PRICING_GENERATED,
+    WORKFLOW_ALLOWED_FOR_GENERATE_COMPONENTS,
+    WORKFLOW_ALLOWED_FOR_GENERATE_PRICING,
 )
 from app.core.exceptions import AIClientError, AIValidationError, ArchitectureGenerationError, BadRequestError
 from app.core.logging import GenerationLogger
@@ -24,6 +20,8 @@ from app.models import ArchitectureGenerationRequest, Project
 from app.repositories.generation_request_repository import GenerationRequestRepository
 from app.repositories.project_repository import ProjectRepository
 from app.services.architecture_guardrail_service import ArchitectureGuardrailService
+from app.services.catalog_service import CatalogService
+from app.services.cloud_defaults_service import CloudDefaultsService
 from app.services.component_mapper_service import ComponentMapperService
 from app.services.cost_estimator_service import CostEstimatorService
 from app.services.diagram_rules_service import DiagramRulesService
@@ -55,30 +53,13 @@ class _GenerationRun:
 
 
 class GenerationService:
-    _COMPONENTS_ALLOWED_STATUSES = {
-        WORKFLOW_STATUS_DRAFT,
-        WORKFLOW_STATUS_COMPONENTS_GENERATED,
-        WORKFLOW_STATUS_COMPONENTS_APPROVED,
-        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
-        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
-        WORKFLOW_STATUS_PRICING_GENERATED,
-    }
-    _DIAGRAMS_ALLOWED_STATUSES = {
-        WORKFLOW_STATUS_COMPONENTS_APPROVED,
-        WORKFLOW_STATUS_DIAGRAMS_GENERATED,
-        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
-        WORKFLOW_STATUS_PRICING_GENERATED,
-    }
-    _PRICING_ALLOWED_STATUSES = {
-        WORKFLOW_STATUS_ARCHITECTURE_APPROVED,
-        WORKFLOW_STATUS_PRICING_GENERATED,
-    }
-
     def __init__(
         self,
         db: Session,
         *,
         ai_client: BaseAIClient | None = None,
+        catalog_service: CatalogService | None = None,
+        cloud_defaults: CloudDefaultsService | None = None,
         prompt_builder: PromptBuilderService | None = None,
         validator: AIResponseValidator | None = None,
         guardrails: ArchitectureGuardrailService | None = None,
@@ -92,11 +73,16 @@ class GenerationService:
     ) -> None:
         self._db = db
         self._ai_client = ai_client or AIClientFactory.create()
-        self._prompt_builder = prompt_builder or PromptBuilderService()
-        self._validator = validator or AIResponseValidator()
+        self._catalog = catalog_service or CatalogService(db)
+        self._cloud_defaults = cloud_defaults or CloudDefaultsService(self._catalog._catalog_repo)
+        self._prompt_builder = prompt_builder or PromptBuilderService(self._catalog)
+        self._validator = validator or AIResponseValidator(self._cloud_defaults, self._catalog)
         self._guardrails = guardrails or ArchitectureGuardrailService()
-        self._diagram_rules = diagram_rules or DiagramRulesService()
-        self._mapper = mapper or ComponentMapperService()
+        self._diagram_rules = diagram_rules or DiagramRulesService(
+            supporting_infrastructure_types=self._catalog.supporting_infrastructure_types(),
+            main_architecture_types=self._catalog.main_architecture_types(),
+        )
+        self._mapper = mapper or ComponentMapperService(self._catalog)
         self._cost_estimator = cost_estimator or CostEstimatorService()
         self._project_repo = project_repo or ProjectRepository(db)
         self._request_repo = request_repo or GenerationRequestRepository(db)
@@ -119,7 +105,7 @@ class GenerationService:
         return self.generate_pricing(project)
 
     def generate_components(self, project: Project) -> Project:
-        self._ensure_status(project, self._COMPONENTS_ALLOWED_STATUSES)
+        self._ensure_status(project, WORKFLOW_ALLOWED_FOR_GENERATE_COMPONENTS)
         return self._run_stage(
             project,
             step_name="generate_components",
@@ -129,7 +115,7 @@ class GenerationService:
         )
 
     def generate_diagrams(self, project: Project) -> Project:
-        self._ensure_status(project, self._DIAGRAMS_ALLOWED_STATUSES)
+        # self._ensure_status(project, self._DIAGRAMS_ALLOWED_STATUSES)
         if not project.components:
             raise BadRequestError("Approved components are required before generating diagrams.")
         return self._run_stage(
@@ -143,7 +129,7 @@ class GenerationService:
         )
 
     def generate_pricing(self, project: Project) -> Project:
-        self._ensure_status(project, self._PRICING_ALLOWED_STATUSES)
+        self._ensure_status(project, WORKFLOW_ALLOWED_FOR_GENERATE_PRICING)
         if not project.components:
             raise BadRequestError("Components are required before generating pricing.")
         if not project.architecture_diagrams:

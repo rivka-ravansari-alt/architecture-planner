@@ -61,8 +61,11 @@ class DatabaseInitializer:
         import app.models  # noqa: F401 — register ORM models
 
         self._enable_sqlite_wal()
+        self._migrate_legacy_project_components_table()
         Base.metadata.create_all(bind=self._engine)
         self._apply_migrations()
+        self._seed_component_catalog()
+        self._backfill_component_catalog_categories()
 
     def _enable_sqlite_wal(self) -> None:
         if not str(self._engine.url).startswith("sqlite"):
@@ -73,6 +76,17 @@ class DatabaseInitializer:
                 conn.execute(text("PRAGMA synchronous=NORMAL"))
         except Exception as exc:
             logger.warning("SQLite WAL mode unavailable (%s); using default journal.", exc)
+
+    def _migrate_legacy_project_components_table(self) -> None:
+        inspector = inspect(self._engine)
+        tables = set(inspector.get_table_names())
+        if "architecture_components" not in tables or "project_components" in tables:
+            return
+        columns = {col["name"] for col in inspector.get_columns("architecture_components")}
+        if "project_id" not in columns:
+            return
+        with self._engine.begin() as conn:
+            conn.execute(text("ALTER TABLE architecture_components RENAME TO project_components"))
 
     def _apply_migrations(self) -> None:
         self._ensure_column(
@@ -96,19 +110,19 @@ class DatabaseInitializer:
             "ALTER TABLE architecture_generation_requests ADD COLUMN project_id VARCHAR(36)",
         )
         self._ensure_column(
-            "architecture_components",
+            "project_components",
             "component_type",
-            "ALTER TABLE architecture_components ADD COLUMN component_type VARCHAR(40) DEFAULT 'api'",
+            "ALTER TABLE project_components ADD COLUMN component_type VARCHAR(40) DEFAULT 'api'",
         )
         self._ensure_column(
-            "architecture_components",
+            "project_components",
             "implementation_options",
-            "ALTER TABLE architecture_components ADD COLUMN implementation_options JSON",
+            "ALTER TABLE project_components ADD COLUMN implementation_options JSON",
         )
         self._ensure_column(
-            "architecture_components",
+            "project_components",
             "source",
-            "ALTER TABLE architecture_components ADD COLUMN source VARCHAR(20) DEFAULT 'ai_generated'",
+            "ALTER TABLE project_components ADD COLUMN source VARCHAR(20) DEFAULT 'ai_generated'",
         )
         self._ensure_column(
             "projects",
@@ -120,8 +134,26 @@ class DatabaseInitializer:
             "workflow_status",
             "ALTER TABLE projects ADD COLUMN workflow_status VARCHAR(40) DEFAULT 'DRAFT'",
         )
+        self._ensure_column(
+            "architecture_components",
+            "category",
+            "ALTER TABLE architecture_components ADD COLUMN category VARCHAR(40) "
+            "DEFAULT 'main_architecture' NOT NULL",
+        )
         for legacy_column in ("user_flow", "data_flow"):
             self._drop_column_if_exists("projects", legacy_column)
+
+    def _seed_component_catalog(self) -> None:
+        from app.repositories.component_catalog_repository import ComponentCatalogRepository
+
+        with SessionLocal() as session:
+            ComponentCatalogRepository(session).seed_if_empty()
+
+    def _backfill_component_catalog_categories(self) -> None:
+        from app.repositories.component_catalog_repository import ComponentCatalogRepository
+
+        with SessionLocal() as session:
+            ComponentCatalogRepository(session).backfill_categories()
 
     def _ensure_column(self, table: str, column: str, ddl: str) -> None:
         inspector = inspect(self._engine)

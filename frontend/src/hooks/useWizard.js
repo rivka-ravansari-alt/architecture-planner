@@ -4,7 +4,7 @@ import { api } from "../api/index.js";
 import { deriveArchitecture } from "../features/architecture/utils/deriveArchitecture.js";
 import { WORKFLOW_STATUS } from "../constants/wizard.js";
 import { componentsToApiPayload } from "../utils/componentPayload.js";
-import { buildIntakeOutput, EMPTY_INTAKE_FORM } from "../utils/intakeFormState.js";
+import { EMPTY_INTAKE_FORM } from "../utils/intakeFormState.js";
 import { toLegacyPayload } from "../utils/intakeFormMapper.js";
 import { buildInputKey, validateBasicProduct } from "../utils/validation.js";
 
@@ -49,8 +49,6 @@ export function useWizard() {
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }, [intakeForm]);
-
-  const getIntakeOutput = useCallback(() => buildIntakeOutput(intakeForm), [intakeForm]);
 
   const unlockAndGo = useCallback((target) => {
     setMaxStep((current) => Math.max(current, target));
@@ -262,9 +260,7 @@ export function useWizard() {
     components,
     loading,
     error,
-    setError,
     derived,
-    needsSave,
     hasPricing,
     canGeneratePricing,
     inWorkspace,
@@ -280,7 +276,6 @@ export function useWizard() {
     updateComponent,
     primaryLabel,
     showStaleNotice,
-    getIntakeOutput,
     approveComponentsAndGenerateDiagrams,
     generatePricing,
   };

@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
-import {
-  CATALOG_COMPONENT_TYPES,
-  formatComponentTypeLabel,
-} from "../../constants/componentTypes.js";
+import { formatComponentTypeLabel } from "../../constants/componentTypes.js";
+import { getCatalogTypeNames } from "../../constants/componentCatalog.js";
 import {
   buildComponentFromForm,
   applyTypeDescription,
@@ -18,6 +16,7 @@ export default function ComponentFormPanel({
   mode = "create",
   initialComponent = null,
   existingKeys = new Set(),
+  componentCatalog = [],
   onClose,
   onSubmit,
 }) {
@@ -48,6 +47,11 @@ export default function ComponentFormPanel({
   if (!open) {
     return null;
   }
+
+  const catalogTypes =
+    componentCatalog.length > 0
+      ? componentCatalog.map((entry) => entry.name)
+      : getCatalogTypeNames();
 
   const isEdit = mode === "edit";
   const title = isEdit ? "Edit Component" : "Add Component";
@@ -138,7 +142,7 @@ export default function ComponentFormPanel({
               onChange={(event) => handleTypeChange(event.target.value)}
               autoFocus
             >
-              {CATALOG_COMPONENT_TYPES.map((type) => (
+              {catalogTypes.map((type) => (
                 <option key={type} value={type}>
                   {formatComponentTypeLabel(type)}
                 </option>
