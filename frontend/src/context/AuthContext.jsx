@@ -4,15 +4,30 @@ import { api } from "../api/index.js";
 import { AUTH_ROUTES } from "../constants/wizard.js";
 
 const AuthContext = createContext(null);
+const AUTH_PENDING_KEY = "auth_pending";
+
+function initialLoadingMessage() {
+  return sessionStorage.getItem(AUTH_PENDING_KEY) === "1"
+    ? "Completing sign-in…"
+    : "Checking your session…";
+}
+
+function clearAuthPending() {
+  sessionStorage.removeItem(AUTH_PENDING_KEY);
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState(initialLoadingMessage);
 
   const refresh = useCallback(async () => {
     try {
       const me = await api.getMe();
       setUser(me ?? null);
+      if (me) {
+        clearAuthPending();
+      }
     } catch {
       setUser(null);
     }
@@ -24,7 +39,10 @@ export function AuthProvider({ children }) {
       try {
         await refresh();
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          clearAuthPending();
+          setLoading(false);
+        }
       }
     })();
     return () => {
@@ -33,6 +51,7 @@ export function AuthProvider({ children }) {
   }, [refresh]);
 
   const login = useCallback(() => {
+    sessionStorage.setItem(AUTH_PENDING_KEY, "1");
     window.location.href = AUTH_ROUTES.googleLogin;
   }, []);
 
@@ -40,13 +59,14 @@ export function AuthProvider({ children }) {
     try {
       await api.logout();
     } finally {
+      clearAuthPending();
       setUser(null);
     }
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, login, logout }),
-    [user, loading, login, logout]
+    () => ({ user, loading, loadingMessage, login, logout }),
+    [user, loading, loadingMessage, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

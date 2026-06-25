@@ -8,13 +8,13 @@ import LoginPage from "./pages/LoginPage.jsx";
 import ErrorBanner from "./components/ui/ErrorBanner.jsx";
 
 export default function App() {
-  const { user, loading: authLoading, logout } = useAuth();
+  const { user, loading: authLoading, loadingMessage, logout } = useAuth();
   const wizard = useWizard();
   const { projectTypes, error: projectTypesError } = useProjectTypes();
   const { componentCatalog, error: componentCatalogError } = useComponentCatalog();
 
   if (authLoading) {
-    return <AuthLoadingPage />;
+    return <AuthLoadingPage message={loadingMessage} />;
   }
 
   if (!user) {

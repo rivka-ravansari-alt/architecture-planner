@@ -143,6 +143,18 @@ cp .env.example .env
 uvicorn app.main:app --reload --reload-dir app --port 8000
 ```
 
+## Authentication performance
+
+Google OAuth uses a single shared `GoogleOAuthClient` for the app process. OIDC discovery
+metadata (`accounts.google.com/.well-known/openid-configuration`) is fetched once at
+startup when OAuth is configured, then reused for `/auth/google` and
+`/auth/google/callback`.
+
+On **Google Cloud Run**, login still hits the API several times per sign-in. With
+`min-instances=0` (default in `cloudbuild.yaml`), the first request after idle incurs a
+cold start before OAuth or `/auth/me` can respond. Set `--min-instances=1` on the API
+service to keep one container warm and reduce first-login latency.
+
 ## Tests
 
 ```bash

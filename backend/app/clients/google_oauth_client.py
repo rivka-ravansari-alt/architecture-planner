@@ -18,15 +18,24 @@ class GoogleOAuthClient:
             server_metadata_url=OAUTH_SERVER_METADATA_URL,
             client_kwargs={"scope": OAUTH_SCOPES},
         )
+        self._metadata_loaded = False
 
     @property
     def is_configured(self) -> bool:
         return settings.oauth_configured
 
+    async def ensure_metadata_loaded(self) -> None:
+        if self._metadata_loaded:
+            return
+        await self._oauth.google.load_server_metadata()
+        self._metadata_loaded = True
+
     async def authorize_redirect(self, request, redirect_uri: str):
+        await self.ensure_metadata_loaded()
         return await self._oauth.google.authorize_redirect(request, redirect_uri)
 
     async def authorize_access_token(self, request):
+        await self.ensure_metadata_loaded()
         return await self._oauth.google.authorize_access_token(request)
 
     async def fetch_userinfo(self, token: dict) -> dict:
