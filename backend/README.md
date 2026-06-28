@@ -155,6 +155,33 @@ On **Google Cloud Run**, login still hits the API several times per sign-in. Wit
 cold start before OAuth or `/auth/me` can respond. Set `--min-instances=1` on the API
 service to keep one container warm and reduce first-login latency.
 
+## GCP pricing ingestion (Firestore)
+
+`POST /api/admin/pricing/sync` reads enabled GCP service names from Firestore `gcp_catalog`,
+matches them to the Google Cloud Billing Catalog by exact display name, fetches SKUs only for
+those services, and upserts pricing documents back into Firestore. It does **not** sync the full
+Google catalog.
+
+Register service names first (names only, exact billing display names):
+
+```bash
+cd backend
+python scripts/seed_gcp_catalog_registry.py
+```
+
+Collections:
+- `gcp_catalog` — enabled service registry and pricing docs (`id`, `name`, `skus`, `formula`)
+- `price_import_runs` — sync audit log only (not used for price calculation)
+
+Authentication uses **Application Default Credentials** (no API key):
+
+| Environment | Setup |
+|-------------|-------|
+| **Local** | `gcloud auth application-default login` — enable Cloud Billing API + Firestore API |
+| **Cloud Run** | Service account ADC; grant Firestore access (`roles/datastore.user`) |
+
+Env vars: `FIRESTORE_PROJECT_ID`, `FIRESTORE_DATABASE` (default `(default)`), `GCP_BILLING_BASE_URL`.
+
 ## Tests
 
 ```bash

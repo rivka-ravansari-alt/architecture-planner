@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.api.routes import auth_router, health_router, project_router
+from app.api.routes import admin_pricing_router, auth_router, health_router, project_router
 from app.config.params import OAUTH_SESSION_COOKIE, OAUTH_SESSION_MAX_AGE_SECONDS
 from app.config.settings import settings
 from app.core.database import init_db
@@ -101,6 +101,7 @@ def _register_routes(application: FastAPI) -> None:
     application.include_router(health_router, prefix="/api")
     application.include_router(auth_router, prefix="/api")
     application.include_router(project_router, prefix="/api")
+    application.include_router(admin_pricing_router, prefix="/api")
 
 
 app = create_app()

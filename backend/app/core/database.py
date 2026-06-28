@@ -66,6 +66,7 @@ class DatabaseInitializer:
         self._apply_migrations()
         self._seed_component_catalog()
         self._backfill_component_catalog_categories()
+        self._backfill_component_catalog_cloud_options()
 
     def _enable_sqlite_wal(self) -> None:
         if not str(self._engine.url).startswith("sqlite"):
@@ -154,6 +155,12 @@ class DatabaseInitializer:
 
         with SessionLocal() as session:
             ComponentCatalogRepository(session).backfill_categories()
+
+    def _backfill_component_catalog_cloud_options(self) -> None:
+        from app.repositories.component_catalog_repository import ComponentCatalogRepository
+
+        with SessionLocal() as session:
+            ComponentCatalogRepository(session).backfill_cloud_options_from_seed()
 
     def _ensure_column(self, table: str, column: str, ddl: str) -> None:
         inspector = inspect(self._engine)

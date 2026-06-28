@@ -180,7 +180,7 @@ def test_uses_hardcoded_database_cloud_options(small_mvp_project, ai_validator):
     result = _validate_and_apply(payload, small_mvp_project, ai_validator)
     normalized_db = next(item for item in result["components"] if item["type"] == "database")
     assert normalized_db["cloud_options"]["aws"] == ["DynamoDB", "RDS"]
-    assert normalized_db["cloud_options"]["gcp"] == ["Firestore", "Cloud SQL"]
+    assert normalized_db["cloud_options"]["gcp"] == ["Cloud Firestore", "Cloud SQL"]
 
 
 def test_existing_valid_fixture_still_passes_through_guardrails(small_mvp_project, ai_validator):

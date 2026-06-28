@@ -5,6 +5,8 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from app.config.params import COMPONENT_CATEGORY_MAIN, LEGACY_COMPONENT_TYPES, PROJECT_TYPES
+from app.pricing_ingestion.models.aws_catalog_ref import aws_option_display_name
+from app.pricing_ingestion.models.azure_catalog_ref import azure_option_display_name
 from app.repositories.component_catalog_repository import ComponentCatalogRepository
 from app.schemas.project import ComponentCatalogOut, ProjectTypeInfo
 from app.utils.component_type import normalize_component_type
@@ -30,7 +32,24 @@ class CatalogService:
 
     def list_component_catalog(self) -> list[ComponentCatalogOut]:
         return [
-            ComponentCatalogOut.model_validate(entry)
+            ComponentCatalogOut(
+                id=entry.id,
+                name=entry.name,
+                category=entry.category,
+                description=entry.description,
+                aws_options=[
+                    aws_option_display_name(option)
+                    for option in entry.aws_options
+                    if aws_option_display_name(option)
+                ],
+                gcp_options=list(entry.gcp_options),
+                azure_options=[
+                    azure_option_display_name(option)
+                    for option in entry.azure_options
+                    if azure_option_display_name(option)
+                ],
+                is_active=entry.is_active,
+            )
             for entry in self._catalog_repo.list_active()
         ]
 

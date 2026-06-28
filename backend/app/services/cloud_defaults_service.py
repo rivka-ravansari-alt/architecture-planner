@@ -8,6 +8,8 @@ from app.config.params import (
     DEFAULT_COMPONENT_TYPE,
 )
 from app.models.component_catalog import ComponentCatalog
+from app.pricing_ingestion.models.aws_catalog_ref import aws_option_display_name
+from app.pricing_ingestion.models.azure_catalog_ref import azure_option_display_name
 from app.repositories.component_catalog_repository import ComponentCatalogRepository
 from app.utils.component_type import normalize_component_type
 
@@ -25,9 +27,17 @@ class CloudDefaultsService:
         if entry is None:
             return {provider: [] for provider in CLOUD_PROVIDERS}
         return {
-            "aws": list(entry.aws_options),
+            "aws": [
+                aws_option_display_name(option)
+                for option in entry.aws_options
+                if aws_option_display_name(option)
+            ],
             "gcp": list(entry.gcp_options),
-            "azure": list(entry.azure_options),
+            "azure": [
+                azure_option_display_name(option)
+                for option in entry.azure_options
+                if azure_option_display_name(option)
+            ],
         }
 
     def default_reason_for_type(self, component_type: str) -> str:
