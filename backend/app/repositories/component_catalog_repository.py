@@ -5,9 +5,14 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.config.params import COMPONENT_CATEGORY_SUPPORTING
+from app.config.params import AWS_CATALOG_SKIP_OPTIONS, AZURE_CATALOG_SKIP_OPTIONS, COMPONENT_CATEGORY_SUPPORTING
 from app.data.component_catalog_seed import COMPONENT_CATALOG_SEED
 from app.models.component_catalog import ComponentCatalog
+from app.pricing_ingestion.models.aws_catalog_ref import AwsCatalogServiceRef, parse_aws_catalog_option
+from app.pricing_ingestion.models.azure_catalog_ref import (
+    AzureCatalogServiceRef,
+    parse_azure_catalog_option,
+)
 from app.repositories.base import BaseRepository
 
 
@@ -39,6 +44,40 @@ class ComponentCatalogRepository(BaseRepository):
     def supporting_infrastructure_types(self) -> frozenset[str]:
         return self.types_by_category(COMPONENT_CATEGORY_SUPPORTING)
 
+    def collect_azure_catalog_services(self) -> list[AzureCatalogServiceRef]:
+        seen: set[str] = set()
+        services: list[AzureCatalogServiceRef] = []
+
+        for entry in self.list_active():
+            for raw_option in entry.azure_options or []:
+                ref = parse_azure_catalog_option(raw_option)
+                if ref is None or ref.name in AZURE_CATALOG_SKIP_OPTIONS:
+                    continue
+                key = ref.name.casefold()
+                if key in seen:
+                    continue
+                seen.add(key)
+                services.append(ref)
+
+        return sorted(services, key=lambda service: service.name.casefold())
+
+    def collect_aws_catalog_services(self) -> list[AwsCatalogServiceRef]:
+        seen: set[str] = set()
+        services: list[AwsCatalogServiceRef] = []
+
+        for entry in self.list_active():
+            for raw_option in entry.aws_options or []:
+                ref = parse_aws_catalog_option(raw_option)
+                if ref is None or ref.name in AWS_CATALOG_SKIP_OPTIONS:
+                    continue
+                key = ref.name.casefold()
+                if key in seen:
+                    continue
+                seen.add(key)
+                services.append(ref)
+
+        return sorted(services, key=lambda service: service.name.casefold())
+
     def seed_if_empty(self) -> None:
         existing = self._db.scalar(select(ComponentCatalog.id).limit(1))
         if existing is not None:
@@ -66,6 +105,32 @@ class ComponentCatalogRepository(BaseRepository):
             expected = category_by_name.get(entry.name)
             if expected and entry.category != expected:
                 entry.category = expected
+                updated = True
+        if updated:
+            self._db.commit()
+
+    def backfill_cloud_options_from_seed(self) -> None:
+        options_by_name = {
+            str(item["name"]): {
+                "gcp_options": list(item["gcp_options"]),
+                "aws_options": list(item["aws_options"]),
+                "azure_options": list(item["azure_options"]),
+            }
+            for item in COMPONENT_CATALOG_SEED
+        }
+        updated = False
+        for entry in self._db.scalars(select(ComponentCatalog)).all():
+            expected = options_by_name.get(entry.name)
+            if expected is None:
+                continue
+            if (
+                entry.gcp_options != expected["gcp_options"]
+                or entry.aws_options != expected["aws_options"]
+                or entry.azure_options != expected["azure_options"]
+            ):
+                entry.gcp_options = expected["gcp_options"]
+                entry.aws_options = expected["aws_options"]
+                entry.azure_options = expected["azure_options"]
                 updated = True
         if updated:
             self._db.commit()

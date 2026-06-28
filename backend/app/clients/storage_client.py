@@ -13,11 +13,11 @@ from app.config.settings import settings
 
 class StorageClient(ABC):
     @abstractmethod
-    def write_json(self, key: str, payload: dict[str, Any]) -> str:
+    def write_json(self, key: str, payload: Any) -> str:
         """Serialize and persist a JSON payload."""
 
     @abstractmethod
-    def read_json(self, key: str) -> dict[str, Any]:
+    def read_json(self, key: str) -> Any:
         """Load and deserialize a JSON payload."""
 
 
@@ -25,13 +25,13 @@ class LocalStorageClient(StorageClient):
     def __init__(self, root: str | Path) -> None:
         self._root = Path(root)
 
-    def write_json(self, key: str, payload: dict[str, Any]) -> str:
+    def write_json(self, key: str, payload: Any) -> str:
         path = self._root / key
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         return str(path.resolve())
 
-    def read_json(self, key: str) -> dict[str, Any]:
+    def read_json(self, key: str) -> Any:
         path = self._root / key
         return json.loads(path.read_text(encoding="utf-8"))
 
@@ -62,7 +62,7 @@ class GCSStorageClient(StorageClient):
             self._bucket = self._gcs_client.bucket(self._bucket_name)
         return self._bucket
 
-    def write_json(self, key: str, payload: dict[str, Any]) -> str:
+    def write_json(self, key: str, payload: Any) -> str:
         blob = self._bucket_ref().blob(key)
         blob.upload_from_string(
             json.dumps(payload, indent=2),
@@ -70,21 +70,26 @@ class GCSStorageClient(StorageClient):
         )
         return f"gs://{self._bucket_name}/{key}"
 
-    def read_json(self, key: str) -> dict[str, Any]:
+    def read_json(self, key: str) -> Any:
+        from google.cloud.exceptions import NotFound
+
         blob = self._bucket_ref().blob(key)
-        return json.loads(blob.download_as_text(encoding="utf-8"))
+        try:
+            return json.loads(blob.download_as_text(encoding="utf-8"))
+        except NotFound as exc:
+            raise FileNotFoundError(key) from exc
 
 
 class S3StorageClient(StorageClient):
     def __init__(self, bucket: str) -> None:
         self._bucket = bucket
 
-    def write_json(self, key: str, payload: dict[str, Any]) -> str:
+    def write_json(self, key: str, payload: Any) -> str:
         raise NotImplementedError(
             f"S3 storage is not implemented yet (bucket={self._bucket}, key={key})."
         )
 
-    def read_json(self, key: str) -> dict[str, Any]:
+    def read_json(self, key: str) -> Any:
         raise NotImplementedError(
             f"S3 storage is not implemented yet (bucket={self._bucket}, key={key})."
         )

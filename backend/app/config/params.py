@@ -274,6 +274,62 @@ GENERATION_RESPONSE_FILENAME = "response.json"
 GENERATION_TYPE_ARCHITECTURE = "architecture"
 
 # ---------------------------------------------------------------------------
+# Firestore (GCP catalog ingestion)
+# ---------------------------------------------------------------------------
+
+FIRESTORE_COLLECTION_GCP_CATALOG = "gcp_catalog"
+FIRESTORE_COLLECTION_AWS_CATALOG = "aws_catalog"
+FIRESTORE_COLLECTION_AZURE_CATALOG = "azure_catalog"
+FIRESTORE_COLLECTION_PRICE_IMPORT_RUNS = "price_import_runs"
+
+PRICING_PROVIDER_GCP = "gcp"
+PRICING_PROVIDER_AWS = "aws"
+PRICING_PROVIDER_AZURE = "azure"
+PRICING_PROVIDER_ALL = "all"
+PRICING_PROVIDERS = (
+    PRICING_PROVIDER_GCP,
+    PRICING_PROVIDER_AWS,
+    PRICING_PROVIDER_AZURE,
+)
+
+GCP_CATALOG_SKIP_OPTIONS: frozenset[str] = frozenset(
+    {
+        "N/A",
+        "Stripe",
+        "Paddle",
+        "Third-party API",
+        "SendGrid",
+        "Looker Studio",
+    }
+)
+
+AZURE_CATALOG_SKIP_OPTIONS: frozenset[str] = frozenset(
+    {
+        "N/A",
+        "Stripe",
+        "Paddle",
+        "Third-party API",
+    }
+)
+
+AWS_CATALOG_SKIP_OPTIONS: frozenset[str] = frozenset(
+    {
+        "N/A",
+        "Stripe",
+        "Paddle",
+        "Third-party API",
+    }
+)
+
+PRICE_IMPORT_STATUS_RUNNING = "running"
+PRICE_IMPORT_STATUS_COMPLETED = "completed"
+PRICE_IMPORT_STATUS_COMPLETED_WITH_ERRORS = "completed_with_errors"
+PRICE_IMPORT_STATUS_FAILED = "failed"
+
+MAX_SKUS_PER_COMPONENT = 80
+MAX_SKU_DESCRIPTION_CHARS = 120
+
+# ---------------------------------------------------------------------------
 # AI generation
 # ---------------------------------------------------------------------------
 

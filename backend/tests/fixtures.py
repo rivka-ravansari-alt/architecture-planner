@@ -89,7 +89,7 @@ VALID_AI_PAYLOAD = {
             "cloud_options": {
                 "aws": ["Amplify Hosting"],
                 "gcp": ["Firebase Hosting"],
-                "azure": ["Azure Static Web Apps"],
+                "azure": ["Azure App Service"],
             },
         },
         {
