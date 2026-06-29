@@ -47,6 +47,7 @@ from app.pricing_ingestion.services.firestore_gcp_catalog_loader import Firestor
 from app.pricing_ingestion.services.gcp_pricing_sync_service import GcpPricingSyncService
 from app.pricing_ingestion.services.pricing_sync_orchestrator import PricingSyncOrchestrator
 from app.services.generation_service import GenerationService
+from app.services.pricing_sync_auth import resolve_pricing_sync_principal
 from app.services.project_service import ProjectService
 from app.utils.jwt import JwtService
 
@@ -174,3 +175,13 @@ def get_current_user(
     if user is None:
         raise UnauthorizedError(ERR_NOT_AUTHENTICATED)
     return user
+
+
+def get_pricing_sync_principal(
+    request: Request,
+    user: User | None = Depends(get_optional_user),
+) -> str:
+    principal = resolve_pricing_sync_principal(request, user_id=user.id if user else None)
+    if principal is None:
+        raise UnauthorizedError(ERR_NOT_AUTHENTICATED)
+    return principal

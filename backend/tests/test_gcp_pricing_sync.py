@@ -246,6 +246,7 @@ def test_admin_sync_endpoint_requires_auth(db_session, ai_dirs, mock_ai_client, 
     from app.core.dependencies import get_ai_client
 
     monkeypatch.setattr(settings, "openai_api_key", "test-key")
+    monkeypatch.setattr(settings, "pricing_sync_scheduler_secret", "")
 
     def override_get_db():
         yield db_session
@@ -258,6 +259,22 @@ def test_admin_sync_endpoint_requires_auth(db_session, ai_dirs, mock_ai_client, 
 
     app.dependency_overrides.clear()
     assert response.status_code == 401
+
+
+def test_admin_sync_endpoint_accepts_scheduler_secret(
+    admin_pricing_api_client, monkeypatch
+):
+    from app.config.settings import settings
+    from app.services.pricing_sync_auth import SCHEDULER_SECRET_HEADER
+
+    monkeypatch.setattr(settings, "pricing_sync_scheduler_secret", "scheduler-test-secret")
+
+    response = admin_pricing_api_client.post(
+        "/api/admin/pricing/sync",
+        json={"provider": "gcp"},
+        headers={SCHEDULER_SECRET_HEADER: "scheduler-test-secret"},
+    )
+    assert response.status_code == 200
 
 
 def test_admin_sync_endpoint(admin_pricing_api_client):

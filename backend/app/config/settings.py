@@ -50,7 +50,18 @@ class Settings(BaseSettings):
     firestore_project_id: str = ""
     firestore_database: str = ""
 
-    @field_validator("openai_api_key", "jwt_secret", "google_client_secret", mode="before")
+    # Cloud Scheduler / cron auth for POST /api/admin/pricing/sync (no browser session).
+    pricing_sync_scheduler_secret: str = ""
+    pricing_sync_scheduler_audience: str = ""
+    pricing_sync_scheduler_service_accounts: str = ""
+
+    @field_validator(
+        "openai_api_key",
+        "jwt_secret",
+        "google_client_secret",
+        "pricing_sync_scheduler_secret",
+        mode="before",
+    )
     @classmethod
     def strip_secret_whitespace(cls, value: object) -> object:
         if isinstance(value, str):

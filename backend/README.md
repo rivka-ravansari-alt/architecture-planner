@@ -182,6 +182,25 @@ Authentication uses **Application Default Credentials** (no API key):
 
 Env vars: `FIRESTORE_PROJECT_ID`, `FIRESTORE_DATABASE` (default `(default)`), `GCP_BILLING_BASE_URL`.
 
+### Cloud Scheduler
+
+`POST /api/admin/pricing/sync` normally requires a logged-in browser session. For **Cloud Scheduler**, configure machine auth instead:
+
+**Option A — shared secret (simplest)**
+
+1. Create a Secret Manager secret, e.g. `pricing-sync-scheduler-secret`.
+2. On Cloud Run, set `PRICING_SYNC_SCHEDULER_SECRET` from that secret.
+3. On the Scheduler HTTP job, add header `X-Scheduler-Secret: <same value>`.
+4. Request body: `{"provider":"all"}` and `Content-Type: application/json`.
+
+**Option B — OIDC (GCP-native)**
+
+1. Create a service account for the scheduler job.
+2. On Cloud Run, set `PRICING_SYNC_SCHEDULER_SERVICE_ACCOUNTS` to that SA email.
+3. Set `PRICING_SYNC_SCHEDULER_AUDIENCE` to your Cloud Run service URL (must match Scheduler OIDC audience), e.g. `https://archsari-985644154252.europe-west1.run.app`.
+4. In Scheduler, set **Auth header** → **Add OIDC token** with that service account and the same audience.
+5. If Cloud Run is **not** `--allow-unauthenticated`, also grant the SA `roles/run.invoker` on the service.
+
 ## Tests
 
 ```bash
