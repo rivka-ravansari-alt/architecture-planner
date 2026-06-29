@@ -22,7 +22,7 @@ substitutions:
   _AR_REPO: archsari
   _API_SERVICE: archsari-api
   _WEB_SERVICE: archsari-web
-  _PRICING_SYNC_JOB: archsari-pricing-sync
+  _PRICING_SYNC_JOB: cloud-pricing-sync
   _CLOUD_SQL_CONNECTION: ""
   # Set after first API deploy, e.g. https://archsari-api-xxxxx-uc.a.run.app
   _BACKEND_URL: ""
