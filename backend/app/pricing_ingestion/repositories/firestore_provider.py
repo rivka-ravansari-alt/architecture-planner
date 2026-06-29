@@ -17,7 +17,7 @@ class FirestoreClientFactory:
 
         from google.cloud import firestore
 
-        project = settings.firestore_project_id or settings.gcs_project_id or None
+        project = settings.gcs_project_id or None
         database = settings.firestore_database or None
         if project and database:
             return firestore.Client(project=project, database=database)

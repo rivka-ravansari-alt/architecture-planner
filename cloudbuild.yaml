@@ -22,6 +22,7 @@ substitutions:
   _AR_REPO: archsari
   _API_SERVICE: archsari-api
   _WEB_SERVICE: archsari-web
+  _PRICING_SYNC_JOB: archsari-pricing-sync
   _CLOUD_SQL_CONNECTION: ""
   # Set after first API deploy, e.g. https://archsari-api-xxxxx-uc.a.run.app
   _BACKEND_URL: ""
@@ -80,6 +81,25 @@ steps:
       - --set-secrets=OPENAI_API_KEY=openai-api-key:latest,JWT_SECRET=jwt-secret:latest,GOOGLE_CLIENT_SECRET=google-client-secret:latest
       # OAuth/cookies must use the *web* service URL (browser origin), not the API service URL.
       - --set-env-vars=^@^SESSION_COOKIE_SECURE=true@OPENAI_MODEL=gpt-4o-mini@FRONTEND_URL=https://${_WEB_SERVICE}-$PROJECT_NUMBER.${_REGION}.run.app@GOOGLE_REDIRECT_URI=https://${_WEB_SERVICE}-$PROJECT_NUMBER.${_REGION}.run.app/api/auth/google/callback@CORS_ALLOW_ORIGINS=https://${_WEB_SERVICE}-$PROJECT_NUMBER.${_REGION}.run.app
+    waitFor: [push-api]
+
+  - id: deploy-pricing-sync-job
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - jobs
+      - deploy
+      - ${_PRICING_SYNC_JOB}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_API_SERVICE}:$COMMIT_SHA
+      - --region=${_REGION}
+      - --command=python,-m,app.jobs.pricing_sync_job
+      - --args=--provider,all
+      - --memory=1Gi
+      - --cpu=1
+      - --max-retries=1
+      - --task-timeout=3600
+      - --set-env-vars=GCS_PROJECT_ID=$PROJECT_ID
     waitFor: [push-api]
 
   - id: deploy-web

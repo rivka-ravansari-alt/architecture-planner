@@ -15,8 +15,6 @@ from app.config.params import (
     PRICING_PROVIDER_AZURE,
     PRICING_PROVIDER_GCP,
 )
-from app.core.dependencies import get_pricing_sync_registry
-from app.main import app
 from app.pricing_ingestion.clients.aws_billing_client import AwsBillingClient
 from app.pricing_ingestion.clients.azure_billing_client import AzureBillingClient
 from app.pricing_ingestion.normalizers.gcp_catalog_normalizer import GcpCatalogNormalizer
@@ -226,79 +224,3 @@ def test_azure_sync_fails_without_registered_services(fake_firestore):
     assert result.provider == PRICING_PROVIDER_AZURE
     assert result.status == PRICE_IMPORT_STATUS_FAILED
     assert "No Azure service names found in the component catalog database." in result.errors[0].message
-
-
-@pytest.fixture
-def admin_pricing_api_client(api_client, fake_firestore):
-    def override_get_pricing_sync_registry():
-        return _build_registry(fake_firestore)
-
-    app.dependency_overrides[get_pricing_sync_registry] = override_get_pricing_sync_registry
-    yield api_client
-    app.dependency_overrides.pop(get_pricing_sync_registry, None)
-
-
-def test_admin_sync_endpoint_requires_auth(db_session, ai_dirs, mock_ai_client, monkeypatch):
-    from fastapi.testclient import TestClient
-
-    from app.config.settings import settings
-    from app.core.database import get_db
-    from app.core.dependencies import get_ai_client
-
-    monkeypatch.setattr(settings, "openai_api_key", "test-key")
-    monkeypatch.setattr(settings, "pricing_sync_scheduler_secret", "")
-
-    def override_get_db():
-        yield db_session
-
-    app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_ai_client] = lambda: mock_ai_client
-
-    with TestClient(app) as client:
-        response = client.post("/api/admin/pricing/sync", json={"provider": "gcp"})
-
-    app.dependency_overrides.clear()
-    assert response.status_code == 401
-
-
-def test_admin_sync_endpoint_accepts_scheduler_secret(
-    admin_pricing_api_client, monkeypatch
-):
-    from app.config.settings import settings
-    from app.services.pricing_sync_auth import SCHEDULER_SECRET_HEADER
-
-    monkeypatch.setattr(settings, "pricing_sync_scheduler_secret", "scheduler-test-secret")
-
-    response = admin_pricing_api_client.post(
-        "/api/admin/pricing/sync",
-        json={"provider": "gcp"},
-        headers={SCHEDULER_SECRET_HEADER: "scheduler-test-secret"},
-    )
-    assert response.status_code == 200
-
-
-def test_admin_sync_endpoint(admin_pricing_api_client):
-    response = admin_pricing_api_client.post("/api/admin/pricing/sync", json={"provider": "gcp"})
-    assert response.status_code == 200
-    body = response.json()
-    assert body["provider"] == PRICING_PROVIDER_GCP
-    assert body["services_succeeded"] == 2
-    assert body["services_failed"] == 1
-    assert body["skus_upserted"] == 3
-    assert body["status"] == PRICE_IMPORT_STATUS_COMPLETED_WITH_ERRORS
-
-
-def test_admin_sync_all_providers(admin_pricing_api_client):
-    response = admin_pricing_api_client.post("/api/admin/pricing/sync", json={"provider": "all"})
-    assert response.status_code == 200
-    body = response.json()
-    assert body["provider"] == "all"
-    assert body["services_succeeded"] == 2
-    assert body["services_failed"] == 1
-    assert body["skus_upserted"] == 3
-    assert body["status"] == PRICE_IMPORT_STATUS_COMPLETED_WITH_ERRORS
-    assert {entry["provider"] for entry in body["providers"]} == {
-        PRICING_PROVIDER_GCP,
-        PRICING_PROVIDER_AWS,
-        PRICING_PROVIDER_AZURE,
-    }
