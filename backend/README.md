@@ -200,10 +200,10 @@ python -m app.jobs.pricing_sync_job --provider all
 
 Provider choices: `gcp`, `aws`, `azure`, or `all`. You can also set `PRICING_SYNC_PROVIDER` instead of `--provider`.
 
-**Deploy** (also wired in `cloudbuild.yaml` as `archsari-pricing-sync`):
+**Deploy** (also wired in `cloudbuild.yaml` as `cloud-pricing-sync`):
 
 ```bash
-gcloud run jobs deploy archsari-pricing-sync \
+gcloud run jobs deploy cloud-pricing-sync \
   --image=REGION-docker.pkg.dev/PROJECT/REPO/archsari-api:TAG \
   --region=REGION \
   --command=python,-m,app.jobs.pricing_sync_job \
@@ -221,7 +221,7 @@ Grant the job service account Firestore access (`roles/datastore.user`), Cloud B
 gcloud scheduler jobs create http pricing-sync-daily \
   --location=REGION \
   --schedule="0 3 * * *" \
-  --uri="https://run.googleapis.com/v2/projects/PROJECT/locations/REGION/jobs/archsari-pricing-sync:run" \
+  --uri="https://run.googleapis.com/v2/projects/PROJECT/locations/REGION/jobs/cloud-pricing-sync:run" \
   --http-method=POST \
   --oauth-service-account-email=scheduler-sa@PROJECT.iam.gserviceaccount.com \
   --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform \
