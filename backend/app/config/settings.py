@@ -47,10 +47,14 @@ class Settings(BaseSettings):
     gcp_billing_base_url: str = "https://cloudbilling.googleapis.com/v1"
     azure_billing_base_url: str = "https://prices.azure.com/api/retail/prices"
     aws_pricing_bulk_base_url: str = "https://pricing.us-east-1.amazonaws.com"
-    firestore_project_id: str = ""
     firestore_database: str = ""
 
-    @field_validator("openai_api_key", "jwt_secret", "google_client_secret", mode="before")
+    @field_validator(
+        "openai_api_key",
+        "jwt_secret",
+        "google_client_secret",
+        mode="before",
+    )
     @classmethod
     def strip_secret_whitespace(cls, value: object) -> object:
         if isinstance(value, str):

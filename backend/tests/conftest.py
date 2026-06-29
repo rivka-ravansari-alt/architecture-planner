@@ -11,7 +11,7 @@ from sqlalchemy.pool import StaticPool
 from app.clients.ai_client import BaseAIClient
 from app.config.settings import settings
 from app.core.database import Base, get_db
-from app.core.dependencies import get_ai_client, get_current_user
+from app.core.dependencies import get_ai_client, get_current_user, get_optional_user
 from app.main import app
 from app.repositories.component_catalog_repository import ComponentCatalogRepository
 from app.services.catalog_service import CatalogService
@@ -159,6 +159,9 @@ def api_client(db_session: Session, test_user, ai_dirs, mock_ai_client, monkeypa
     def override_get_db():
         yield db_session
 
+    def override_get_optional_user():
+        return test_user
+
     def override_get_current_user():
         return test_user
 
@@ -166,6 +169,7 @@ def api_client(db_session: Session, test_user, ai_dirs, mock_ai_client, monkeypa
         return mock_ai_client
 
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_optional_user] = override_get_optional_user
     app.dependency_overrides[get_current_user] = override_get_current_user
     app.dependency_overrides[get_ai_client] = override_get_ai_client
     with TestClient(app) as client:
