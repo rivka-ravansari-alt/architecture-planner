@@ -1,17 +1,9 @@
 import { INTAKE_FORM_CONFIG } from "../../config/intakeFormConfig.js";
 import { DESCRIPTION_MAX_CHARS } from "../../constants/wizard.js";
-import {
-  setFeatureEnabled,
-  setFeatureField,
-  setProductField,
-  togglePlatform,
-} from "../../utils/intakeFormState.js";
+import { setProductField, togglePlatform } from "../../utils/intakeFormState.js";
 import FieldRenderer from "./FieldRenderer.jsx";
-import ToggleSection from "./ToggleSection.jsx";
 
-const { productSection, architectureSection } = INTAKE_FORM_CONFIG;
-
-const SCALE_FIELD_KEYS = new Set(["stage", "expected_users"]);
+const { productSection } = INTAKE_FORM_CONFIG;
 
 /**
  * @param {Object} props
@@ -29,7 +21,6 @@ export default function DynamicForm({
   showHeader = true,
 }) {
   const showBasic = section === "basic" || section === "all";
-  const showFeatures = section === "features" || section === "all";
 
   const descriptionLength = String(value.product.description || "").length;
   const descriptionOverLimit = descriptionLength > DESCRIPTION_MAX_CHARS;
@@ -44,14 +35,6 @@ export default function DynamicForm({
 
   const handlePlatformToggle = (optionValue) => {
     onChange(togglePlatform(value, "platforms", optionValue));
-  };
-
-  const handleFeatureToggle = (featureKey, enabled) => {
-    onChange(setFeatureEnabled(value, featureKey, enabled));
-  };
-
-  const handleFeatureFieldChange = (featureKey, fieldKey, fieldValue) => {
-    onChange(setFeatureField(value, featureKey, fieldKey, fieldValue));
   };
 
   const renderProductField = (field) => (
@@ -71,9 +54,6 @@ export default function DynamicForm({
     </div>
   );
 
-  const primaryFields = productSection.fields.filter((field) => !SCALE_FIELD_KEYS.has(field.key));
-  const scaleFields = productSection.fields.filter((field) => SCALE_FIELD_KEYS.has(field.key));
-
   return (
     <div className="dynamic-form">
       {showBasic && (
@@ -85,32 +65,7 @@ export default function DynamicForm({
             </>
           )}
 
-          {primaryFields.map(renderProductField)}
-
-          <div className="grid-2">{scaleFields.map(renderProductField)}</div>
-        </div>
-      )}
-
-      {showFeatures && (
-        <div className="card intake-features-card">
-          {showHeader && (
-            <>
-              <h2>{architectureSection.title}</h2>
-              <p className="subtitle">{architectureSection.subtitle}</p>
-            </>
-          )}
-
-          {architectureSection.toggles.map((toggle) => (
-            <ToggleSection
-              key={toggle.key}
-              toggle={toggle}
-              featureState={value.features[toggle.key]}
-              onToggle={(enabled) => handleFeatureToggle(toggle.key, enabled)}
-              onFieldChange={(fieldKey, fieldValue) =>
-                handleFeatureFieldChange(toggle.key, fieldKey, fieldValue)
-              }
-            />
-          ))}
+          {productSection.fields.map(renderProductField)}
         </div>
       )}
     </div>

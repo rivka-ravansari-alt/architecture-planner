@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, status
 from app.api.controllers.project_controller import ProjectController
 from app.core.dependencies import (
     get_catalog_service,
+    get_cost_estimate_refresh_service,
     get_current_user,
     get_generation_service,
     get_project_service,
@@ -20,6 +21,7 @@ from app.schemas.project import (
     ProjectTypeInfo,
 )
 from app.services.catalog_service import CatalogService
+from app.services.cost_estimate_refresh_service import CostEstimateRefreshService
 from app.services.generation_service import GenerationService
 from app.services.project_service import ProjectService
 
@@ -28,8 +30,14 @@ def _controller(
     project_service: ProjectService = Depends(get_project_service),
     generation_service: GenerationService = Depends(get_generation_service),
     catalog_service: CatalogService = Depends(get_catalog_service),
+    cost_refresh_service: CostEstimateRefreshService = Depends(get_cost_estimate_refresh_service),
 ) -> ProjectController:
-    return ProjectController(project_service, generation_service, catalog_service)
+    return ProjectController(
+        project_service,
+        generation_service,
+        catalog_service,
+        cost_refresh_service,
+    )
 
 
 router = APIRouter(tags=["projects"])
@@ -116,3 +124,13 @@ def generate_pricing(
     controller: ProjectController = Depends(_controller),
 ):
     return controller.generate_pricing(project_id, user)
+
+
+@router.post("/projects/{project_id}/ensure-cost-estimates", response_model=ProjectDetail)
+def ensure_cost_estimates(
+    project_id: str,
+    user: User = Depends(get_current_user),
+    controller: ProjectController = Depends(_controller),
+):
+    return controller.ensure_cost_estimates(project_id, user)
+

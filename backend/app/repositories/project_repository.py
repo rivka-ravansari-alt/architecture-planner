@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.config.params import (
+    CALCULATOR_VERSION_PROFILE_DRIVEN,
     COMPONENT_CATEGORY_CORE,
     COMPONENT_CATEGORY_OPTIONAL,
     COMPONENT_SOURCE_AI,
@@ -43,10 +44,15 @@ class ProjectRepository(BaseRepository):
             description=payload.description,
             project_types=[project_type.value for project_type in payload.project_types],
             stage=payload.stage.value,
-            expected_users=payload.expected_users.value,
+            expected_users=payload.expected_users,
             workflow_status=WORKFLOW_STATUS_DRAFT,
         )
-        project.answers = RequirementAnswers(**payload.answers.model_dump())
+        project.answers = RequirementAnswers(
+            **payload.answers.model_dump(),
+            usage_profile=(
+                payload.usage_profile.model_dump() if payload.usage_profile is not None else None
+            ),
+        )
         self._db.add(project)
         return project
 
@@ -172,9 +178,18 @@ class ProjectRepository(BaseRepository):
             project.cost_estimates.append(
                 CostEstimate(
                     provider=cost.provider,
-                    monthly_low=cost.monthly_low,
-                    monthly_high=cost.monthly_high,
+                    monthly_low=cost.required_low,
+                    monthly_high=cost.required_high,
+                    required_monthly_low=cost.required_low,
+                    required_monthly_high=cost.required_high,
+                    optional_monthly_low=cost.optional_low,
+                    optional_monthly_high=cost.optional_high,
                     currency=cost.currency,
                     notes=cost.notes,
+                    unknown_items=list(cost.unknown_items),
+                    warnings=list(cost.warnings),
+                    component_breakdown=list(cost.component_breakdown),
+                    pricing_debug_table=list(cost.pricing_debug_table or cost.component_breakdown),
+                    calculator_version=cost.calculator_version or CALCULATOR_VERSION_PROFILE_DRIVEN,
                 )
             )

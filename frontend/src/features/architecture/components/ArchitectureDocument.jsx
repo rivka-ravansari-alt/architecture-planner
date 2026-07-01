@@ -2,7 +2,6 @@ import DocSection from "./document/DocSection.jsx";
 import OverviewSection from "./document/OverviewSection.jsx";
 import ComponentsSection from "./document/ComponentsSection.jsx";
 import CloudCostsSection from "./document/CloudCostsSection.jsx";
-import PricingReviewSection from "./document/PricingReviewSection.jsx";
 import { FlowList } from "./document/DocumentLists.jsx";
 import ArchitectureDiagrams from "./diagrams/ArchitectureDiagrams.jsx";
 import { partitionIndexedComponents } from "../../../utils/components.js";
@@ -14,9 +13,6 @@ export default function ArchitectureDocument({
   onMove = null,
   costs,
   hasPricing,
-  canGeneratePricing,
-  loading,
-  onGeneratePricing,
   expandedSections,
   onToggleSection,
   sectionRef,
@@ -67,13 +63,11 @@ export default function ArchitectureDocument({
         {...sectionProps("costs")}
         badge={hasPricing ? null : "Pending"}
       >
-        {hasPricing ? (
+        {(costs?.length ?? 0) > 0 ? (
           <CloudCostsSection components={components} costs={costs} />
-        ) : canGeneratePricing ? (
-          <PricingReviewSection loading={loading} onGeneratePricing={onGeneratePricing} />
         ) : (
           <p className="muted doc-empty">
-            Complete architecture diagram generation before estimating cloud costs.
+            Complete architecture generation to see cloud cost estimates.
           </p>
         )}
       </DocSection>

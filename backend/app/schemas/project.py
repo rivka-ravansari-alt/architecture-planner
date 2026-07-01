@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.config.params import COMPONENT_SOURCE_AI, DESCRIPTION_MAX_CHARS
 from app.schemas.enums import ExpectedUsers, ProjectType, Stage, WorkflowStatus
@@ -18,13 +18,52 @@ class RequirementAnswersIn(BaseModel):
     include_edge_cases: bool = False
 
 
+class UsageProfileIn(BaseModel):
+    monthly_active_users: str = "100"
+    custom_monthly_active_users: int | None = None
+    user_activity: str = "moderate"
+    file_uploads_enabled: bool = False
+    files_per_month: str = "under_1k"
+    average_file_size: str = "small"
+    ai_enabled: bool = False
+    ai_requests_per_user_per_day: str = "under_1"
+    prompt_size: str = "small"
+    response_size: str = "medium"
+    background_jobs: str = "none"
+    notification_channels: list[str] = Field(default_factory=list)
+    notifications_per_month: str = "under_1k"
+
+
 class ProjectCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     description: str = Field(min_length=1, max_length=DESCRIPTION_MAX_CHARS)
     project_types: list[ProjectType] = Field(min_length=1)
     stage: Stage = Stage.mvp
-    expected_users: ExpectedUsers = ExpectedUsers.u100
+    expected_users: str = ExpectedUsers.u100.value
     answers: RequirementAnswersIn = RequirementAnswersIn()
+    usage_profile: UsageProfileIn | None = None
+
+    @field_validator("expected_users", mode="before")
+    @classmethod
+    def validate_expected_users(cls, value: object) -> str:
+        if isinstance(value, bool):
+            raise ValueError("expected_users must be a known tier or positive integer.")
+        if isinstance(value, (int, float)):
+            count = int(value)
+            if count < 1:
+                raise ValueError("expected_users must be a positive integer.")
+            return str(count)
+
+        normalized = str(value).strip()
+        if normalized in {item.value for item in ExpectedUsers}:
+            return normalized
+        try:
+            count = int(normalized)
+        except ValueError as exc:
+            raise ValueError("expected_users must be a known tier or positive integer.") from exc
+        if count < 1:
+            raise ValueError("expected_users must be a positive integer.")
+        return str(count)
 
     @field_validator("project_types")
     @classmethod
@@ -96,13 +135,72 @@ class ComponentOut(BaseModel):
     implementation_options: dict[str, object] | None = None
 
 
+class SkuLineItemOut(BaseModel):
+    sku_role: str
+    sku_name: str | None = None
+    sku_id: str | None = None
+    usage_unit: str | None = None
+    unit_price: float | None = None
+    usage_metric: str | None = None
+    conversion: str | None = None
+    calculated_quantity: float
+    quantity_note: str
+    line_item_cost: float
+
+
+class ComponentCostBreakdownOut(BaseModel):
+    provider: str | None = None
+    component_key: str
+    component_type: str
+    component_name: str
+    status: str | None = None
+    selected_cloud_service: str
+    pricing_record_id: str
+    pricing_record_name: str
+    pricing_profile_id: str | None = None
+    pricing_profile_service: str | None = None
+    pricing_model: str
+    billable_sku_roles: list[str] = []
+    ignored_sku_roles: list[str] = []
+    formula: dict[str, str] | str | None = None
+    expected_users: str
+    usage_assumptions: dict[str, float]
+    sku_lines: list[SkuLineItemOut]
+    warnings: list[str] = []
+    component_monthly_cost: float | None = None
+    final_component_cost: float
+    included_in_total: bool = True
+    exclusion_reason: str | None = None
+    optional: bool
+
+
 class CostEstimateOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     provider: str
     monthly_low: float
     monthly_high: float
+    required_monthly_low: float = 0.0
+    required_monthly_high: float = 0.0
+    optional_monthly_low: float = 0.0
+    optional_monthly_high: float = 0.0
     currency: str
     notes: str
+    calculator_version: str | None = None
+    unknown_items: list[str] = []
+    warnings: list[str] = []
+    component_breakdown: list[ComponentCostBreakdownOut] = []
+    pricing_debug_table: list[ComponentCostBreakdownOut] = []
+
+    @model_validator(mode="after")
+    def sync_monthly_with_required_only(self) -> CostEstimateOut:
+        """Ensure monthly totals never include optional add-ons."""
+        self.monthly_low = self.required_monthly_low
+        self.monthly_high = self.required_monthly_high
+        if not self.pricing_debug_table and self.component_breakdown:
+            self.pricing_debug_table = list(self.component_breakdown)
+        if not self.component_breakdown and self.pricing_debug_table:
+            self.component_breakdown = list(self.pricing_debug_table)
+        return self
 
 
 class DiagramNodeOut(BaseModel):
@@ -146,6 +244,7 @@ class AnswersOut(BaseModel):
     ai: bool
     payments: bool
     include_edge_cases: bool
+    usage_profile: dict[str, object] | None = None
 
 
 class ProjectDetail(BaseModel):
@@ -184,3 +283,24 @@ class ComponentCatalogOut(BaseModel):
     gcp_options: list[str]
     azure_options: list[str]
     is_active: bool
+
+    @field_validator("aws_options", mode="before")
+    @classmethod
+    def normalize_aws_options(cls, value: object) -> list[str]:
+        from app.utils.cloud_catalog_options import cloud_options_as_strings
+
+        return cloud_options_as_strings("aws", value)
+
+    @field_validator("gcp_options", mode="before")
+    @classmethod
+    def normalize_gcp_options(cls, value: object) -> list[str]:
+        from app.utils.cloud_catalog_options import cloud_options_as_strings
+
+        return cloud_options_as_strings("gcp", value)
+
+    @field_validator("azure_options", mode="before")
+    @classmethod
+    def normalize_azure_options(cls, value: object) -> list[str]:
+        from app.utils.cloud_catalog_options import cloud_options_as_strings
+
+        return cloud_options_as_strings("azure", value)

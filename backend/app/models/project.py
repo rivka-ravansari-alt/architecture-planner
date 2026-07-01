@@ -70,6 +70,7 @@ class RequirementAnswers(Base):
     ai: Mapped[bool] = mapped_column(Boolean, default=False)
     payments: Mapped[bool] = mapped_column(Boolean, default=False)
     include_edge_cases: Mapped[bool] = mapped_column(Boolean, default=False)
+    usage_profile: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     project: Mapped[Project] = relationship(back_populates="answers")
 
@@ -120,8 +121,17 @@ class CostEstimate(Base):
     provider: Mapped[str] = mapped_column(String(20))
     monthly_low: Mapped[float] = mapped_column(Float, default=0.0)
     monthly_high: Mapped[float] = mapped_column(Float, default=0.0)
+    required_monthly_low: Mapped[float] = mapped_column(Float, default=0.0)
+    required_monthly_high: Mapped[float] = mapped_column(Float, default=0.0)
+    optional_monthly_low: Mapped[float] = mapped_column(Float, default=0.0)
+    optional_monthly_high: Mapped[float] = mapped_column(Float, default=0.0)
     currency: Mapped[str] = mapped_column(String(8), default="USD")
     notes: Mapped[str] = mapped_column(Text, default="")
+    unknown_items: Mapped[list] = mapped_column(JSON, default=list)
+    warnings: Mapped[list] = mapped_column(JSON, default=list)
+    component_breakdown: Mapped[list] = mapped_column(JSON, default=list)
+    pricing_debug_table: Mapped[list] = mapped_column(JSON, default=list)
+    calculator_version: Mapped[str] = mapped_column(String(40), default="")
 
     project: Mapped[Project] = relationship(back_populates="cost_estimates")
 

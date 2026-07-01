@@ -1,5 +1,15 @@
-import { FEATURE_TOGGLES } from "../../config/intakeFormConfig.js";
-import { EXPECTED_USERS, STAGES } from "../../constants/wizard.js";
+import {
+  AI_REQUESTS_PER_USER_OPTIONS,
+  BACKGROUND_JOBS_OPTIONS,
+  FILE_SIZE_OPTIONS,
+  MONTHLY_ACTIVE_USERS_OPTIONS,
+  NOTIFICATION_CHANNEL_OPTIONS,
+  NOTIFICATION_VOLUME_OPTIONS,
+  USER_ACTIVITY_OPTIONS,
+  USAGE_TOGGLE_GROUPS,
+} from "../../config/intakeFormConfig.js";
+import { STAGES } from "../../constants/wizard.js";
+import { resolveExpectedUsers } from "../../utils/intakeFormMapper.js";
 import ComponentGroup from "../../features/architecture/components/document/ComponentGroup.jsx";
 import ArchitectureDiagrams from "../../features/architecture/components/diagrams/ArchitectureDiagrams.jsx";
 import CloudCostsSection from "../../features/architecture/components/document/CloudCostsSection.jsx";
@@ -7,18 +17,64 @@ import { FlowList } from "../../features/architecture/components/document/Docume
 import { labelFor } from "../../utils/text.js";
 import { partitionIndexedComponents } from "../../utils/components.js";
 
-function RequirementsSummary({ intakeForm }) {
-  const enabled = FEATURE_TOGGLES.filter((toggle) => intakeForm.features[toggle.key]?.enabled);
+function labelFromOptions(options, value) {
+  return options.find((item) => item.value === value)?.label || value || "—";
+}
 
-  if (enabled.length === 0) {
-    return <p className="muted doc-empty">No architecture capabilities were selected.</p>;
-  }
+function RequirementsSummary({ intakeForm }) {
+  const usage = intakeForm.usage;
+  const enabledToggles = USAGE_TOGGLE_GROUPS.filter((toggle) => usage[toggle.key]?.enabled);
+  const notificationChannels =
+    usage.notifications?.enabled && Array.isArray(usage.notifications?.channels)
+      ? usage.notifications.channels
+      : [];
 
   return (
     <ul className="summary-requirements-list">
-      {enabled.map((toggle) => (
-        <li key={toggle.key}>{toggle.label}</li>
+      <li>
+        Monthly active users:{" "}
+        {usage.monthly_active_users === "custom"
+          ? Number(usage.custom_monthly_active_users || 0).toLocaleString()
+          : labelFromOptions(MONTHLY_ACTIVE_USERS_OPTIONS, usage.monthly_active_users)}
+      </li>
+      <li>User activity: {labelFromOptions(USER_ACTIVITY_OPTIONS, usage.user_activity)}</li>
+      <li>
+        Background tasks: {labelFromOptions(BACKGROUND_JOBS_OPTIONS, usage.background_jobs)}
+      </li>
+      {enabledToggles.map((toggle) => (
+        <li key={toggle.key}>{toggle.title}: Yes</li>
       ))}
+      {notificationChannels.length > 0 && (
+        <li>
+          Notifications:{" "}
+          {notificationChannels
+            .map((channel) =>
+              labelFromOptions(NOTIFICATION_CHANNEL_OPTIONS, channel)
+            )
+            .join(", ")}{" "}
+          ({labelFromOptions(
+            NOTIFICATION_VOLUME_OPTIONS,
+            usage.notifications?.volume_per_month
+          )}{" "}
+          / month)
+        </li>
+      )}
+      {usage.file_uploads?.enabled && (
+        <li>
+          File uploads: {labelFromOptions(FILE_SIZE_OPTIONS, usage.file_uploads.average_file_size)}{" "}
+          avg size
+        </li>
+      )}
+      {usage.ai?.enabled && (
+        <li>
+          AI usage:{" "}
+          {labelFromOptions(
+            AI_REQUESTS_PER_USER_OPTIONS,
+            usage.ai.requests_per_user_per_day
+          )}{" "}
+          requests / user / day
+        </li>
+      )}
     </ul>
   );
 }
@@ -46,7 +102,7 @@ function ProductSummary({ intakeForm, projectTypes, project }) {
       <div className="summary-item">
         <div className="k">Expected users</div>
         <div className="v">
-          {labelFor(EXPECTED_USERS, product.expected_users || project?.expected_users)}
+          {resolveExpectedUsers(intakeForm.usage || {}) || project?.expected_users || "—"}
         </div>
       </div>
       <div className="summary-item summary-item-wide">
@@ -63,7 +119,6 @@ export default function StepSummary({
   projectTypes,
   components,
   costs,
-  hasPricing,
 }) {
   const { required, optional } = partitionIndexedComponents(components);
 
@@ -76,7 +131,7 @@ export default function StepSummary({
         </section>
 
         <section className="summary-step-section">
-          <h3 className="wizard-section-title">Requirements</h3>
+          <h3 className="wizard-section-title">Usage Profile</h3>
           <RequirementsSummary intakeForm={intakeForm} />
         </section>
 
@@ -109,7 +164,7 @@ export default function StepSummary({
           />
         </section>
 
-        {hasPricing && (
+        {(costs?.length ?? 0) > 0 && (
           <section className="summary-step-section">
             <h3 className="wizard-section-title">Pricing</h3>
             <CloudCostsSection components={components} costs={costs} />

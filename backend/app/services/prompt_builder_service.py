@@ -17,6 +17,7 @@ from app.config.params import (
 )
 from app.models import Project, ProjectComponent
 from app.services.catalog_service import CatalogService
+from app.services.usage_profile_formatter import format_usage_profile_section
 
 
 class PromptBuilderService:
@@ -24,8 +25,7 @@ class PromptBuilderService:
         self._catalog = catalog_service
 
     def build_components(self, project: Project) -> str:
-        answers_dict = self._build_answers_dict(project)
-        requirement_lines = self._format_requirements(answers_dict)
+        requirement_lines = self._format_requirements(project)
         stage_label = STAGE_LABELS.get(project.stage, project.stage)
         platform_label = self._format_application_platform(project.project_types)
         component_type_list = self._catalog.prompt_component_type_list()
@@ -35,7 +35,7 @@ class PromptBuilderService:
             description=project.description or "(not provided)",
             platform_label=platform_label,
             stage_label=stage_label,
-            requirement_lines="\n".join(requirement_lines),
+            requirement_lines=requirement_lines,
             stage_guidance=self._stage_guidance(project.stage),
             component_catalog=component_catalog,
             component_type_list=component_type_list,
@@ -51,15 +51,22 @@ class PromptBuilderService:
             component_lines=component_lines,
         )
 
-    def _build_answers_dict(self, project: Project) -> dict[str, bool]:
+    def _format_requirements(self, project: Project) -> str:
         answers = project.answers
-        return {key: getattr(answers, key, False) if answers else False for key in REQUIREMENT_KEYS}
+        usage_profile = answers.usage_profile if answers else None
+        if usage_profile:
+            return format_usage_profile_section(
+                usage_profile,
+                expected_users=project.expected_users,
+            )
 
-    def _format_requirements(self, answers_dict: dict[str, bool]) -> list[str]:
-        return [
+        answers_dict = {
+            key: getattr(answers, key, False) if answers else False for key in REQUIREMENT_KEYS
+        }
+        return "\n".join(
             f"- {REQUIREMENT_LABELS[key]}: {self._yes_no(value)}"
             for key, value in answers_dict.items()
-        ]
+        )
 
     def _format_components(self, components: list[ProjectComponent]) -> str:
         if not components:

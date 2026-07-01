@@ -1,94 +1,55 @@
-"""Deterministic monthly cost estimation."""
+"""Deterministic monthly cost estimation from Firestore pricing catalogs."""
 
 from __future__ import annotations
 
-from app.config.params import (
-    CLOUD_PROVIDERS,
-    CLOUD_PROVIDER_LABELS,
-    COST_BASELINE,
-    COST_CURRENCY,
-    COST_FEATURE_BANDS,
-    COST_PRODUCTION_BAND,
-    COST_USER_MULTIPLIER,
-    FEATURE_FLAG_KEYS,
-    STAGE_PRODUCTION,
-)
-from app.schemas.domain import ProviderCost
+import logging
+from typing import Any
+
+from app.config.params import CALCULATOR_VERSION_PROFILE_DRIVEN
+from app.pricing_ingestion.repositories.firestore_provider import FirestoreClientFactory
+from app.schemas.domain import MappedComponent, ProviderCost
+from app.services.cost_calculation.architecture_cost_calculator import ArchitectureCostCalculator
+from app.services.cost_calculation.pricing_catalog_repository import PricingCatalogRepository
+from app.services.cost_calculation.pricing_profile_repository import PricingProfileRepository
+from app.services.usage_estimation import ProductCapabilities
+
+logger = logging.getLogger(__name__)
 
 
 class CostEstimatorService:
-    def estimate(
+    def __init__(
         self,
         *,
+        cost_calculator: ArchitectureCostCalculator | None = None,
+        firestore_client: Any | None = None,
+    ) -> None:
+        if cost_calculator is not None:
+            self._calculator = cost_calculator
+        else:
+            client = firestore_client or FirestoreClientFactory.create()
+            self._calculator = ArchitectureCostCalculator(
+                PricingCatalogRepository(client),
+                pricing_profiles=PricingProfileRepository(client),
+            )
+
+    def estimate_from_components(
+        self,
+        *,
+        components: list[MappedComponent],
         expected_users: str,
         stage: str,
-        file_upload: bool,
-        ai: bool,
-        background_processing: bool,
+        capabilities: ProductCapabilities | dict[str, bool] | None = None,
+        usage_profile: dict[str, object] | None = None,
     ) -> list[ProviderCost]:
-        multiplier = COST_USER_MULTIPLIER.get(expected_users, 1.0)
-        flags = {
-            "file_upload": file_upload,
-            "ai": ai,
-            "background_processing": background_processing,
-        }
-        return [
-            self._estimate_for_provider(provider, stage, flags, multiplier, expected_users)
-            for provider in CLOUD_PROVIDERS
-        ]
-
-    def _estimate_for_provider(
-        self,
-        provider: str,
-        stage: str,
-        flags: dict[str, bool],
-        multiplier: float,
-        expected_users: str,
-    ) -> ProviderCost:
-        low, high = COST_BASELINE[provider]
-        low, high = self._apply_feature_bands(provider, flags, low, high)
-        if stage == STAGE_PRODUCTION:
-            low, high = self._apply_production_band(provider, low, high)
-        low, high = self._apply_user_multiplier(low, high, multiplier)
-        return ProviderCost(
-            provider=provider,
-            monthly_low=float(low),
-            monthly_high=float(high),
-            currency=COST_CURRENCY,
-            notes=self._build_notes(provider, expected_users, stage),
+        logger.info(
+            "PROFILE_DRIVEN_COST_CALCULATOR_USED calculator_version=%s components=%s",
+            CALCULATOR_VERSION_PROFILE_DRIVEN,
+            len(components),
         )
-
-    def _apply_feature_bands(
-        self,
-        provider: str,
-        flags: dict[str, bool],
-        low: float,
-        high: float,
-    ) -> tuple[float, float]:
-        for feature_key in FEATURE_FLAG_KEYS:
-            if flags.get(feature_key):
-                band_low, band_high = COST_FEATURE_BANDS[feature_key][provider]
-                low += band_low
-                high += band_high
-        return low, high
-
-    @staticmethod
-    def _apply_production_band(
-        provider: str,
-        low: float,
-        high: float,
-    ) -> tuple[float, float]:
-        prod_low, prod_high = COST_PRODUCTION_BAND[provider]
-        return low + prod_low, high + prod_high
-
-    @staticmethod
-    def _apply_user_multiplier(low: float, high: float, multiplier: float) -> tuple[int, int]:
-        return round(low * multiplier), round(high * multiplier)
-
-    @staticmethod
-    def _build_notes(provider: str, expected_users: str, stage: str) -> str:
-        label = CLOUD_PROVIDER_LABELS[provider]
-        return (
-            f"Estimated range for {label} at ~{expected_users} users ({stage}). "
-            "Estimate only, not exact billing."
+        return self._calculator.calculate(
+            components=components,
+            expected_users=expected_users,
+            stage=stage,
+            capabilities=capabilities,
+            usage_profile=usage_profile,
         )

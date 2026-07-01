@@ -26,3 +26,30 @@ def test_default_reason_for_type(cloud_defaults_service):
         cloud_defaults_service.default_reason_for_type("api")
         == cloud_defaults_service.default_reason_for_type("api_gateway")
     )
+
+
+def test_component_catalog_out_normalizes_structured_cloud_options():
+    from app.schemas.project import ComponentCatalogOut
+
+    entry = ComponentCatalogOut.model_validate(
+        {
+            "id": "1",
+            "name": "web_app",
+            "category": "main_architecture",
+            "description": "Browser app",
+            "aws_options": [{"name": "Amplify Hosting", "api_service_code": "AWSAmplify"}],
+            "gcp_options": ["Firebase Hosting"],
+            "azure_options": [
+                {
+                    "name": "Azure App Service",
+                    "api_service_name": "Azure App Service",
+                    "price_filter": "contains(productName, 'Static Web')",
+                }
+            ],
+            "is_active": True,
+        }
+    )
+
+    assert entry.aws_options == ["Amplify Hosting"]
+    assert entry.gcp_options == ["Firebase Hosting"]
+    assert entry.azure_options == ["Azure App Service"]

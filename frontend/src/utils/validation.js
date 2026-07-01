@@ -1,4 +1,7 @@
 import { DESCRIPTION_MAX_CHARS } from "../constants/wizard.js";
+import { INTAKE_FORM_CONFIG } from "../config/intakeFormConfig.js";
+
+const { usageSection } = INTAKE_FORM_CONFIG;
 
 export function estimateTokenCount(text) {
   const stripped = text.trim();
@@ -35,16 +38,51 @@ export function validateBasicProduct(intakeForm) {
     errors.stage = "Stage is required.";
   }
 
-  if (!String(product.expected_users || "").trim()) {
-    errors.expected_users = "Expected users is required.";
+  return errors;
+}
+
+/**
+ * Validates required usage profile fields for the Requirements step.
+ * @param {ReturnType<import("./intakeFormState.js").createEmptyIntakeForm>} intakeForm
+ */
+export function validateUsageProfile(intakeForm) {
+  const { usage } = intakeForm;
+  /** @type {Record<string, string>} */
+  const errors = {};
+
+  for (const fieldKey of usageSection.validation) {
+    if (!String(usage[fieldKey] || "").trim()) {
+      const block = usageSection.questionBlocks.find((item) =>
+        item.fields.some((field) => field.key === fieldKey)
+      );
+      const field = block?.fields.find((item) => item.key === fieldKey);
+      errors[fieldKey] = `${field?.label || block?.title || fieldKey} is required.`;
+    }
+  }
+
+  if (usage.monthly_active_users === "custom") {
+    const custom = Number(usage.custom_monthly_active_users);
+    if (!Number.isFinite(custom) || custom < 1) {
+      errors.custom_monthly_active_users = "Enter a valid number of monthly active users.";
+    }
   }
 
   return errors;
 }
 
+/**
+ * @param {ReturnType<import("./intakeFormState.js").createEmptyIntakeForm>} intakeForm
+ */
+export function validateIntakeForm(intakeForm) {
+  return {
+    ...validateBasicProduct(intakeForm),
+    ...validateUsageProfile(intakeForm),
+  };
+}
+
 /** @deprecated Use validateBasicProduct */
 export function validateProjectForm(form) {
-  return validateBasicProduct({ product: form, features: {} });
+  return validateBasicProduct({ product: form, usage: {} });
 }
 
 /**

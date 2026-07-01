@@ -1,84 +1,48 @@
-import {
-  COST_BASELINE,
-  COST_CURRENCY,
-  COST_FEATURE_BANDS,
-  COST_OPTIONAL_INFRA_BANDS,
-  COST_PRODUCTION_BAND,
-  COST_PRODUCTION_KEYS,
-  COST_PROVIDERS,
-  COST_USER_MULTIPLIER,
-} from "../../../constants/costs.js";
-
-function bandFor(component, provider) {
-  if (COST_PRODUCTION_KEYS.has(component.key)) return null;
-  if (component.optional && COST_OPTIONAL_INFRA_BANDS[component.key]) {
-    return COST_OPTIONAL_INFRA_BANDS[component.key][provider];
-  }
-  if (COST_FEATURE_BANDS[component.key]) return COST_FEATURE_BANDS[component.key][provider];
-  return null;
-}
-
-export function computeCosts(project, components) {
-  const multiplier = COST_USER_MULTIPLIER[project.expected_users] ?? 1.0;
-  const hasRequired = components.some((component) => !component.optional);
-  const reqProd = components.some(
-    (component) => !component.optional && COST_PRODUCTION_KEYS.has(component.key)
-  );
-  const optProd = components.some(
-    (component) => component.optional && COST_PRODUCTION_KEYS.has(component.key)
-  );
-
-  return COST_PROVIDERS.map((provider) => {
-    let reqLow = 0;
-    let reqHigh = 0;
-    let optLow = 0;
-    let optHigh = 0;
-
-    if (hasRequired) {
-      reqLow += COST_BASELINE[provider][0];
-      reqHigh += COST_BASELINE[provider][1];
-    }
-    if (reqProd) {
-      reqLow += COST_PRODUCTION_BAND[provider][0];
-      reqHigh += COST_PRODUCTION_BAND[provider][1];
-    } else if (optProd) {
-      optLow += COST_PRODUCTION_BAND[provider][0];
-      optHigh += COST_PRODUCTION_BAND[provider][1];
-    }
-
-    for (const component of components) {
-      const band = bandFor(component, provider);
-      if (!band) continue;
-      if (component.optional) {
-        optLow += band[0];
-        optHigh += band[1];
-      } else {
-        reqLow += band[0];
-        reqHigh += band[1];
-      }
-    }
-
-    const scale = (value) => Math.round(value * multiplier);
-    const requiredLow = scale(reqLow);
-    const requiredHigh = scale(reqHigh);
-    const optionalLow = scale(optLow);
-    const optionalHigh = scale(optHigh);
-
-    return {
-      provider,
-      requiredLow,
-      requiredHigh,
-      optionalLow,
-      optionalHigh,
-      totalLow: requiredLow + optionalLow,
-      totalHigh: requiredHigh + optionalHigh,
-      currency: COST_CURRENCY,
-    };
-  });
-}
-
-export function deriveArchitecture(project, components) {
-  return {
-    costs: computeCosts(project, components),
-  };
-}
+import {
+  CALCULATOR_VERSION_PROFILE_DRIVEN,
+  COST_CURRENCY,
+  isPricedBreakdownRow,
+} from "../../../constants/costs.js";
+
+function mapBackendCostEstimate(estimate) {
+  const requiredLow = Math.round(estimate.required_monthly_low ?? 0);
+  const requiredHigh = Math.round(estimate.required_monthly_high ?? 0);
+  const optionalLow = Math.round(estimate.optional_monthly_low ?? 0);
+  const optionalHigh = Math.round(estimate.optional_monthly_high ?? 0);
+
+  const debugTable =
+    estimate.pricing_debug_table?.length > 0
+      ? estimate.pricing_debug_table
+      : (estimate.component_breakdown ?? []);
+
+  return {
+    provider: estimate.provider,
+    calculatorVersion: estimate.calculator_version ?? null,
+    requiredLow,
+    requiredHigh,
+    optionalLow,
+    optionalHigh,
+    totalLow: requiredLow,
+    totalHigh: requiredHigh,
+    currency: estimate.currency || COST_CURRENCY,
+    unknownItems: estimate.unknown_items ?? [],
+    warnings: estimate.warnings ?? [],
+    notes: estimate.notes ?? "",
+    componentBreakdown: debugTable,
+    pricingDebugTable: debugTable.map((row) => ({
+      ...row,
+      isPriced: isPricedBreakdownRow(row),
+    })),
+  };
+}
+
+export function deriveArchitecture(project) {
+  const estimates = project?.cost_estimates ?? [];
+  return {
+    costs: estimates.map(mapBackendCostEstimate),
+    expectedCalculatorVersion: CALCULATOR_VERSION_PROFILE_DRIVEN,
+  };
+}
+
+export { isPricedBreakdownRow };
+

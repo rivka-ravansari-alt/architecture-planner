@@ -170,6 +170,27 @@ export default function FieldRenderer({
     );
   }
 
+  if (field.type === "number") {
+    return (
+      <div className="field">
+        <label htmlFor={fieldId}>{field.label}</label>
+        <input
+          id={fieldId}
+          type="number"
+          min="1"
+          step="1"
+          placeholder={field.placeholder}
+          value={value === "" || value === null || value === undefined ? "" : String(value)}
+          onChange={(event) => {
+            const raw = event.target.value;
+            onChange(raw === "" ? "" : Number(raw));
+          }}
+        />
+        {error && <div className="error-text">{error}</div>}
+      </div>
+    );
+  }
+
   if (field.type === "boolean") {
     return (
       <div className="toggle-row toggle-row-nested">

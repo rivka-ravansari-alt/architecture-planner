@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { api } from "../api/index.js";
 import { deriveArchitecture } from "../features/architecture/utils/deriveArchitecture.js";
@@ -6,12 +6,17 @@ import { WORKFLOW_STATUS } from "../constants/wizard.js";
 import { componentsToApiPayload } from "../utils/componentPayload.js";
 import { EMPTY_INTAKE_FORM } from "../utils/intakeFormState.js";
 import { toLegacyPayload } from "../utils/intakeFormMapper.js";
-import { buildInputKey, validateBasicProduct } from "../utils/validation.js";
+import { loadProjectPricing } from "../utils/pricingLoader.js";
+import { buildInputKey, validateBasicProduct, validateUsageProfile } from "../utils/validation.js";
 
 const TOTAL_STEPS = 6;
 
 function cloneComponents(components) {
   return components.map((component) => ({ ...component }));
+}
+
+function hasCostEstimates(project) {
+  return (project?.cost_estimates?.length ?? 0) > 0;
 }
 
 export function useWizard() {
@@ -27,21 +32,27 @@ export function useWizard() {
 
   const inputKey = useMemo(() => buildInputKey(intakeForm), [intakeForm]);
   const needsSave = project === null || savedKey !== inputKey;
-  const hasPricing =
-    project?.workflow_status === WORKFLOW_STATUS.PRICING_GENERATED ||
-    (project?.cost_estimates?.length ?? 0) > 0;
+  const hasPricing = hasCostEstimates(project);
   const canGeneratePricing =
     project?.workflow_status === WORKFLOW_STATUS.DIAGRAMS_GENERATED ||
     project?.workflow_status === WORKFLOW_STATUS.ARCHITECTURE_APPROVED ||
     project?.workflow_status === WORKFLOW_STATUS.PRICING_GENERATED;
 
   const derived = useMemo(
-    () => (project ? deriveArchitecture(project, components) : null),
-    [project, components]
+    () => (project ? deriveArchitecture(project) : null),
+    [project]
   );
 
   const validateStep1 = useCallback(() => {
     const nextErrors = validateBasicProduct(intakeForm);
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }, [intakeForm]);
+
+  const validateStep2 = useCallback(() => {
+    const productErrors = validateBasicProduct(intakeForm);
+    const usageErrors = validateUsageProfile(intakeForm);
+    const nextErrors = { ...productErrors, ...usageErrors };
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }, [intakeForm]);
@@ -63,6 +74,37 @@ export function useWizard() {
     setSavedKey(inputKey);
     return created;
   }, [intakeForm, inputKey, syncProject]);
+
+  const ensureCostEstimates = useCallback(async () => {
+    if (!project || !canGeneratePricing) return false;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const refreshed = await loadProjectPricing(project);
+      syncProject(refreshed);
+      return hasCostEstimates(refreshed);
+    } catch (err) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [project, canGeneratePricing, syncProject]);
+
+  const pricingLoadAttempted = useRef(false);
+
+  useEffect(() => {
+    if (step !== 5) {
+      pricingLoadAttempted.current = false;
+      return;
+    }
+    if (!project || hasPricing || !canGeneratePricing || pricingLoadAttempted.current || loading) {
+      return;
+    }
+    pricingLoadAttempted.current = true;
+    ensureCostEstimates();
+  }, [step, project, hasPricing, canGeneratePricing, loading, ensureCostEstimates]);
 
   const generateComponents = useCallback(async () => {
     setLoading(true);
@@ -115,9 +157,11 @@ export function useWizard() {
     try {
       const payload = componentsToApiPayload(components);
       const approved = await api.updateComponents(project.id, payload);
-      syncProject(approved);
-      const withDiagrams = await api.generateDiagrams(approved.id);
-      syncProject(withDiagrams);
+      let current = await api.generateDiagrams(approved.id);
+      if (!hasCostEstimates(current)) {
+        current = await loadProjectPricing(current);
+      }
+      syncProject(current);
       unlockAndGo(5);
       return true;
     } catch (err) {
@@ -139,17 +183,18 @@ export function useWizard() {
     try {
       let current = project;
       if (current.workflow_status === WORKFLOW_STATUS.COMPONENTS_GENERATED) {
-        const approved = await api.updateComponents(
+        current = await api.updateComponents(
           project.id,
           componentsToApiPayload(components)
         );
-        syncProject(approved);
-        current = approved;
       }
       if (current.workflow_status === WORKFLOW_STATUS.COMPONENTS_APPROVED) {
         current = await api.skipArchitecture(project.id);
-        syncProject(current);
       }
+      if (!hasCostEstimates(current)) {
+        current = await loadProjectPricing(current);
+      }
+      syncProject(current);
       unlockAndGo(5);
       return true;
     } catch (err) {
@@ -159,32 +204,6 @@ export function useWizard() {
       setLoading(false);
     }
   }, [project, components, syncProject, unlockAndGo]);
-
-  const generatePricing = useCallback(async () => {
-    if (!project || !canGeneratePricing) return false;
-
-    setLoading(true);
-    setError(null);
-    try {
-      let current = project;
-      if (
-        current.workflow_status === WORKFLOW_STATUS.DIAGRAMS_GENERATED ||
-        current.workflow_status === WORKFLOW_STATUS.PRICING_GENERATED
-      ) {
-        current = await api.approveArchitecture(project.id);
-        syncProject(current);
-      }
-      const withPricing = await api.generatePricing(current.id);
-      syncProject(withPricing);
-      unlockAndGo(5);
-      return true;
-    } catch (err) {
-      setError(err.message);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [project, canGeneratePricing, syncProject, unlockAndGo]);
 
   const goToStep = useCallback(
     async (target) => {
@@ -198,8 +217,22 @@ export function useWizard() {
       }
 
       setStep(target);
+
+      if (target === 5 && project && canGeneratePricing && !hasPricing && !pricingLoadAttempted.current) {
+        pricingLoadAttempted.current = true;
+        await ensureCostEstimates();
+      }
     },
-    [step, loading, maxStep, validateStep1]
+    [
+      step,
+      loading,
+      maxStep,
+      validateStep1,
+      project,
+      canGeneratePricing,
+      hasPricing,
+      ensureCostEstimates,
+    ]
   );
 
   const goNext = useCallback(async () => {
@@ -213,8 +246,10 @@ export function useWizard() {
     }
 
     if (step === 2) {
-      if (!validateStep1()) {
-        setStep(1);
+      if (!validateStep2()) {
+        if (!validateBasicProduct(intakeForm)) {
+          setStep(1);
+        }
         return;
       }
       await generateComponents();
@@ -236,7 +271,10 @@ export function useWizard() {
         unlockAndGo(6);
         return;
       }
-      await generatePricing();
+      const ready = await ensureCostEstimates();
+      if (ready) {
+        unlockAndGo(6);
+      }
       return;
     }
   }, [
@@ -244,11 +282,13 @@ export function useWizard() {
     loading,
     hasPricing,
     validateStep1,
+    validateStep2,
+    intakeForm,
     unlockAndGo,
     generateComponents,
     approveComponents,
     generateArchitecture,
-    generatePricing,
+    ensureCostEstimates,
   ]);
 
   const goBack = useCallback(() => {
@@ -326,7 +366,7 @@ export function useWizard() {
     if (loading) {
       if (step === 2) return "Generating components… (may take a few seconds)";
       if (step === 4) return "Generating architecture… (may take a few seconds)";
-      if (step === 5) return "Generating pricing… (may take a few seconds)";
+      if (step === 5) return "Calculating pricing… (may take a few seconds)";
     }
 
     switch (step) {
@@ -339,7 +379,7 @@ export function useWizard() {
       case 4:
         return "Generate Architecture";
       case 5:
-        return hasPricing ? "View Summary" : "Generate Pricing";
+        return hasPricing ? "View Summary" : "Continue";
       case 6:
         return "View Summary";
       default:
@@ -376,7 +416,6 @@ export function useWizard() {
     error,
     derived,
     hasPricing,
-    canGeneratePricing,
     goToStep,
     goNext,
     goBack,

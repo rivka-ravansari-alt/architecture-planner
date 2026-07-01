@@ -24,6 +24,7 @@ from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
 from app.services.catalog_service import CatalogService
 from app.services.cloud_defaults_service import CloudDefaultsService
+from app.services.cost_estimate_refresh_service import CostEstimateRefreshService
 from app.services.generation_service import GenerationService
 from app.services.project_service import ProjectService
 from app.utils.jwt import JwtService
@@ -85,6 +86,13 @@ def get_generation_service(
         catalog_service=catalog_service,
         cloud_defaults=cloud_defaults,
     )
+
+
+def get_cost_estimate_refresh_service(
+    db: Session = Depends(get_db),
+    catalog_service: CatalogService = Depends(get_catalog_service),
+) -> CostEstimateRefreshService:
+    return CostEstimateRefreshService(db, catalog_service=catalog_service)
 
 
 def get_optional_user(

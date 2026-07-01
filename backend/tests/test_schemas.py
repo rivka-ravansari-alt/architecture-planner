@@ -31,3 +31,41 @@ def test_dedupes_project_types():
         project_types=["web_app", "web_app", "mobile_app"],
     )
     assert project.project_types == ["web_app", "mobile_app"]
+
+
+def test_accepts_custom_expected_users_and_usage_profile():
+    project = ProjectCreate(
+        name="Test",
+        description="Valid description.",
+        project_types=["web_app"],
+        expected_users="2500",
+        usage_profile={
+            "monthly_active_users": "custom",
+            "custom_monthly_active_users": 2500,
+            "user_activity": "heavy",
+            "background_jobs": "moderate",
+        },
+    )
+    assert project.expected_users == "2500"
+    assert project.usage_profile is not None
+    assert project.usage_profile.user_activity == "heavy"
+
+
+def test_accepts_small_custom_expected_users_count():
+    project = ProjectCreate(
+        name="Test",
+        description="Valid description.",
+        project_types=["web_app"],
+        expected_users="150",
+    )
+    assert project.expected_users == "150"
+
+
+def test_accepts_numeric_expected_users_count():
+    project = ProjectCreate(
+        name="Test",
+        description="Valid description.",
+        project_types=["web_app"],
+        expected_users=150,
+    )
+    assert project.expected_users == "150"

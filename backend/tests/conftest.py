@@ -20,6 +20,16 @@ from app.services.component_mapper_service import ComponentMapperService
 from app.services.prompt_builder_service import PromptBuilderService
 from app.validators.ai_response_validator import AIResponseValidator
 from tests.fixtures import VALID_AI_RESPONSE_JSON
+from tests.cost_fixtures import build_fake_firestore_with_pricing
+
+
+@pytest.fixture(autouse=True)
+def mock_firestore_for_costs(monkeypatch):
+    fake_client = build_fake_firestore_with_pricing()
+    monkeypatch.setattr(
+        "app.services.cost_estimator_service.FirestoreClientFactory.create",
+        lambda client=None: fake_client if client is None else client,
+    )
 
 
 def seed_component_catalog(db_session: Session) -> ComponentCatalogRepository:
@@ -135,6 +145,17 @@ def sample_project(db_session: Session, test_user):
         ai=False,
         payments=False,
         include_edge_cases=True,
+        usage_profile={
+            "monthly_active_users": "1000",
+            "user_activity": "moderate",
+            "background_jobs": "low",
+            "file_uploads_enabled": True,
+            "files_per_month": "1k_10k",
+            "average_file_size": "medium",
+            "ai_enabled": False,
+            "notification_channels": [],
+            "notifications_per_month": "under_1k",
+        },
     )
     db_session.add(project)
     db_session.commit()

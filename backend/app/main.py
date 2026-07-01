@@ -26,6 +26,8 @@ from app.core.exceptions import (
 
 logger = logging.getLogger(__name__)
 
+# Route modules are loaded at startup; uvicorn --reload watches app/**/*.py
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):

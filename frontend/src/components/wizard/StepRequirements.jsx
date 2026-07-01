@@ -1,5 +1,12 @@
-import DynamicForm from "../intake/DynamicForm.jsx";
+import UsageForm from "../intake/UsageForm.jsx";
 
-export default function StepRequirements({ intakeForm, setIntakeForm }) {
-  return <DynamicForm section="features" value={intakeForm} onChange={setIntakeForm} showHeader={false} />;
+export default function StepRequirements({ intakeForm, setIntakeForm, errors }) {
+  return (
+    <UsageForm
+      value={intakeForm}
+      onChange={setIntakeForm}
+      errors={errors}
+      showHeader={false}
+    />
+  );
 }

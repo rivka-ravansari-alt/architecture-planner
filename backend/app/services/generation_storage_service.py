@@ -109,6 +109,7 @@ class GenerationStorageService:
         requirements = {
             key: getattr(answers, key, False) if answers else False for key in REQUIREMENT_KEYS
         }
+        usage_profile = dict(answers.usage_profile) if answers and answers.usage_profile else None
         return {
             "name": project.name,
             "description": project.description or "",
@@ -116,6 +117,7 @@ class GenerationStorageService:
             "stage": project.stage,
             "expected_users": project.expected_users,
             "requirements": requirements,
+            "usage_profile": usage_profile,
         }
 
 

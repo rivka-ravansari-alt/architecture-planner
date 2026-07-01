@@ -144,6 +144,57 @@ class DatabaseInitializer:
         for legacy_column in ("user_flow", "data_flow"):
             self._drop_column_if_exists("projects", legacy_column)
 
+        self._ensure_column(
+            "cost_estimates",
+            "required_monthly_low",
+            "ALTER TABLE cost_estimates ADD COLUMN required_monthly_low FLOAT DEFAULT 0.0",
+        )
+        self._ensure_column(
+            "cost_estimates",
+            "required_monthly_high",
+            "ALTER TABLE cost_estimates ADD COLUMN required_monthly_high FLOAT DEFAULT 0.0",
+        )
+        self._ensure_column(
+            "cost_estimates",
+            "optional_monthly_low",
+            "ALTER TABLE cost_estimates ADD COLUMN optional_monthly_low FLOAT DEFAULT 0.0",
+        )
+        self._ensure_column(
+            "cost_estimates",
+            "optional_monthly_high",
+            "ALTER TABLE cost_estimates ADD COLUMN optional_monthly_high FLOAT DEFAULT 0.0",
+        )
+        self._ensure_column(
+            "cost_estimates",
+            "unknown_items",
+            "ALTER TABLE cost_estimates ADD COLUMN unknown_items JSON",
+        )
+        self._ensure_column(
+            "cost_estimates",
+            "warnings",
+            "ALTER TABLE cost_estimates ADD COLUMN warnings JSON",
+        )
+        self._ensure_column(
+            "cost_estimates",
+            "component_breakdown",
+            "ALTER TABLE cost_estimates ADD COLUMN component_breakdown JSON",
+        )
+        self._ensure_column(
+            "cost_estimates",
+            "pricing_debug_table",
+            "ALTER TABLE cost_estimates ADD COLUMN pricing_debug_table JSON",
+        )
+        self._ensure_column(
+            "cost_estimates",
+            "calculator_version",
+            "ALTER TABLE cost_estimates ADD COLUMN calculator_version VARCHAR(40) DEFAULT ''",
+        )
+        self._ensure_column(
+            "requirement_answers",
+            "usage_profile",
+            "ALTER TABLE requirement_answers ADD COLUMN usage_profile JSON",
+        )
+
     def _seed_component_catalog(self) -> None:
         from app.repositories.component_catalog_repository import ComponentCatalogRepository
 

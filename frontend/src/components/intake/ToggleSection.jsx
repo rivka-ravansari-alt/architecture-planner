@@ -1,23 +1,32 @@
 import FieldRenderer from "./FieldRenderer.jsx";
+import QuestionTitle from "./QuestionTitle.jsx";
 
 /**
  * @param {Object} props
- * @param {import("../../config/intakeFormConfig.js").FeatureToggle} props.toggle
+ * @param {import("../../config/intakeFormConfig.js").UsageToggleGroup} props.toggle
  * @param {Record<string, unknown>} props.featureState
  * @param {(enabled: boolean) => void} props.onToggle
  * @param {(fieldKey: string, value: unknown) => void} props.onFieldChange
+ * @param {(field: import("../../config/intakeFormConfig.js").FormField) => boolean} [props.isFieldVisible]
  */
 export default function ToggleSection({
   toggle,
   featureState,
   onToggle,
   onFieldChange,
+  isFieldVisible = () => true,
 }) {
   const enabled = Boolean(featureState.enabled);
-  const hasSubQuestions = toggle.fields.length > 0;
+  const visibleFields = toggle.fields.filter(isFieldVisible);
+  const hasSubQuestions = visibleFields.length > 0;
 
   return (
-    <div className={`toggle-section ${enabled ? "toggle-section-active" : ""}`}>
+    <section className={`usage-question-block toggle-section ${enabled ? "toggle-section-active" : ""}`}>
+      <QuestionTitle
+        title={toggle.title}
+        description={toggle.description}
+        examples={toggle.examples}
+      />
       <div className="toggle-row">
         <span className="label">{toggle.label}</span>
         <label className="switch">
@@ -33,7 +42,7 @@ export default function ToggleSection({
       {hasSubQuestions && (
         <div className={`toggle-section-content ${enabled ? "open" : ""}`}>
           <div className="toggle-section-inner">
-            {toggle.fields.map((field) => (
+            {visibleFields.map((field) => (
               <FieldRenderer
                 key={field.key}
                 field={field}
@@ -44,6 +53,6 @@ export default function ToggleSection({
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

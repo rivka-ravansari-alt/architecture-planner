@@ -1,6 +1,6 @@
-import { EXPECTED_USERS, STAGES } from "../constants/wizard.js";
+import { STAGES } from "../constants/wizard.js";
 
-/** @typedef {'text' | 'textarea' | 'select' | 'multi_select' | 'checkbox_group' | 'radio' | 'boolean'} FieldType */
+/** @typedef {'text' | 'textarea' | 'select' | 'multi_select' | 'checkbox_group' | 'radio' | 'boolean' | 'number'} FieldType */
 
 /** @typedef {{ value: string; label: string; disabled?: boolean }} FieldOption */
 
@@ -8,17 +8,31 @@ import { EXPECTED_USERS, STAGES } from "../constants/wizard.js";
  * @typedef {Object} FormField
  * @property {string} key
  * @property {FieldType} type
- * @property {string} label
+ * @property {string} [label]
  * @property {string} [placeholder]
  * @property {FieldOption[]} [options]
  * @property {boolean} [required]
  * @property {string} [defaultValue]
+ * @property {{ field: string; value: string }} [showWhen]
+ * @property {boolean} [requiresChannels]
  */
 
 /**
- * @typedef {Object} FeatureToggle
+ * @typedef {Object} UsageToggleGroup
  * @property {string} key
+ * @property {string} title
  * @property {string} label
+ * @property {string} [description]
+ * @property {string[]} [examples]
+ * @property {FormField[]} fields
+ */
+
+/**
+ * @typedef {Object} UsageQuestionBlock
+ * @property {string} key
+ * @property {string} title
+ * @property {string} [description]
+ * @property {string[]} [examples]
  * @property {FormField[]} fields
  */
 
@@ -28,16 +42,72 @@ export const PLATFORM_OPTIONS = [
   { value: "both", label: "Both" },
 ];
 
-export const EXPECTED_USERS_OPTIONS = EXPECTED_USERS.map(({ id, label }) => ({
-  value: id,
-  label,
-}));
-
 export const STAGE_OPTIONS = STAGES.map(({ id, label }) => ({
   value: id,
   label,
   ...(id === "production" ? { disabled: true } : {}),
 }));
+
+export const MONTHLY_ACTIVE_USERS_OPTIONS = [
+  { value: "100", label: "100" },
+  { value: "1000", label: "1,000" },
+  { value: "10000", label: "10,000" },
+  { value: "100000+", label: "100,000+" },
+  { value: "custom", label: "Custom" },
+];
+
+export const USER_ACTIVITY_OPTIONS = [
+  { value: "light", label: "Light (1–5 actions per day)" },
+  { value: "moderate", label: "Moderate (5–20 actions per day)" },
+  { value: "heavy", label: "Heavy (20–100 actions per day)" },
+  { value: "very_heavy", label: "Very Heavy (100+ actions per day)" },
+];
+
+export const FILES_PER_MONTH_OPTIONS = [
+  { value: "under_1k", label: "Less than 1,000" },
+  { value: "1k_10k", label: "1,000–10,000" },
+  { value: "10k_100k", label: "10,000–100,000" },
+  { value: "100k_plus", label: "More than 100,000" },
+];
+
+export const FILE_SIZE_OPTIONS = [
+  { value: "small", label: "Small (<1 MB)" },
+  { value: "medium", label: "Medium (1–10 MB)" },
+  { value: "large", label: "Large (>10 MB)" },
+];
+
+export const AI_REQUESTS_PER_USER_OPTIONS = [
+  { value: "under_1", label: "Less than 1" },
+  { value: "1_5", label: "1–5" },
+  { value: "5_20", label: "5–20" },
+  { value: "20_plus", label: "More than 20" },
+];
+
+export const AI_SIZE_OPTIONS = [
+  { value: "small", label: "Small" },
+  { value: "medium", label: "Medium" },
+  { value: "large", label: "Large" },
+];
+
+export const BACKGROUND_JOBS_OPTIONS = [
+  { value: "none", label: "None" },
+  { value: "low", label: "Low" },
+  { value: "moderate", label: "Moderate" },
+  { value: "heavy", label: "Heavy" },
+];
+
+export const NOTIFICATION_CHANNEL_OPTIONS = [
+  { value: "email", label: "Email" },
+  { value: "sms", label: "SMS" },
+  { value: "push", label: "Push Notifications" },
+];
+
+export const NOTIFICATION_VOLUME_OPTIONS = [
+  { value: "under_1k", label: "Less than 1,000" },
+  { value: "1k_10k", label: "1,000–10,000" },
+  { value: "10k_100k", label: "10,000–100,000" },
+  { value: "100k_plus", label: "More than 100,000" },
+];
 
 /** @type {FormField[]} */
 export const BASIC_PRODUCT_FIELDS = [
@@ -70,137 +140,165 @@ export const BASIC_PRODUCT_FIELDS = [
     required: true,
     defaultValue: "mvp",
   },
+];
+
+/** @type {UsageQuestionBlock[]} */
+export const USAGE_QUESTION_BLOCKS = [
   {
-    key: "expected_users",
-    type: "select",
-    label: "Expected users",
-    options: EXPECTED_USERS_OPTIONS,
-    required: true,
-    defaultValue: "100",
+    key: "monthly_active_users",
+    title: "Expected Monthly Active Users",
+    description: "How many active users do you expect each month?",
+    fields: [
+      {
+        key: "monthly_active_users",
+        type: "select",
+        options: MONTHLY_ACTIVE_USERS_OPTIONS,
+        required: true,
+        defaultValue: "100",
+      },
+      {
+        key: "custom_monthly_active_users",
+        type: "number",
+        label: "Custom monthly active users",
+        placeholder: "e.g. 2500",
+        showWhen: { field: "monthly_active_users", value: "custom" },
+      },
+    ],
+  },
+  {
+    key: "user_activity",
+    title: "Average User Activity",
+    description:
+      "How often does a typical active user interact with your application? Actions include page views, form submissions, API calls, and similar interactions.",
+    examples: [
+      "Opening the dashboard once per day",
+      "Submitting several forms throughout the day",
+      "Frequent real-time updates or searches",
+    ],
+    fields: [
+      {
+        key: "user_activity",
+        type: "radio",
+        options: USER_ACTIVITY_OPTIONS,
+        required: true,
+        defaultValue: "moderate",
+      },
+    ],
+  },
+  {
+    key: "background_jobs",
+    title: "Background Tasks",
+    description: "Does your application perform work after the user action completes?",
+    examples: [
+      "AI processing",
+      "File processing",
+      "Scheduled jobs",
+      "Report generation",
+      "Data synchronization",
+      "Sending emails asynchronously",
+    ],
+    fields: [
+      {
+        key: "background_jobs",
+        type: "radio",
+        options: BACKGROUND_JOBS_OPTIONS,
+        required: true,
+        defaultValue: "none",
+      },
+    ],
   },
 ];
 
-/**
- * Architecture capability toggles — only questions that affect components,
- * cloud services, scaling, and monthly cost estimates.
- * @type {FeatureToggle[]}
- */
-export const FEATURE_TOGGLES = [
-  {
-    key: "authentication",
-    label: "Does the system require user accounts?",
-    fields: [],
-  },
+/** @type {UsageToggleGroup[]} */
+export const USAGE_TOGGLE_GROUPS = [
   {
     key: "file_uploads",
-    label: "Does the system upload files?",
+    title: "File Uploads",
+    description:
+      "Enable if users can upload documents, images, videos, or other files. Upload volume and file size affect storage and bandwidth estimates.",
+    examples: [
+      "Profile photos",
+      "PDF or document uploads",
+      "Video or media attachments",
+    ],
+    label: "Does your application allow users to upload files?",
     fields: [
       {
-        key: "estimated_files_per_month",
+        key: "files_per_month",
         type: "radio",
-        label: "Estimated files per month",
-        options: [
-          { value: "under_1k", label: "<1K" },
-          { value: "1k_10k", label: "1K–10K" },
-          { value: "10k_plus", label: "10K+" },
-        ],
+        label: "Files uploaded per month",
+        options: FILES_PER_MONTH_OPTIONS,
+        defaultValue: "under_1k",
       },
       {
         key: "average_file_size",
         type: "radio",
         label: "Average file size",
-        options: [
-          { value: "small", label: "Small" },
-          { value: "medium", label: "Medium" },
-          { value: "large", label: "Large" },
-        ],
-      },
-      {
-        key: "process_after_upload",
-        type: "boolean",
-        label: "Are files processed after upload?",
+        options: FILE_SIZE_OPTIONS,
+        defaultValue: "small",
       },
     ],
   },
   {
     key: "ai",
-    label: "Does the system use AI?",
+    title: "Artificial Intelligence",
+    description:
+      "Enable if your application calls AI models for inference, generation, embeddings, or similar workloads.",
+    examples: [
+      "Chat assistants",
+      "Document summarization",
+      "Image or audio analysis",
+      "Semantic search and recommendations",
+    ],
+    label: "Does your application use AI?",
     fields: [
       {
-        key: "ai_types",
-        type: "checkbox_group",
-        label: "AI type",
-        options: [
-          { value: "chat", label: "Chat" },
-          { value: "document_processing", label: "Document Processing" },
-          { value: "recommendations", label: "Recommendations" },
-          { value: "search", label: "Search" },
-          { value: "image_generation", label: "Image Generation" },
-          { value: "audio_processing", label: "Audio Processing" },
-        ],
+        key: "requests_per_user_per_day",
+        type: "radio",
+        label: "Average AI requests per active user per day",
+        options: AI_REQUESTS_PER_USER_OPTIONS,
+        defaultValue: "under_1",
       },
       {
-        key: "estimated_ai_requests_per_day",
+        key: "prompt_size",
         type: "radio",
-        label: "Estimated AI requests per day",
-        options: [
-          { value: "under_100", label: "<100" },
-          { value: "100_1k", label: "100–1K" },
-          { value: "1k_10k", label: "1K–10K" },
-          { value: "10k_plus", label: "10K+" },
-        ],
+        label: "Average prompt size",
+        options: AI_SIZE_OPTIONS,
+        defaultValue: "small",
+      },
+      {
+        key: "response_size",
+        type: "radio",
+        label: "Average response size",
+        options: AI_SIZE_OPTIONS,
+        defaultValue: "medium",
       },
     ],
-  },
-  {
-    key: "dashboards",
-    label: "Does the system require dashboards or reports?",
-    fields: [],
-  },
-  {
-    key: "payments",
-    label: "Does the system require payments?",
-    fields: [],
   },
   {
     key: "notifications",
-    label: "Does the system send notifications?",
-    fields: [],
-  },
-  {
-    key: "external_integrations",
-    label: "Does the system connect to external systems?",
-    fields: [],
-  },
-  {
-    key: "real_time",
-    label: "Does the system require real-time updates?",
-    fields: [
-      {
-        key: "real_time_types",
-        type: "checkbox_group",
-        label: "Real-time type",
-        options: [
-          { value: "live_chat", label: "Live Chat" },
-          { value: "live_dashboard", label: "Live Dashboard" },
-          { value: "collaboration", label: "Collaboration" },
-        ],
-      },
+    title: "Notifications",
+    description: "Enable if your application sends outbound notifications to users.",
+    examples: [
+      "Account alerts via email",
+      "OTP codes via SMS",
+      "Mobile push notifications",
     ],
-  },
-  {
-    key: "sensitive_data",
-    label: "Does the system store sensitive data?",
+    label: "Does your application send notifications?",
     fields: [
       {
-        key: "data_types",
+        key: "channels",
         type: "checkbox_group",
-        label: "Data type",
-        options: [
-          { value: "financial", label: "Financial" },
-          { value: "medical", label: "Medical" },
-          { value: "personal", label: "Personal" },
-        ],
+        label: "Channels",
+        options: NOTIFICATION_CHANNEL_OPTIONS,
+      },
+      {
+        key: "volume_per_month",
+        type: "radio",
+        label: "Estimated notifications per month",
+        options: NOTIFICATION_VOLUME_OPTIONS,
+        defaultValue: "under_1k",
+        requiresChannels: true,
       },
     ],
   },
@@ -208,30 +306,29 @@ export const FEATURE_TOGGLES = [
 
 /** Required product field keys for step-1 validation. */
 export const INTAKE_VALIDATION = {
-  product: ["name", "description", "platforms", "stage", "expected_users"],
+  product: ["name", "description", "platforms", "stage"],
+  usage: ["monthly_active_users", "user_activity", "background_jobs"],
 };
 
 /**
- * Maps intake feature state to legacy backend requirement booleans.
- * @type {Record<string, (features: Record<string, Record<string, unknown>>) => boolean>}
+ * Maps usage answers to legacy backend requirement booleans for AI component generation.
+ * @type {Record<string, (usage: Record<string, unknown>) => boolean>}
  */
 export const LEGACY_ANSWER_MAPPING = {
-  auth: (features) => Boolean(features.authentication?.enabled),
-  file_upload: (features) => Boolean(features.file_uploads?.enabled),
-  background_processing: (features) =>
-    Boolean(features.file_uploads?.enabled && features.file_uploads?.process_after_upload),
-  dashboards: (features) => Boolean(features.dashboards?.enabled),
-  ai: (features) => Boolean(features.ai?.enabled),
-  payments: (features) => Boolean(features.payments?.enabled),
-  include_edge_cases: (features) =>
-    Boolean(
-      features.sensitive_data?.enabled ||
-        features.real_time?.enabled ||
-        features.external_integrations?.enabled
-    ),
+  auth: () => true,
+  file_upload: (usage) => Boolean(usage.file_uploads?.enabled),
+  background_processing: (usage) => usage.background_jobs !== "none",
+  dashboards: (usage) =>
+    usage.user_activity === "heavy" || usage.user_activity === "very_heavy",
+  ai: (usage) => Boolean(usage.ai?.enabled),
+  payments: () => false,
+  include_edge_cases: (usage) =>
+    usage.monthly_active_users === "100000+" ||
+    usage.user_activity === "very_heavy" ||
+    usage.background_jobs === "heavy",
 };
 
-/** Single configuration object for sections, toggles, validation, and API mapping. */
+/** Single configuration object for sections, usage questions, validation, and API mapping. */
 export const INTAKE_FORM_CONFIG = {
   productSection: {
     id: "product",
@@ -240,12 +337,14 @@ export const INTAKE_FORM_CONFIG = {
     fields: BASIC_PRODUCT_FIELDS,
     validation: INTAKE_VALIDATION.product,
   },
-  architectureSection: {
-    id: "requirements",
-    title: "Architecture Questionnaire",
+  usageSection: {
+    id: "usage",
+    title: "Usage Profile",
     subtitle:
-      "Enable only what affects infrastructure, cloud services, and monthly cost estimates.",
-    toggles: FEATURE_TOGGLES,
+      "Answer a few questions about how your application will be used. We'll estimate cloud resource consumption from your answers.",
+    questionBlocks: USAGE_QUESTION_BLOCKS,
+    toggleGroups: USAGE_TOGGLE_GROUPS,
+    validation: INTAKE_VALIDATION.usage,
   },
   legacyAnswerMapping: LEGACY_ANSWER_MAPPING,
 };

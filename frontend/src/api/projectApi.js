@@ -29,4 +29,9 @@ export const projectApi = {
       method: "POST",
       timeoutMs: GENERATE_TIMEOUT_MS,
     }),
+  ensureCostEstimates: (projectId) =>
+    apiRequest(`/projects/${projectId}/ensure-cost-estimates`, {
+      method: "POST",
+      timeoutMs: GENERATE_TIMEOUT_MS,
+    }),
 };

@@ -9,7 +9,7 @@ export const WIZARD_STEPS = [
 
 export const STEP_SUBTITLES = [
   "Product name, description, platform, and stage.",
-  "Answer the architecture questionnaire, then generate components.",
+  "Estimate usage patterns to drive accurate cloud cost calculations.",
   "Review, add, remove, or edit the generated components.",
   "Generate architecture diagrams or skip to pricing.",
   "Compare monthly cost estimates across AWS, GCP, and Azure.",

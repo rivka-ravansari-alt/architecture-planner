@@ -233,31 +233,233 @@ CLOUD_DEFAULTS_FALLBACK_TYPE = "api_gateway"
 # ---------------------------------------------------------------------------
 
 COST_CURRENCY = "USD"
+CALCULATOR_VERSION_PROFILE_DRIVEN = "baseline_usage_v1"
 
-COST_BASELINE: dict[str, tuple[float, float]] = {
-    "aws": (15, 45),
-    "gcp": (12, 40),
-    "azure": (18, 50),
+COST_ESTIMATE_LOW_FACTOR = 0.75
+COST_ESTIMATE_HIGH_FACTOR = 1.35
+
+# Sanity thresholds for small user tiers.
+COST_SANITY_REQUIRED_MAX_100_USERS = 500.0
+COST_SANITY_OPTIONAL_MAX_100_USERS = 500.0
+COST_SANITY_COMPONENT_MAX_100_USERS = 200.0
+COST_SANITY_COMPONENT_MAX_1000_USERS = 1000.0
+
+# Usage estimation — conservative baseline defaults (provider-independent).
+# Totals are derived by UsageEstimator from users × usage profile × stage.
+USAGE_ESTIMATION_BASE: dict[str, float] = {
+    "sessions_per_user_month": 10.0,
+    "requests_per_session": 3.0,
+    "avg_request_duration_seconds": 0.3,
+    "cpu_vcpu_per_request": 1.0,
+    "memory_gib_per_request": 0.5,
+    "db_reads_per_request": 2.0,
+    "db_writes_per_request": 0.2,
+    "base_storage_gb": 0.1,
+    "storage_gb_per_user_upload": 0.0,
+    "outbound_gb_per_user": 0.02,
+    "base_database_storage_gb": 0.1,
+    "database_storage_gb_per_100_users": 1.0,
+    "db_storage_gb_per_user": 0.0,
+    "queue_messages_per_user": 3.0,
+    "cache_memory_gb": 0.25,
+    "ai_requests_per_user": 2.0,
+    "input_tokens_per_ai_request": 500.0,
+    "output_tokens_per_ai_request": 200.0,
+    "emails_per_user": 2.0,
+    "push_notifications_per_user": 5.0,
+    "sms_per_user": 0.5,
+    "log_gb_per_1000_requests": 0.05,
+    "metric_samples_per_request": 0.5,
+    "monitoring_log_gb_cap": 0.5,
+    "monitoring_metric_samples_cap": 5000.0,
+    "instances": 0.0,
+    "instance_hours": 0.0,
+    "instance_hours_full": 720.0,
+    "hosting_instance_hours_cap": 72.0,
+    "active_days_per_month": 25.0,
 }
 
-COST_FEATURE_BANDS: dict[str, dict[str, tuple[float, float]]] = {
-    "file_upload": {"aws": (5, 20), "gcp": (4, 18), "azure": (5, 22)},
-    "ai": {"aws": (20, 120), "gcp": (18, 110), "azure": (22, 130)},
-    "background_processing": {"aws": (8, 30), "gcp": (7, 28), "azure": (9, 32)},
+# Questionnaire answer → numeric consumption assumptions for UsageEstimator.
+USAGE_PROFILE_MAU: dict[str, float] = {
+    "100": 100.0,
+    "1000": 1000.0,
+    "10000": 10000.0,
+    "100000+": 100000.0,
 }
 
-COST_PRODUCTION_BAND: dict[str, tuple[float, float]] = {
-    "aws": (15, 60),
-    "gcp": (12, 55),
-    "azure": (16, 65),
+USAGE_PROFILE_USER_ACTIVITY: dict[str, float] = {
+    "light": 3.0,
+    "moderate": 12.0,
+    "heavy": 50.0,
+    "very_heavy": 150.0,
+    # Legacy aliases
+    "low": 3.0,
+    "medium": 12.0,
+    "high": 50.0,
+    "very_high": 150.0,
 }
 
-COST_USER_MULTIPLIER: dict[str, float] = {
-    "100": 1.0,
-    "1000": 1.8,
-    "10000": 4.0,
-    "100000+": 9.0,
+USAGE_PROFILE_FILES_PER_MONTH: dict[str, float] = {
+    "under_1k": 500.0,
+    "1k_10k": 5000.0,
+    "10k_100k": 50000.0,
+    "100k_plus": 200000.0,
 }
+
+USAGE_PROFILE_FILE_SIZE_GB: dict[str, float] = {
+    "small": 0.001,
+    "medium": 0.005,
+    "large": 0.05,
+}
+
+USAGE_PROFILE_AI_REQUESTS_PER_USER_DAY: dict[str, float] = {
+    "under_1": 0.5,
+    "1_5": 3.0,
+    "5_20": 12.0,
+    "20_plus": 50.0,
+}
+
+USAGE_PROFILE_TOKEN_SIZES: dict[str, float] = {
+    "small": 250.0,
+    "medium": 1000.0,
+    "large": 4000.0,
+}
+
+USAGE_PROFILE_BACKGROUND_MULTIPLIER: dict[str, float] = {
+    "none": 0.0,
+    "low": 1.0,
+    "moderate": 3.0,
+    "heavy": 10.0,
+    # Legacy aliases
+    "medium": 3.0,
+    "high": 10.0,
+}
+
+USAGE_PROFILE_NOTIFICATION_VOLUME: dict[str, float] = {
+    "under_1k": 500.0,
+    "1k_10k": 5000.0,
+    "10k_100k": 50000.0,
+    "100k_plus": 200000.0,
+}
+
+# Capability toggles scale specific consumption dimensions (multiplicative).
+USAGE_CAPABILITY_MULTIPLIERS: dict[str, dict[str, float]] = {
+    "file_upload": {
+        "storage_gb": 2.5,
+        "outbound_network_gb": 1.5,
+        "monthly_requests": 1.1,
+    },
+    "background_processing": {
+        "queue_messages": 4.0,
+        "monthly_requests": 1.15,
+        "cpu_seconds": 1.2,
+    },
+    "dashboards": {
+        "database_reads": 1.5,
+        "monthly_requests": 1.1,
+        "metric_samples": 2.0,
+    },
+    "ai": {
+        "ai_requests": 1.0,
+        "input_tokens": 1.0,
+        "output_tokens": 1.0,
+        "monthly_requests": 1.05,
+    },
+    "payments": {
+        "monthly_requests": 1.1,
+        "database_writes": 1.3,
+    },
+    "auth": {
+        "database_reads": 1.2,
+        "database_writes": 1.15,
+        "monthly_requests": 1.05,
+    },
+}
+
+USAGE_STAGE_PRODUCTION_MULTIPLIER = 1.5
+
+# Legacy static profiles — kept for reference; prefer UsageEstimator.
+USAGE_PROFILE_BY_EXPECTED_USERS: dict[str, dict[str, float]] = {
+    "100": {
+        "monthly_active_users": 100,
+        "monthly_requests": 3_000,
+        "avg_request_duration_hours": 0.2 / 3600,
+        "cpu_vcpu": 0.25,
+        "memory_gib": 0.5,
+        "monthly_gb_seconds": 150,
+        "storage_gb": 5,
+        "egress_gb": 2,
+        "database_requests": 10_000,
+        "tokens": 50_000,
+        "notifications": 500,
+        "metric_samples": 10_000,
+        "log_gb": 1,
+        "instances": 1,
+        "instance_hours": 720,
+    },
+    "1000": {
+        "monthly_active_users": 1_000,
+        "monthly_requests": 30_000,
+        "avg_request_duration_hours": 0.2 / 3600,
+        "cpu_vcpu": 0.25,
+        "memory_gib": 0.5,
+        "monthly_gb_seconds": 1_500,
+        "storage_gb": 25,
+        "egress_gb": 15,
+        "database_requests": 100_000,
+        "tokens": 500_000,
+        "notifications": 5_000,
+        "metric_samples": 50_000,
+        "log_gb": 5,
+        "instances": 1,
+        "instance_hours": 720,
+    },
+    "10000": {
+        "monthly_active_users": 10_000,
+        "monthly_requests": 300_000,
+        "avg_request_duration_hours": 0.15 / 3600,
+        "cpu_vcpu": 0.5,
+        "memory_gib": 1.0,
+        "monthly_gb_seconds": 15_000,
+        "storage_gb": 100,
+        "egress_gb": 80,
+        "database_requests": 1_000_000,
+        "tokens": 5_000_000,
+        "notifications": 50_000,
+        "metric_samples": 200_000,
+        "log_gb": 20,
+        "instances": 2,
+        "instance_hours": 1_440,
+    },
+    "100000+": {
+        "monthly_active_users": 100_000,
+        "monthly_requests": 3_000_000,
+        "avg_request_duration_hours": 0.1 / 3600,
+        "cpu_vcpu": 1.0,
+        "memory_gib": 2.0,
+        "monthly_gb_seconds": 150_000,
+        "storage_gb": 500,
+        "egress_gb": 400,
+        "database_requests": 10_000_000,
+        "tokens": 50_000_000,
+        "notifications": 500_000,
+        "metric_samples": 1_000_000,
+        "log_gb": 100,
+        "instances": 4,
+        "instance_hours": 2_880,
+    },
+}
+
+PRICING_MODEL_COMPUTE_REQUEST = "compute_request_based"
+PRICING_MODEL_STORAGE = "storage_based"
+PRICING_MODEL_DATABASE_REQUEST = "database_request_based"
+PRICING_MODEL_INSTANCE = "instance_based"
+PRICING_MODEL_TOKEN = "token_based"
+PRICING_MODEL_NOTIFICATION = "notification_based"
+PRICING_MODEL_MONITORING = "monitoring_based"
+PRICING_MODEL_LINEAR_SKU = "linear_sku"
+
+CLOUD_OPTION_SKIP_VALUES: frozenset[str] = frozenset({"n/a", "stripe", "paddle", "third-party api"})
 
 STAGE_PRODUCTION = "production"
 
@@ -280,6 +482,11 @@ GENERATION_TYPE_ARCHITECTURE = "architecture"
 FIRESTORE_COLLECTION_GCP_CATALOG = "gcp_catalog"
 FIRESTORE_COLLECTION_AWS_CATALOG = "aws_catalog"
 FIRESTORE_COLLECTION_AZURE_CATALOG = "azure_catalog"
+FIRESTORE_COLLECTION_GCP_PRICING_PROFILES = "gcp_pricing_profiles"
+FIRESTORE_COLLECTION_AWS_PRICING_PROFILES = "aws_pricing_profiles"
+FIRESTORE_COLLECTION_AZURE_PRICING_PROFILES = "azure_pricing_profiles"
+# Legacy single-collection name (migrated by seed_pricing_profiles.py)
+FIRESTORE_COLLECTION_PRICING_PROFILES = "pricing_profiles"
 FIRESTORE_COLLECTION_PRICE_IMPORT_RUNS = "price_import_runs"
 
 PRICING_PROVIDER_GCP = "gcp"
@@ -291,6 +498,12 @@ PRICING_PROVIDERS = (
     PRICING_PROVIDER_AWS,
     PRICING_PROVIDER_AZURE,
 )
+
+PRICING_PROFILE_COLLECTION_BY_PROVIDER = {
+    PRICING_PROVIDER_GCP: FIRESTORE_COLLECTION_GCP_PRICING_PROFILES,
+    PRICING_PROVIDER_AWS: FIRESTORE_COLLECTION_AWS_PRICING_PROFILES,
+    PRICING_PROVIDER_AZURE: FIRESTORE_COLLECTION_AZURE_PRICING_PROFILES,
+}
 
 GCP_CATALOG_SKIP_OPTIONS: frozenset[str] = frozenset(
     {
@@ -352,7 +565,7 @@ PROMPT_STAGE_GUIDANCE_PRODUCTION = """For Production:
 
 PROMPT_COMPONENTS_TEMPLATE = """You are a senior software architect.
 
-Using the product name, description, application platform, requirements, and stage (MVP or Production), identify the architecture components needed for this product.
+Using the product name, description, application platform, usage profile, and stage (MVP or Production), identify the architecture components needed for this product.
 
 ## Product
 
@@ -371,9 +584,9 @@ When choosing components, consider:
 - Services needed to support the selected platform.
 
 The return components should represent a complete runnable architecture.
-Include all components required for the system to function end-to-end, not only components explicitly mentioned in the requirements.
+Include all components required for the system to function end-to-end, not only components explicitly mentioned in the usage profile.
 
-## Requirements
+## Usage profile
 {requirement_lines}
 
 {stage_guidance}

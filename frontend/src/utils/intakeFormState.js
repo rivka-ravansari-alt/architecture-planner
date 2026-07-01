@@ -1,6 +1,6 @@
 import { INTAKE_FORM_CONFIG } from "../config/intakeFormConfig.js";
 
-const { productSection, architectureSection } = INTAKE_FORM_CONFIG;
+const { productSection, usageSection } = INTAKE_FORM_CONFIG;
 
 /** @param {import("../config/intakeFormConfig.js").FormField} field */
 function defaultFieldValue(field) {
@@ -14,19 +14,21 @@ function defaultFieldValue(field) {
       return [];
     case "boolean":
       return false;
+    case "number":
+      return "";
     default:
       return "";
   }
 }
 
-/** @param {import("../config/intakeFormConfig.js").FeatureToggle} toggle */
-function createFeatureState(toggle) {
+/** @param {import("../config/intakeFormConfig.js").UsageToggleGroup} toggle */
+function createUsageToggleState(toggle) {
   /** @type {Record<string, unknown>} */
-  const feature = { enabled: false };
+  const group = { enabled: false };
   for (const field of toggle.fields) {
-    feature[field.key] = defaultFieldValue(field);
+    group[field.key] = defaultFieldValue(field);
   }
-  return feature;
+  return group;
 }
 
 export function createEmptyIntakeForm() {
@@ -36,13 +38,18 @@ export function createEmptyIntakeForm() {
     product[field.key] = defaultFieldValue(field);
   }
 
-  /** @type {Record<string, Record<string, unknown>>} */
-  const features = {};
-  for (const toggle of architectureSection.toggles) {
-    features[toggle.key] = createFeatureState(toggle);
+  /** @type {Record<string, unknown>} */
+  const usage = {};
+  for (const block of usageSection.questionBlocks) {
+    for (const field of block.fields) {
+      usage[field.key] = defaultFieldValue(field);
+    }
+  }
+  for (const toggle of usageSection.toggleGroups) {
+    usage[toggle.key] = createUsageToggleState(toggle);
   }
 
-  return { product, features };
+  return { product, usage };
 }
 
 export const EMPTY_INTAKE_FORM = createEmptyIntakeForm();
@@ -72,18 +79,22 @@ export function setIntakeValue(intakeForm, path, value) {
 
 /**
  * @param {ReturnType<typeof createEmptyIntakeForm>} intakeForm
- * @param {string} featureKey
+ * @param {string} toggleKey
  * @param {boolean} enabled
  */
-export function setFeatureEnabled(intakeForm, featureKey, enabled) {
-  const toggle = architectureSection.toggles.find((item) => item.key === featureKey);
+export function setUsageToggleEnabled(intakeForm, toggleKey, enabled) {
+  const toggle = usageSection.toggleGroups.find((item) => item.key === toggleKey);
   if (!toggle) return intakeForm;
 
-  let next = setIntakeValue(intakeForm, ["features", featureKey, "enabled"], enabled);
+  let next = setIntakeValue(intakeForm, ["usage", toggleKey, "enabled"], enabled);
 
   if (!enabled) {
     for (const field of toggle.fields) {
-      next = setIntakeValue(next, ["features", featureKey, field.key], defaultFieldValue(field));
+      next = setIntakeValue(
+        next,
+        ["usage", toggleKey, field.key],
+        defaultFieldValue(field)
+      );
     }
   }
 
@@ -101,12 +112,21 @@ export function setProductField(intakeForm, fieldKey, value) {
 
 /**
  * @param {ReturnType<typeof createEmptyIntakeForm>} intakeForm
- * @param {string} featureKey
  * @param {string} fieldKey
  * @param {unknown} value
  */
-export function setFeatureField(intakeForm, featureKey, fieldKey, value) {
-  return setIntakeValue(intakeForm, ["features", featureKey, fieldKey], value);
+export function setUsageField(intakeForm, fieldKey, value) {
+  return setIntakeValue(intakeForm, ["usage", fieldKey], value);
+}
+
+/**
+ * @param {ReturnType<typeof createEmptyIntakeForm>} intakeForm
+ * @param {string} toggleKey
+ * @param {string} fieldKey
+ * @param {unknown} value
+ */
+export function setUsageToggleField(intakeForm, toggleKey, fieldKey, value) {
+  return setIntakeValue(intakeForm, ["usage", toggleKey, fieldKey], value);
 }
 
 /**

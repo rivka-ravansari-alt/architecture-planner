@@ -416,13 +416,12 @@ class GenerationService:
         self._logger.log_step(
             "estimate_costs", project_id=project_id, request_id=request_id, status="started"
         )
-        flags = self._mapper.feature_flags_from_components(components)
-        costs = self._cost_estimator.estimate(
+        costs = self._cost_estimator.estimate_from_components(
+            components=components,
             expected_users=project.expected_users,
             stage=project.stage,
-            file_upload=flags["file_upload"],
-            ai=flags["ai"],
-            background_processing=flags["background_processing"],
+            capabilities=self._project_capabilities(project),
+            usage_profile=self._project_usage_profile(project),
         )
         self._logger.log_step(
             "estimate_costs",
@@ -432,6 +431,27 @@ class GenerationService:
             reason=f"estimates={len(costs)}",
         )
         return costs
+
+    @staticmethod
+    def _project_usage_profile(project: Project) -> dict[str, object] | None:
+        answers = project.answers
+        if answers is None or not answers.usage_profile:
+            return None
+        return dict(answers.usage_profile)
+
+    @staticmethod
+    def _project_capabilities(project: Project) -> dict[str, bool]:
+        answers = project.answers
+        if answers is None:
+            return {}
+        return {
+            "auth": bool(answers.auth),
+            "file_upload": bool(answers.file_upload),
+            "background_processing": bool(answers.background_processing),
+            "dashboards": bool(answers.dashboards),
+            "ai": bool(answers.ai),
+            "payments": bool(answers.payments),
+        }
 
     def _complete_request(
         self,

@@ -80,7 +80,11 @@ export default function AppShell({
           )}
 
           {step === 2 && (
-            <StepRequirements intakeForm={intakeForm} setIntakeForm={setIntakeForm} />
+            <StepRequirements
+              intakeForm={intakeForm}
+              setIntakeForm={setIntakeForm}
+              errors={errors}
+            />
           )}
 
           {step === 3 && (
@@ -100,11 +104,7 @@ export default function AppShell({
           )}
 
           {step === 5 && (
-            <StepPricing
-              components={components}
-              costs={derived?.costs}
-              hasPricing={hasPricing}
-            />
+            <StepPricing components={components} costs={derived?.costs} />
           )}
 
           {step === 6 && project && (
@@ -114,7 +114,6 @@ export default function AppShell({
               projectTypes={projectTypes}
               components={components}
               costs={derived?.costs}
-              hasPricing={hasPricing}
             />
           )}
 
