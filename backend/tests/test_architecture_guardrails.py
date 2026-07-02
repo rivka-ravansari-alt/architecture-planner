@@ -78,10 +78,10 @@ def test_demotes_required_analytics_when_dashboards_disabled(small_mvp_project, 
     result = _validate_and_apply(payload, small_mvp_project, ai_validator)
     analytics = next(item for item in result["components"] if item["type"] == "analytics")
     assert analytics["tag"] == "optional"
-    assert analytics["cloud_options"]["aws"] == ["CloudWatch Dashboards", "Athena", "QuickSight"]
+    assert analytics["cloud_mappings"]["aws"] == "CloudWatch Dashboards"
 
 
-def test_ignores_llm_cloud_options_and_uses_hardcoded_defaults(small_mvp_project, ai_validator):
+def test_ignores_llm_cloud_options_and_uses_db_defaults(small_mvp_project, ai_validator):
     payload = copy.deepcopy(VALID_AI_PAYLOAD)
     payload["components"].append(
         {
@@ -128,12 +128,12 @@ def test_ignores_llm_cloud_options_and_uses_hardcoded_defaults(small_mvp_project
 
     result = _validate_and_apply(payload, small_mvp_project, ai_validator)
     ai_component = next(item for item in result["components"] if item["type"] == "ai_provider")
-    assert ai_component["cloud_options"]["aws"] == ["Bedrock"]
-    assert ai_component["cloud_options"]["gcp"] == ["Gemini API", "Vertex AI"]
-    assert ai_component["implementation_options"]["recommended"] == "managed_service"
+    assert ai_component["cloud_mappings"]["aws"] == "Bedrock"
+    assert ai_component["cloud_mappings"]["gcp"] == "Gemini API"
+    assert "implementation_options" not in ai_component
 
 
-def test_uses_hardcoded_database_cloud_options(small_mvp_project, ai_validator):
+def test_uses_db_cloud_mappings(small_mvp_project, ai_validator):
     payload = copy.deepcopy(VALID_AI_PAYLOAD)
     payload["components"].append(
         {
@@ -179,8 +179,8 @@ def test_uses_hardcoded_database_cloud_options(small_mvp_project, ai_validator):
 
     result = _validate_and_apply(payload, small_mvp_project, ai_validator)
     normalized_db = next(item for item in result["components"] if item["type"] == "database")
-    assert normalized_db["cloud_options"]["aws"] == ["DynamoDB", "RDS"]
-    assert normalized_db["cloud_options"]["gcp"] == ["Cloud Firestore", "Cloud SQL"]
+    assert normalized_db["cloud_mappings"]["aws"] == "DynamoDB"
+    assert normalized_db["cloud_mappings"]["gcp"] == "Cloud Firestore"
 
 
 def test_existing_valid_fixture_still_passes_through_guardrails(small_mvp_project, ai_validator):

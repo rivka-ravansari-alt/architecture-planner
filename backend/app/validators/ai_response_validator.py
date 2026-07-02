@@ -13,27 +13,14 @@ from app.config.params import (
     DIAGRAM_KEYS,
     ERR_AI_NO_JSON_OBJECT,
     ERR_AI_RESPONSE_EMPTY,
-    IMPLEMENTATION_MODEL_LABELS,
     VALID_COMPONENT_TAGS,
     VALID_DIAGRAM_GROUPS,
-    VALID_IMPLEMENTATION_MODELS,
 )
 from app.core.exceptions import AIValidationError
 from app.services.catalog_service import CatalogService
 from app.services.cloud_defaults_service import CloudDefaultsService
 from app.utils.component_type import normalize_component_type
 from app.utils.diagram_migration import migrate_diagram_keys
-
-_DEFAULT_IMPLEMENTATION_OPTIONS: dict[str, object] = {
-    "recommended": "managed_service",
-    "managed_service": {
-        "when_to_use": "Managed platform suitable for this component at the requested scale.",
-        "cost_impact": "Varies with usage and scale.",
-        "pros": [],
-        "cons": [],
-    },
-}
-
 
 class AIResponseValidator:
     def __init__(
@@ -96,8 +83,9 @@ class AIResponseValidator:
         for component in payload.get("components", []):
             if not isinstance(component, dict):
                 continue
-            if "implementation_options" not in component:
-                component["implementation_options"] = dict(_DEFAULT_IMPLEMENTATION_OPTIONS)
+            for key in list(component.keys()):
+                if key not in {"name", "type", "tag", "reason"}:
+                    component.pop(key, None)
 
         diagram = payload.get("diagram")
         if isinstance(diagram, dict) and "diagrams" not in payload:
@@ -165,100 +153,7 @@ class AIResponseValidator:
             )
         component["tag"] = tag
         component["reason"] = self._cloud_defaults.default_reason_for_type(component_type)
-        component["cloud_options"] = self._cloud_defaults.normalize_cloud_options(component)
-        component["implementation_options"] = self._normalize_implementation_options(
-            component.get("implementation_options"),
-            index,
-        )
-
-    def _normalize_implementation_options(
-        self,
-        value: Any,
-        index: int,
-    ) -> dict[str, Any]:
-        if not isinstance(value, dict):
-            raise AIValidationError(
-                f"components[{index}].implementation_options must be an object."
-            )
-
-        recommended = str(value.get("recommended", "")).strip().lower()
-        if recommended not in VALID_IMPLEMENTATION_MODELS:
-            allowed = ", ".join(sorted(VALID_IMPLEMENTATION_MODELS))
-            raise AIValidationError(
-                f"components[{index}].implementation_options.recommended must be one of: "
-                f"{allowed}, got '{value.get('recommended')}'."
-            )
-
-        normalized: dict[str, Any] = {"recommended": recommended}
-        for model in VALID_IMPLEMENTATION_MODELS:
-            raw = value.get(model)
-            if raw is None:
-                continue
-            detail = self._normalize_option_detail(raw, index, model)
-            if detail:
-                normalized[model] = detail
-
-        recommended_detail = normalized.get(recommended)
-        recommended_when = (
-            recommended_detail.get("when_to_use", "")
-            if isinstance(recommended_detail, dict)
-            else ""
-        )
-        if not str(recommended_when).strip():
-            label = IMPLEMENTATION_MODEL_LABELS.get(recommended, recommended)
-            raise AIValidationError(
-                f"components[{index}].implementation_options must include a non-empty "
-                f"when_to_use for the recommended model ({label})."
-            )
-
-        return normalized
-
-    def _normalize_option_detail(
-        self,
-        raw: Any,
-        index: int,
-        model: str,
-    ) -> dict[str, Any] | None:
-        field_path = f"components[{index}].implementation_options.{model}"
-
-        if isinstance(raw, str):
-            when_to_use = raw.strip()
-            if not when_to_use:
-                return None
-            not_applicable = when_to_use.lower().startswith("not applicable")
-            detail: dict[str, Any] = {
-                "when_to_use": when_to_use,
-                "cost_impact": "" if not_applicable else "Varies with usage and scale.",
-                "pros": [],
-                "cons": [],
-            }
-            if not_applicable:
-                detail["not_applicable"] = True
-            return detail
-
-        if not isinstance(raw, dict):
-            raise AIValidationError(f"{field_path} must be a string or object.")
-
-        when_to_use = str(raw.get("when_to_use", "")).strip()
-        if not when_to_use:
-            raise AIValidationError(f"{field_path}.when_to_use is required.")
-
-        cost_impact = str(raw.get("cost_impact", "")).strip()
-        pros = self._normalize_string_list(raw.get("pros"), f"{field_path}.pros")
-        cons = self._normalize_string_list(raw.get("cons"), f"{field_path}.cons")
-        not_applicable = bool(raw.get("not_applicable")) or when_to_use.lower().startswith(
-            "not applicable"
-        )
-
-        detail = {
-            "when_to_use": when_to_use,
-            "cost_impact": cost_impact,
-            "pros": pros,
-            "cons": cons,
-        }
-        if not_applicable:
-            detail["not_applicable"] = True
-        return detail
+        component["cloud_mappings"] = self._cloud_defaults.normalize_cloud_mapping(component)
 
     @staticmethod
     def _normalize_string_list(value: Any, field_path: str) -> list[str]:

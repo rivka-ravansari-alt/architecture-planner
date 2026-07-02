@@ -89,13 +89,12 @@ class ProjectRepository(BaseRepository):
                 source=item.source or COMPONENT_SOURCE_AI,
                 optional=item.optional,
                 order=order * 10,
-                implementation_options=item.implementation_options,
             )
             cloud = item.cloud_mapping
             component.cloud_mapping = CloudMapping(
-                aws=cloud.aws if cloud else [],
-                gcp=cloud.gcp if cloud else [],
-                azure=cloud.azure if cloud else [],
+                aws=cloud.aws if cloud else None,
+                gcp=cloud.gcp if cloud else None,
+                azure=cloud.azure if cloud else None,
             )
             project.components.append(component)
         project.workflow_status = WORKFLOW_STATUS_COMPONENTS_APPROVED
@@ -158,12 +157,11 @@ class ProjectRepository(BaseRepository):
                 source=comp.source or COMPONENT_SOURCE_AI,
                 optional=comp.optional,
                 order=comp.order,
-                implementation_options=comp.implementation_options or None,
             )
             component.cloud_mapping = CloudMapping(
-                aws=comp.cloud.get("aws", []),
-                gcp=comp.cloud.get("gcp", []),
-                azure=comp.cloud.get("azure", []),
+                aws=comp.cloud.get("aws"),
+                gcp=comp.cloud.get("gcp"),
+                azure=comp.cloud.get("azure"),
             )
             project.components.append(component)
 

@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { api } from "../api/index.js";
 import { deriveArchitecture } from "../features/architecture/utils/deriveArchitecture.js";
 import { WORKFLOW_STATUS } from "../constants/wizard.js";
+import { normalizeCloudMappings } from "../utils/cloudMappings.js";
 import { componentsToApiPayload } from "../utils/componentPayload.js";
 import { EMPTY_INTAKE_FORM } from "../utils/intakeFormState.js";
 import { toLegacyPayload } from "../utils/intakeFormMapper.js";
@@ -11,7 +12,10 @@ import { buildInputKey, validateBasicProduct } from "../utils/validation.js";
 const TOTAL_STEPS = 6;
 
 function cloneComponents(components) {
-  return components.map((component) => ({ ...component }));
+  return components.map((component) => ({
+    ...component,
+    cloud_mappings: normalizeCloudMappings(component),
+  }));
 }
 
 export function useWizard() {

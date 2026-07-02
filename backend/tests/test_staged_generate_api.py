@@ -14,9 +14,8 @@ def _components_payload_from_response(components):
                 "type": component["type"],
                 "reason": component["reason"],
                 "optional": component["optional"],
-                "cloud_mapping": component.get("cloud_mapping")
-                or {"aws": [], "gcp": [], "azure": []},
-                "implementation_options": component.get("implementation_options"),
+                "cloud_mappings": component.get("cloud_mappings")
+                or {"aws": None, "gcp": None, "azure": None},
             }
             for component in components
         ]
@@ -30,6 +29,9 @@ def test_staged_generation_flow(api_client, mock_ai_success):
     body = draft.json()
     assert body["workflow_status"] == "COMPONENTS_GENERATED"
     assert len(body["components"]) == 4
+    assert body["components"][0]["cloud_mappings"]["aws"]
+    assert "cloud_mapping" not in body["components"][0]
+    assert "implementation_options" not in body["components"][0]
     assert not body["architecture_summary"]
     assert body["architecture_diagrams"] is None
     assert not body["cost_estimates"]

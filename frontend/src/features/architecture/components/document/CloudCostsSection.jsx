@@ -1,10 +1,13 @@
 import Badge from "../../../../components/ui/Badge.jsx";
 import { PROVIDER_LABELS } from "../../../../constants/providers.js";
+import { normalizeCloudMappings } from "../../../../utils/cloudMappings.js";
 import { formatCloudServices } from "../../../../utils/text.js";
 import DocSubheading from "./DocSubheading.jsx";
 
 export default function CloudCostsSection({ components, costs }) {
-  const componentsWithCloud = components.filter((component) => component.cloud_mapping);
+  const componentsWithCloud = components.filter(
+    (component) => component.cloud_mappings || component.cloud_mapping
+  );
   const hasOptionalCost = costs.some((cost) => cost.optionalHigh > 0);
 
   return (
@@ -22,21 +25,25 @@ export default function CloudCostsSection({ components, costs }) {
             </tr>
           </thead>
           <tbody>
-            {componentsWithCloud.map((component) => (
-              <tr key={component.key + component.name} className={component.optional ? "row-optional" : ""}>
-                <td>
-                  <strong>{component.name}</strong>
-                </td>
-                <td>
-                  <Badge variant={component.optional ? "optional" : "required"}>
-                    {component.optional ? "Optional" : "Required"}
-                  </Badge>
-                </td>
-                <td>{formatCloudServices(component.cloud_mapping.aws)}</td>
-                <td>{formatCloudServices(component.cloud_mapping.gcp)}</td>
-                <td>{formatCloudServices(component.cloud_mapping.azure)}</td>
-              </tr>
-            ))}
+            {componentsWithCloud.map((component) => {
+              const cloudMappings = normalizeCloudMappings(component);
+
+              return (
+                <tr key={component.key + component.name} className={component.optional ? "row-optional" : ""}>
+                  <td>
+                    <strong>{component.name}</strong>
+                  </td>
+                  <td>
+                    <Badge variant={component.optional ? "optional" : "required"}>
+                      {component.optional ? "Optional" : "Required"}
+                    </Badge>
+                  </td>
+                  <td>{formatCloudServices(cloudMappings.aws)}</td>
+                  <td>{formatCloudServices(cloudMappings.gcp)}</td>
+                  <td>{formatCloudServices(cloudMappings.azure)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

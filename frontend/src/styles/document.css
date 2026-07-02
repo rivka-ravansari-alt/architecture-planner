@@ -263,6 +263,7 @@
 }
 
 .doc-component-card {
+  container-type: inline-size;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px 18px;
@@ -281,6 +282,183 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
+}
+
+.doc-component-cloud-mappings {
+  margin-top: 12px;
+}
+
+.doc-component-cloud-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.doc-component-cloud-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: stretch;
+}
+
+@container (min-width: 560px) {
+  .doc-component-cloud-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.doc-cloud-service-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  height: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.doc-cloud-service-card.is-not-mapped {
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 1px #e5e7eb;
+}
+
+.doc-cloud-provider-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.doc-cloud-provider-logo {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.doc-cloud-provider-logo.provider-aws {
+  background: #fff7ed;
+}
+
+.doc-cloud-provider-logo.provider-gcp {
+  background: #eef6ff;
+}
+
+.doc-cloud-provider-logo.provider-azure {
+  background: #eff6ff;
+}
+
+.doc-cloud-provider-mark {
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.doc-cloud-provider-logo.provider-aws .doc-cloud-provider-mark::before {
+  content: "AWS";
+  position: absolute;
+  left: 50%;
+  top: 1px;
+  transform: translateX(-50%);
+  font-size: 0.38rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #232f3e;
+}
+
+.doc-cloud-provider-logo.provider-aws .doc-cloud-provider-mark::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  height: 5px;
+  border-bottom: 2px solid #ff9900;
+  border-radius: 0 0 50% 50%;
+  transform: rotate(-8deg);
+}
+
+.doc-cloud-provider-logo.provider-gcp .doc-cloud-provider-mark {
+  border-radius: 50%;
+  border-top: 4px solid #ea4335;
+  border-right: 4px solid #4285f4;
+  border-bottom: 4px solid #34a853;
+  border-left: 4px solid #fbbc05;
+}
+
+.doc-cloud-provider-logo.provider-gcp .doc-cloud-provider-mark::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: 5px;
+  width: 8px;
+  height: 4px;
+  background: #4285f4;
+}
+
+.doc-cloud-provider-logo.provider-azure .doc-cloud-provider-mark::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  bottom: 1px;
+  width: 12px;
+  height: 12px;
+  background: #0078d4;
+  clip-path: polygon(47% 0, 100% 100%, 0 100%);
+}
+
+.doc-cloud-provider-logo.provider-azure .doc-cloud-provider-mark::after {
+  content: "";
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 8px;
+  height: 8px;
+  background: #50a7ea;
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+
+.doc-cloud-service-card.is-not-mapped .doc-cloud-provider-logo {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+.doc-cloud-provider-name {
+  min-width: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #64748b;
+  overflow-wrap: break-word;
+}
+
+.doc-cloud-service-name {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #0f172a;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.doc-cloud-service-card.is-not-mapped .doc-cloud-service-name {
+  color: #94a3b8;
+  font-style: italic;
+  font-weight: 500;
 }
 
 .doc-component-title {
@@ -512,4 +690,5 @@
   .doc-status-grid {
     grid-template-columns: 1fr;
   }
+
 }

@@ -53,11 +53,16 @@ class ComponentMapperService:
                     optional=component.optional,
                     order=component.order,
                     cloud={
-                        "aws": cloud_mapping.aws if cloud_mapping else [],
-                        "gcp": cloud_mapping.gcp if cloud_mapping else [],
-                        "azure": cloud_mapping.azure if cloud_mapping else [],
+                        "aws": self._extract_selected_service(cloud_mapping.aws)
+                        if cloud_mapping
+                        else None,
+                        "gcp": self._extract_selected_service(cloud_mapping.gcp)
+                        if cloud_mapping
+                        else None,
+                        "azure": self._extract_selected_service(cloud_mapping.azure)
+                        if cloud_mapping
+                        else None,
                     },
-                    implementation_options=component.implementation_options or {},
                     source=component.source or COMPONENT_SOURCE_AI,
                 )
             )
@@ -82,8 +87,7 @@ class ComponentMapperService:
         component_type = self._resolve_component_type(item)
         key = self.infer_component_key(name, used_keys, component_type)
         used_keys.add(key)
-        cloud = self._extract_cloud_options(item["cloud_options"])
-        implementation_options = self._extract_implementation_options(item.get("implementation_options"))
+        cloud = self._extract_cloud_mapping(item.get("cloud_mappings") or {})
         return MappedComponent(
             key=key,
             name=name,
@@ -93,7 +97,6 @@ class ComponentMapperService:
             optional=optional,
             order=order * COMPONENT_ORDER_MULTIPLIER,
             cloud=cloud,
-            implementation_options=implementation_options,
             source=COMPONENT_SOURCE_AI,
         )
 
@@ -105,34 +108,20 @@ class ComponentMapperService:
             return DEFAULT_COMPONENT_TYPE
         return component_type
 
-    def _extract_cloud_options(self, cloud_options: dict) -> dict[str, list[str]]:
+    def _extract_cloud_mapping(self, cloud_options: dict) -> dict[str, str | None]:
         return {
-            provider: [
-                str(option).strip()
-                for option in cloud_options.get(provider, [])
-                if str(option).strip()
-            ]
+            provider: self._extract_selected_service(cloud_options.get(provider))
             for provider in CLOUD_PROVIDERS
         }
 
     @staticmethod
-    def _extract_implementation_options(value: Any) -> dict[str, Any]:
-        if not isinstance(value, dict):
-            return {}
-        normalized: dict[str, Any] = {}
-        for key, item in value.items():
-            field = str(key).strip()
-            if not field:
-                continue
-            if field == "recommended":
-                normalized[field] = str(item).strip().lower()
-            elif isinstance(item, dict):
-                normalized[field] = item
-            else:
-                text = str(item).strip()
-                if text:
-                    normalized[field] = text
-        return normalized
+    def _extract_selected_service(value: Any) -> str | None:
+        if isinstance(value, list):
+            value = next((item for item in value if str(item).strip()), None)
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
 
     def infer_component_key(
         self,

@@ -88,7 +88,6 @@ class ProjectComponent(Base):
     source: Mapped[str] = mapped_column(String(20), default="ai_generated")
     optional: Mapped[bool] = mapped_column(Boolean, default=False)
     order: Mapped[int] = mapped_column(Integer, default=0)
-    implementation_options: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     project: Mapped[Project] = relationship(back_populates="components")
     cloud_mapping: Mapped[CloudMapping | None] = relationship(
@@ -104,9 +103,9 @@ class CloudMapping(Base):
         ForeignKey("project_components.id", ondelete="CASCADE")
     )
 
-    aws: Mapped[list] = mapped_column(JSON, default=list)
-    gcp: Mapped[list] = mapped_column(JSON, default=list)
-    azure: Mapped[list] = mapped_column(JSON, default=list)
+    aws: Mapped[str | None] = mapped_column(JSON, nullable=True)
+    gcp: Mapped[str | None] = mapped_column(JSON, nullable=True)
+    azure: Mapped[str | None] = mapped_column(JSON, nullable=True)
 
     component: Mapped[ProjectComponent] = relationship(back_populates="cloud_mapping")
 

@@ -277,11 +277,10 @@ class GenerationService:
                     optional=component.optional,
                     source=component.source or "ai_generated",
                     cloud_mapping=CloudMappingIn(
-                        aws=cloud.aws if cloud else [],
-                        gcp=cloud.gcp if cloud else [],
-                        azure=cloud.azure if cloud else [],
+                        aws=cloud.aws if cloud else None,
+                        gcp=cloud.gcp if cloud else None,
+                        azure=cloud.azure if cloud else None,
                     ),
-                    implementation_options=component.implementation_options,
                 )
             )
         return payload
