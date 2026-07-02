@@ -79,7 +79,30 @@ class GcpCatalogNormalizer(CatalogNormalizer):
             "base_unit": str(expression.get("baseUnit", "")),
             "currency": "USD",
             "unit_price_usd": unit_price,
+            **self._free_tier_fields(pricing_info[0]),
         }
+
+    @staticmethod
+    def _free_tier_fields(pricing_info: dict[str, Any]) -> dict[str, float]:
+        expression = pricing_info.get("pricingExpression") or {}
+        tiered_rates = expression.get("tieredRates") or []
+        if len(tiered_rates) < 2:
+            return {}
+
+        first_price = GcpCatalogNormalizer._extract_unit_price_usd(pricing_info)
+        if first_price not in (0, 0.0):
+            return {}
+
+        start_amount = tiered_rates[1].get("startUsageAmount")
+        if start_amount is None:
+            return {}
+        try:
+            amount = float(start_amount)
+        except (TypeError, ValueError):
+            return {}
+        if amount <= 0:
+            return {}
+        return {"free_tier_amount": amount}
 
     @staticmethod
     def _extract_unit_price_usd(pricing_info: dict[str, Any]) -> float | None:

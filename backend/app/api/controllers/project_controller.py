@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from app.core.exceptions import ArchitectureGenerationError
+from app.core.exceptions import ArchitectureGenerationError, BadRequestError
 from app.models import User
 from app.schemas.project import (
     ComponentCatalogOut,
@@ -101,4 +101,9 @@ class ProjectController:
             result = self._generation.generate_pricing(project)
         except ArchitectureGenerationError:
             raise
+        except BadRequestError:
+            raise
+        except Exception as exc:
+            logger.exception("generate_pricing failed project_id=%s", project_id)
+            raise ArchitectureGenerationError(f"Pricing generation failed: {exc}") from exc
         return ProjectDetail.model_validate(result)

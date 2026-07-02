@@ -1,0 +1,1383 @@
+{
+  "summary": [
+    {
+      "scenario": "TaskFlow",
+      "users": "100",
+      "stage": "MVP",
+      "providers": {
+        "aws": {
+          "total_low": 18.61,
+          "total_high": 25.17,
+          "total": "$18.61-$25.17",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "File Storage (S3): $17.95-$24.28",
+            "Web Client (Amplify Hosting): $0.52-$0.70",
+            "Database (DynamoDB): $0.14-$0.19",
+            "API Gateway (API Gateway): $0.00-$0.00",
+            "Backend API (Lambda): $0.00-$0.00"
+          ],
+          "zeros": [
+            "API Gateway",
+            "Backend API",
+            "Authentication"
+          ],
+          "missing_roles": [
+            "Backend API: gb_seconds",
+            "Database: write_operations",
+            "Database: storage"
+          ],
+          "low_confidence": [
+            "Backend API",
+            "Authentication",
+            "Database"
+          ],
+          "outliers": [
+            "API Gateway: Zero-cost billable component",
+            "Backend API: Price outlier: low:mvp_100",
+            "Backend API: Zero-cost billable component",
+            "Backend API: Lambda missing gb_seconds likely underprices AWS serverless",
+            "Authentication: Zero-cost billable component"
+          ]
+        },
+        "gcp": {
+          "total_low": 3.78,
+          "total_high": 5.11,
+          "total": "$3.78-$5.11",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "File Storage (Cloud Storage): $2.86-$3.86",
+            "Database (Cloud Firestore): $0.70-$0.95",
+            "Backend API (Cloud Run): $0.22-$0.30",
+            "Web Client (Firebase Hosting): $0.00-$0.00",
+            "API Gateway (API Gateway): $0.00-$0.00"
+          ],
+          "zeros": [
+            "Web Client",
+            "API Gateway",
+            "Authentication"
+          ],
+          "missing_roles": [
+            "Web Client: hosting",
+            "Web Client: requests"
+          ],
+          "low_confidence": [
+            "Web Client",
+            "Authentication"
+          ],
+          "outliers": [
+            "Web Client: Price outlier: low:mvp_100",
+            "Web Client: Zero-cost billable component",
+            "Web Client: Thin hosting catalog likely underprices hosting",
+            "API Gateway: Zero-cost billable component",
+            "API Gateway: Manual GCP API Gateway request SKU; verify against live catalog",
+            "Authentication: Zero-cost billable component",
+            "Database: Firestore write role selected TTL delete SKU"
+          ]
+        },
+        "azure": {
+          "total_low": 76614.58,
+          "total_high": 103655.02,
+          "total": "$76,614.58-$103,655.02",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "File Storage (Blob Storage): $76,613.86-$103,654.04",
+            "Database (Azure Cosmos DB): $0.72-$0.98",
+            "Web Client (Azure App Service): $0.00-$0.00",
+            "API Gateway (API Management): $0.00-$0.00",
+            "Backend API (Functions): $0.00-$0.00"
+          ],
+          "zeros": [
+            "Web Client",
+            "API Gateway",
+            "Backend API",
+            "Authentication"
+          ],
+          "missing_roles": [
+            "Web Client: hosting",
+            "Web Client: storage",
+            "Web Client: requests"
+          ],
+          "low_confidence": [
+            "Web Client",
+            "API Gateway",
+            "Authentication",
+            "File Storage"
+          ],
+          "outliers": [
+            "Web Client: Price outlier: low:mvp_100",
+            "Web Client: Zero-cost billable component",
+            "Web Client: Thin hosting catalog likely underprices hosting",
+            "API Gateway: Zero-cost billable component",
+            "Backend API: Zero-cost billable component",
+            "Authentication: Zero-cost billable component",
+            "File Storage: Price outlier: high:mvp_100"
+          ]
+        }
+      }
+    },
+    {
+      "scenario": "ShopLite",
+      "users": "1000",
+      "stage": "MVP",
+      "providers": {
+        "aws": {
+          "total_low": 320.69,
+          "total_high": 395.23,
+          "total": "$320.69-$395.23",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Product Images (S3): $179.46-$242.79",
+            "Product DB (RDS): $136.06-$145.44",
+            "Storefront (Amplify Hosting): $5.17-$7.00",
+            "CDN (CloudFront): $0.00-$0.00",
+            "API Gateway (API Gateway): $0.00-$0.00"
+          ],
+          "zeros": [
+            "CDN",
+            "API Gateway",
+            "Order Service"
+          ],
+          "missing_roles": [
+            "CDN: egress",
+            "Order Service: gb_seconds",
+            "Product DB: read_operations",
+            "Product DB: write_operations"
+          ],
+          "low_confidence": [
+            "CDN",
+            "Order Service",
+            "Product DB",
+            "Payments"
+          ],
+          "outliers": [
+            "CDN: Price outlier: low:mvp_1000",
+            "CDN: Zero-cost billable component",
+            "API Gateway: Zero-cost billable component",
+            "Order Service: Price outlier: low:mvp_1000",
+            "Order Service: Zero-cost billable component",
+            "Order Service: Lambda missing gb_seconds likely underprices AWS serverless"
+          ]
+        },
+        "gcp": {
+          "total_low": 145.5,
+          "total_high": 174.39,
+          "total": "$145.50-$174.39",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Product DB (Cloud SQL): $81.66-$99.66",
+            "Product Images (Cloud Storage): $28.56-$38.64",
+            "CDN (Networking): $33.00-$33.00",
+            "Order Service (Cloud Run): $2.24-$3.04",
+            "API Gateway (API Gateway): $0.04-$0.05"
+          ],
+          "zeros": [
+            "Storefront"
+          ],
+          "missing_roles": [
+            "Storefront: hosting",
+            "Storefront: requests",
+            "Product DB: read_operations"
+          ],
+          "low_confidence": [
+            "Storefront",
+            "Product DB",
+            "Payments"
+          ],
+          "outliers": [
+            "Storefront: Price outlier: low:mvp_1000",
+            "Storefront: Zero-cost billable component",
+            "Storefront: Thin hosting catalog likely underprices hosting",
+            "API Gateway: Manual GCP API Gateway request SKU; verify against live catalog"
+          ]
+        },
+        "azure": {
+          "total_low": 766400.67,
+          "total_high": 1036845.36,
+          "total": "$766,400.67-$1,036,845.36",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Product Images (Blob Storage): $766,138.58-$1,036,540.42",
+            "Product DB (SQL Database): $132.77-$175.61",
+            "CDN (Content Delivery Network): $129.30-$129.30",
+            "Order Service (Functions): $0.02-$0.03",
+            "Storefront (Azure App Service): $0.00-$0.00"
+          ],
+          "zeros": [
+            "Storefront",
+            "API Gateway"
+          ],
+          "missing_roles": [
+            "Storefront: hosting",
+            "Storefront: storage",
+            "Storefront: requests",
+            "Product DB: read_operations",
+            "Product DB: write_operations"
+          ],
+          "low_confidence": [
+            "Storefront",
+            "API Gateway",
+            "Product DB",
+            "Product Images",
+            "Payments"
+          ],
+          "outliers": [
+            "Storefront: Price outlier: low:mvp_1000",
+            "Storefront: Zero-cost billable component",
+            "Storefront: Thin hosting catalog likely underprices hosting",
+            "API Gateway: Zero-cost billable component",
+            "Product Images: Price outlier: high:mvp_1000"
+          ]
+        }
+      }
+    },
+    {
+      "scenario": "InsightAI",
+      "users": "1000",
+      "stage": "MVP",
+      "providers": {
+        "aws": {
+          "total_low": 237.19,
+          "total_high": 320.89,
+          "total": "$237.19-$320.89",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Document Storage (S3): $179.46-$242.79",
+            "AI Inference (Bedrock): $51.18-$69.24",
+            "Web App (Amplify Hosting): $5.17-$7.00",
+            "Metadata DB (DynamoDB): $1.38-$1.86",
+            "API Gateway (API Gateway): $0.00-$0.00"
+          ],
+          "zeros": [
+            "API Gateway",
+            "API Service",
+            "Job Worker",
+            "Message Queue"
+          ],
+          "missing_roles": [
+            "API Service: gb_seconds",
+            "Job Worker: gb_seconds",
+            "Message Queue: queue_messages",
+            "AI Inference: input_tokens",
+            "AI Inference: output_tokens",
+            "Metadata DB: write_operations",
+            "Metadata DB: storage"
+          ],
+          "low_confidence": [
+            "API Service",
+            "Job Worker",
+            "Message Queue",
+            "AI Inference",
+            "Metadata DB"
+          ],
+          "outliers": [
+            "API Gateway: Zero-cost billable component",
+            "API Service: Price outlier: low:mvp_1000",
+            "API Service: Zero-cost billable component",
+            "API Service: Lambda missing gb_seconds likely underprices AWS serverless",
+            "Job Worker: Price outlier: low:mvp_1000",
+            "Job Worker: Zero-cost billable component",
+            "Job Worker: Lambda missing gb_seconds likely underprices AWS serverless",
+            "Message Queue: Zero-cost billable component"
+          ]
+        },
+        "gcp": {
+          "total_low": 40.4,
+          "total_high": 54.67,
+          "total": "$40.40-$54.67",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Document Storage (Cloud Storage): $28.56-$38.64",
+            "Metadata DB (Cloud Firestore): $7.01-$9.49",
+            "API Service (Cloud Run): $2.24-$3.04",
+            "Job Worker (Cloud Run): $2.24-$3.04",
+            "AI Inference (Vertex AI): $0.31-$0.41"
+          ],
+          "zeros": [
+            "Web App",
+            "Message Queue"
+          ],
+          "missing_roles": [
+            "Web App: hosting",
+            "Web App: requests",
+            "AI Inference: input_tokens",
+            "AI Inference: output_tokens"
+          ],
+          "low_confidence": [
+            "Web App",
+            "Message Queue",
+            "AI Inference"
+          ],
+          "outliers": [
+            "Web App: Price outlier: low:mvp_1000",
+            "Web App: Zero-cost billable component",
+            "Web App: Thin hosting catalog likely underprices hosting",
+            "API Gateway: Manual GCP API Gateway request SKU; verify against live catalog",
+            "Message Queue: Zero-cost billable component",
+            "AI Inference: Price outlier: low:mvp_1000",
+            "Metadata DB: Firestore write role selected TTL delete SKU"
+          ]
+        },
+        "azure": {
+          "total_low": 770904.98,
+          "total_high": 1042989.09,
+          "total": "$770,904.98-$1,042,989.09",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Document Storage (Blob Storage): $766,138.58-$1,036,540.42",
+            "AI Inference (Foundry Models): $4,759.15-$6,438.85",
+            "Metadata DB (Azure Cosmos DB): $7.22-$9.78",
+            "API Service (Functions): $0.02-$0.03",
+            "Job Worker (Functions): $0.01-$0.01"
+          ],
+          "zeros": [
+            "Web App",
+            "API Gateway",
+            "Message Queue"
+          ],
+          "missing_roles": [
+            "Web App: hosting",
+            "Web App: storage",
+            "Web App: requests",
+            "Message Queue: queue_messages",
+            "AI Inference: input_tokens",
+            "AI Inference: output_tokens"
+          ],
+          "low_confidence": [
+            "Web App",
+            "API Gateway",
+            "Message Queue",
+            "Document Storage",
+            "AI Inference"
+          ],
+          "outliers": [
+            "Web App: Price outlier: low:mvp_1000",
+            "Web App: Zero-cost billable component",
+            "Web App: Thin hosting catalog likely underprices hosting",
+            "API Gateway: Zero-cost billable component",
+            "Message Queue: Zero-cost billable component",
+            "Document Storage: Price outlier: high:mvp_1000",
+            "AI Inference: Price outlier: high:mvp_1000"
+          ]
+        }
+      }
+    },
+    {
+      "scenario": "HealthPortal",
+      "users": "10000",
+      "stage": "Production",
+      "providers": {
+        "aws": {
+          "total_low": 6104.73,
+          "total_high": 8220.72,
+          "total": "$6,104.73-$8,220.72",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Medical Files (S3): $5,357.12-$7,247.88",
+            "Patient Records (RDS): $640.75-$828.25",
+            "Patient Portal (Amplify Hosting): $106.25-$143.76",
+            "Core API (ECS Fargate): $0.61-$0.83",
+            "Load Balancer (Application Load Balancer): $0.00-$0.00"
+          ],
+          "zeros": [
+            "Load Balancer",
+            "API Gateway",
+            "Identity",
+            "Monitoring"
+          ],
+          "missing_roles": [
+            "Patient Records: read_operations",
+            "Patient Records: write_operations"
+          ],
+          "low_confidence": [
+            "Load Balancer",
+            "Identity",
+            "Patient Records",
+            "Medical Files"
+          ],
+          "outliers": [
+            "Load Balancer: Price outlier: low:production_10000",
+            "Load Balancer: Zero-cost billable component",
+            "API Gateway: Zero-cost billable component",
+            "Identity: Zero-cost billable component",
+            "Medical Files: Price warning: high:production_10000",
+            "Monitoring: Zero-cost billable component"
+          ]
+        },
+        "gcp": {
+          "total_low": 1743.78,
+          "total_high": 2348.42,
+          "total": "$1,743.78-$2,348.42",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Patient Records (Cloud SQL): $1,050.66-$1,410.66",
+            "Medical Files (Cloud Storage): $579.85-$784.51",
+            "Load Balancer (Networking): $56.10-$75.90",
+            "Core API (Cloud Run): $56.10-$75.90",
+            "API Gateway (API Gateway): $1.07-$1.45"
+          ],
+          "zeros": [
+            "Patient Portal",
+            "Identity",
+            "Monitoring"
+          ],
+          "missing_roles": [
+            "Patient Portal: hosting",
+            "Patient Portal: requests",
+            "Load Balancer: gateway_capacity",
+            "Patient Records: read_operations"
+          ],
+          "low_confidence": [
+            "Patient Portal",
+            "Load Balancer",
+            "Identity",
+            "Patient Records"
+          ],
+          "outliers": [
+            "Patient Portal: Price outlier: low:production_10000",
+            "Patient Portal: Zero-cost billable component",
+            "Patient Portal: Thin hosting catalog likely underprices hosting",
+            "API Gateway: Manual GCP API Gateway request SKU; verify against live catalog",
+            "Identity: Zero-cost billable component",
+            "Monitoring: Zero-cost billable component"
+          ]
+        },
+        "azure": {
+          "total_low": 15327873.35,
+          "total_high": 20737703.27,
+          "total": "$15,327,873.35-$20,737,703.27",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Medical Files (Blob Storage): $15,325,423.50-$20,734,396.50",
+            "Patient Records (SQL Database): $2,449.50-$3,306.30",
+            "Core API (Azure Container Apps): $0.35-$0.47",
+            "Patient Portal (Azure App Service): $0.00-$0.00",
+            "Load Balancer (Application Gateway): $0.00-$0.00"
+          ],
+          "zeros": [
+            "Patient Portal",
+            "Load Balancer",
+            "API Gateway",
+            "Identity",
+            "Monitoring"
+          ],
+          "missing_roles": [
+            "Patient Portal: hosting",
+            "Patient Portal: storage",
+            "Patient Portal: requests",
+            "Patient Records: read_operations",
+            "Patient Records: write_operations"
+          ],
+          "low_confidence": [
+            "Patient Portal",
+            "Load Balancer",
+            "API Gateway",
+            "Identity",
+            "Patient Records",
+            "Medical Files",
+            "Monitoring"
+          ],
+          "outliers": [
+            "Patient Portal: Price outlier: low:production_10000",
+            "Patient Portal: Zero-cost billable component",
+            "Patient Portal: Thin hosting catalog likely underprices hosting",
+            "Load Balancer: Price outlier: low:production_10000",
+            "Load Balancer: Zero-cost billable component",
+            "API Gateway: Price outlier: low:production_10000",
+            "API Gateway: Zero-cost billable component",
+            "Identity: Zero-cost billable component",
+            "Medical Files: Price outlier: high:production_10000",
+            "Monitoring: Price outlier: low:production_10000",
+            "Monitoring: Zero-cost billable component"
+          ]
+        }
+      }
+    },
+    {
+      "scenario": "SocialFeed",
+      "users": "10000",
+      "stage": "MVP",
+      "providers": {
+        "aws": {
+          "total_low": 1883.43,
+          "total_high": 2539.93,
+          "total": "$1,883.43-$2,539.93",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Media Storage (S3): $1,794.56-$2,427.94",
+            "Mobile App (Amplify): $51.71-$69.96",
+            "Feed Cache (ElastiCache): $23.36-$23.36",
+            "User Data (DynamoDB): $13.77-$18.63",
+            "Feed API (Lambda): $0.02-$0.03"
+          ],
+          "zeros": [
+            "Media CDN",
+            "API Gateway"
+          ],
+          "missing_roles": [
+            "Media CDN: egress",
+            "Feed API: gb_seconds",
+            "User Data: write_operations",
+            "User Data: storage",
+            "Media Processor: gb_seconds"
+          ],
+          "low_confidence": [
+            "Media CDN",
+            "Feed API",
+            "User Data",
+            "Media Processor"
+          ],
+          "outliers": [
+            "Media CDN: Price outlier: low:production_10000",
+            "Media CDN: Zero-cost billable component",
+            "API Gateway: Zero-cost billable component",
+            "Feed API: Price outlier: low:production_10000",
+            "Feed API: Lambda missing gb_seconds likely underprices AWS serverless",
+            "Media Processor: Price outlier: low:production_10000",
+            "Media Processor: Lambda missing gb_seconds likely underprices AWS serverless"
+          ]
+        },
+        "gcp": {
+          "total_low": 1242.6,
+          "total_high": 1384.11,
+          "total": "$1,242.60-$1,384.11",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Feed Cache (Cloud Memorystore for Redis): $511.62-$511.62",
+            "Media Storage (Cloud Storage): $285.61-$386.41",
+            "Media CDN (Networking): $330.00-$330.00",
+            "User Data (Cloud Firestore): $70.13-$94.88",
+            "Feed API (Cloud Run): $22.44-$30.36"
+          ],
+          "zeros": [
+            "Mobile App"
+          ],
+          "missing_roles": [
+            "Mobile App: storage",
+            "Mobile App: requests"
+          ],
+          "low_confidence": [
+            "Mobile App"
+          ],
+          "outliers": [
+            "Mobile App: Price outlier: low:production_10000",
+            "Mobile App: Zero-cost billable component",
+            "Mobile App: Thin hosting catalog likely underprices hosting",
+            "API Gateway: Manual GCP API Gateway request SKU; verify against live catalog",
+            "User Data: Firestore write role selected TTL delete SKU"
+          ]
+        },
+        "azure": {
+          "total_low": 7662779.01,
+          "total_high": 10366823.11,
+          "total": "$7,662,779.01-$10,366,823.11",
+          "previous": "$0.00-$0.00",
+          "top5": [
+            "Media Storage (Blob Storage): $7,661,385.75-$10,365,404.25",
+            "Media CDN (Content Delivery Network): $1,293.00-$1,293.00",
+            "User Data (Azure Cosmos DB): $72.25-$97.75",
+            "Feed Cache (Redis Cache): $27.74-$27.74",
+            "Feed API (Functions): $0.21-$0.29"
+          ],
+          "zeros": [
+            "Mobile App",
+            "API Gateway"
+          ],
+          "missing_roles": [],
+          "low_confidence": [
+            "Mobile App",
+            "API Gateway",
+            "Media Storage"
+          ],
+          "outliers": [
+            "Mobile App: Zero-cost billable component",
+            "API Gateway: Price outlier: low:production_10000",
+            "API Gateway: Zero-cost billable component",
+            "Media Storage: Price outlier: high:production_10000"
+          ]
+        }
+      }
+    }
+  ],
+  "comparison": [
+    {
+      "scenario": "TaskFlow",
+      "aws": "$18.61-$25.17",
+      "gcp": "$3.78-$5.11",
+      "azure": "$76,614.58-$103,655.02"
+    },
+    {
+      "scenario": "ShopLite",
+      "aws": "$320.69-$395.23",
+      "gcp": "$145.50-$174.39",
+      "azure": "$766,400.67-$1,036,845.36"
+    },
+    {
+      "scenario": "InsightAI",
+      "aws": "$237.19-$320.89",
+      "gcp": "$40.40-$54.67",
+      "azure": "$770,904.98-$1,042,989.09"
+    },
+    {
+      "scenario": "HealthPortal",
+      "aws": "$6,104.73-$8,220.72",
+      "gcp": "$1,743.78-$2,348.42",
+      "azure": "$15,327,873.35-$20,737,703.27"
+    },
+    {
+      "scenario": "SocialFeed",
+      "aws": "$1,883.43-$2,539.93",
+      "gcp": "$1,242.60-$1,384.11",
+      "azure": "$7,662,779.01-$10,366,823.11"
+    }
+  ],
+  "role_counts": [
+    [
+      "requests",
+      9
+    ],
+    [
+      "storage",
+      8
+    ],
+    [
+      "hosting",
+      8
+    ],
+    [
+      "write_operations",
+      7
+    ],
+    [
+      "gb_seconds",
+      6
+    ],
+    [
+      "read_operations",
+      6
+    ],
+    [
+      "input_tokens",
+      3
+    ],
+    [
+      "output_tokens",
+      3
+    ],
+    [
+      "egress",
+      2
+    ],
+    [
+      "queue_messages",
+      2
+    ],
+    [
+      "gateway_capacity",
+      1
+    ]
+  ],
+  "zero_counts": {
+    "aws": 16,
+    "gcp": 10,
+    "azure": 16
+  },
+  "price_note_counts": [
+    [
+      "price_outlier:low:production_10000",
+      11
+    ],
+    [
+      "price_outlier:low:mvp_1000",
+      9
+    ],
+    [
+      "price_outlier:low:mvp_100",
+      3
+    ],
+    [
+      "price_outlier:high:mvp_1000",
+      3
+    ],
+    [
+      "price_outlier:high:production_10000",
+      2
+    ],
+    [
+      "price_outlier:high:mvp_100",
+      1
+    ],
+    [
+      "price_warning:high:production_10000",
+      1
+    ]
+  ],
+  "outlier_count": 95,
+  "outliers": [
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component": "Backend API",
+      "service": "Lambda",
+      "flag": "Price outlier: low:mvp_100"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component": "Backend API",
+      "service": "Lambda",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component": "Backend API",
+      "service": "Lambda",
+      "flag": "Lambda missing gb_seconds likely underprices AWS serverless"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component": "Authentication",
+      "service": "Cognito",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component": "Web Client",
+      "service": "Firebase Hosting",
+      "flag": "Price outlier: low:mvp_100"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component": "Web Client",
+      "service": "Firebase Hosting",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component": "Web Client",
+      "service": "Firebase Hosting",
+      "flag": "Thin hosting catalog likely underprices hosting"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Manual GCP API Gateway request SKU; verify against live catalog"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component": "Authentication",
+      "service": "Firebase Authentication",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component": "Database",
+      "service": "Cloud Firestore",
+      "flag": "Firestore write role selected TTL delete SKU"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component": "Web Client",
+      "service": "Azure App Service",
+      "flag": "Price outlier: low:mvp_100"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component": "Web Client",
+      "service": "Azure App Service",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component": "Web Client",
+      "service": "Azure App Service",
+      "flag": "Thin hosting catalog likely underprices hosting"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component": "API Gateway",
+      "service": "API Management",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component": "Backend API",
+      "service": "Functions",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component": "Authentication",
+      "service": "Entra ID B2C",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component": "File Storage",
+      "service": "Blob Storage",
+      "flag": "Price outlier: high:mvp_100"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component": "CDN",
+      "service": "CloudFront",
+      "flag": "Price outlier: low:mvp_1000"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component": "CDN",
+      "service": "CloudFront",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component": "Order Service",
+      "service": "Lambda",
+      "flag": "Price outlier: low:mvp_1000"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component": "Order Service",
+      "service": "Lambda",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component": "Order Service",
+      "service": "Lambda",
+      "flag": "Lambda missing gb_seconds likely underprices AWS serverless"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component": "Storefront",
+      "service": "Firebase Hosting",
+      "flag": "Price outlier: low:mvp_1000"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component": "Storefront",
+      "service": "Firebase Hosting",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component": "Storefront",
+      "service": "Firebase Hosting",
+      "flag": "Thin hosting catalog likely underprices hosting"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Manual GCP API Gateway request SKU; verify against live catalog"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component": "Storefront",
+      "service": "Azure App Service",
+      "flag": "Price outlier: low:mvp_1000"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component": "Storefront",
+      "service": "Azure App Service",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component": "Storefront",
+      "service": "Azure App Service",
+      "flag": "Thin hosting catalog likely underprices hosting"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component": "API Gateway",
+      "service": "API Management",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component": "Product Images",
+      "service": "Blob Storage",
+      "flag": "Price outlier: high:mvp_1000"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component": "API Service",
+      "service": "Lambda",
+      "flag": "Price outlier: low:mvp_1000"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component": "API Service",
+      "service": "Lambda",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component": "API Service",
+      "service": "Lambda",
+      "flag": "Lambda missing gb_seconds likely underprices AWS serverless"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component": "Job Worker",
+      "service": "Lambda",
+      "flag": "Price outlier: low:mvp_1000"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component": "Job Worker",
+      "service": "Lambda",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component": "Job Worker",
+      "service": "Lambda",
+      "flag": "Lambda missing gb_seconds likely underprices AWS serverless"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component": "Message Queue",
+      "service": "SQS",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component": "Web App",
+      "service": "Firebase Hosting",
+      "flag": "Price outlier: low:mvp_1000"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component": "Web App",
+      "service": "Firebase Hosting",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component": "Web App",
+      "service": "Firebase Hosting",
+      "flag": "Thin hosting catalog likely underprices hosting"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Manual GCP API Gateway request SKU; verify against live catalog"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component": "Message Queue",
+      "service": "Cloud Pub/Sub",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component": "AI Inference",
+      "service": "Vertex AI",
+      "flag": "Price outlier: low:mvp_1000"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component": "Metadata DB",
+      "service": "Cloud Firestore",
+      "flag": "Firestore write role selected TTL delete SKU"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component": "Web App",
+      "service": "Azure App Service",
+      "flag": "Price outlier: low:mvp_1000"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component": "Web App",
+      "service": "Azure App Service",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component": "Web App",
+      "service": "Azure App Service",
+      "flag": "Thin hosting catalog likely underprices hosting"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component": "API Gateway",
+      "service": "API Management",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component": "Message Queue",
+      "service": "Service Bus",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component": "Document Storage",
+      "service": "Blob Storage",
+      "flag": "Price outlier: high:mvp_1000"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component": "AI Inference",
+      "service": "Foundry Models",
+      "flag": "Price outlier: high:mvp_1000"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component": "Load Balancer",
+      "service": "Application Load Balancer",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component": "Load Balancer",
+      "service": "Application Load Balancer",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component": "Identity",
+      "service": "Cognito",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component": "Medical Files",
+      "service": "S3",
+      "flag": "Price warning: high:production_10000"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component": "Monitoring",
+      "service": "CloudWatch",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component": "Patient Portal",
+      "service": "Firebase Hosting",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component": "Patient Portal",
+      "service": "Firebase Hosting",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component": "Patient Portal",
+      "service": "Firebase Hosting",
+      "flag": "Thin hosting catalog likely underprices hosting"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Manual GCP API Gateway request SKU; verify against live catalog"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component": "Identity",
+      "service": "Identity Platform",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component": "Monitoring",
+      "service": "Cloud Monitoring",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "Patient Portal",
+      "service": "Azure App Service",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "Patient Portal",
+      "service": "Azure App Service",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "Patient Portal",
+      "service": "Azure App Service",
+      "flag": "Thin hosting catalog likely underprices hosting"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "Load Balancer",
+      "service": "Application Gateway",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "Load Balancer",
+      "service": "Application Gateway",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "API Gateway",
+      "service": "API Management",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "API Gateway",
+      "service": "API Management",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "Identity",
+      "service": "Entra ID B2C",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "Medical Files",
+      "service": "Blob Storage",
+      "flag": "Price outlier: high:production_10000"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "Monitoring",
+      "service": "Azure Monitor",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component": "Monitoring",
+      "service": "Azure Monitor",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component": "Media CDN",
+      "service": "CloudFront",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component": "Media CDN",
+      "service": "CloudFront",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component": "Feed API",
+      "service": "Lambda",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component": "Feed API",
+      "service": "Lambda",
+      "flag": "Lambda missing gb_seconds likely underprices AWS serverless"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component": "Media Processor",
+      "service": "Lambda",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component": "Media Processor",
+      "service": "Lambda",
+      "flag": "Lambda missing gb_seconds likely underprices AWS serverless"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component": "Mobile App",
+      "service": "Firebase",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component": "Mobile App",
+      "service": "Firebase",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component": "Mobile App",
+      "service": "Firebase",
+      "flag": "Thin hosting catalog likely underprices hosting"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component": "API Gateway",
+      "service": "API Gateway",
+      "flag": "Manual GCP API Gateway request SKU; verify against live catalog"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component": "User Data",
+      "service": "Cloud Firestore",
+      "flag": "Firestore write role selected TTL delete SKU"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component": "Mobile App",
+      "service": "Azure App Center",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component": "API Gateway",
+      "service": "API Management",
+      "flag": "Price outlier: low:production_10000"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component": "API Gateway",
+      "service": "API Management",
+      "flag": "Zero-cost billable component"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component": "Media Storage",
+      "service": "Blob Storage",
+      "flag": "Price outlier: high:production_10000"
+    }
+  ]
+}

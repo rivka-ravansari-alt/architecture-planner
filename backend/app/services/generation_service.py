@@ -24,6 +24,7 @@ from app.services.architecture_guardrail_service import ArchitectureGuardrailSer
 from app.services.catalog_service import CatalogService
 from app.services.cloud_defaults_service import CloudDefaultsService
 from app.services.component_mapper_service import ComponentMapperService
+from app.schemas.domain import RequirementContext
 from app.services.cost_estimator_service import CostEstimatorService
 from app.services.diagram_rules_service import DiagramRulesService
 from app.services.generation_storage_service import GenerationStorageService
@@ -417,12 +418,21 @@ class GenerationService:
             "estimate_costs", project_id=project_id, request_id=request_id, status="started"
         )
         flags = self._mapper.feature_flags_from_components(components)
+        answers = project.answers
+        requirements = RequirementContext(
+            auth=answers.auth if answers else False,
+            file_upload=flags["file_upload"] or (answers.file_upload if answers else False),
+            ai=flags["ai"] or (answers.ai if answers else False),
+            background_processing=flags["background_processing"]
+            or (answers.background_processing if answers else False),
+            dashboards=answers.dashboards if answers else False,
+            payments=answers.payments if answers else False,
+        )
         costs = self._cost_estimator.estimate(
+            components=components,
             expected_users=project.expected_users,
             stage=project.stage,
-            file_upload=flags["file_upload"],
-            ai=flags["ai"],
-            background_processing=flags["background_processing"],
+            requirements=requirements,
         )
         self._logger.log_step(
             "estimate_costs",

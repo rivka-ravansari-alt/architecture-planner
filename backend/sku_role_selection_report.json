@@ -1,0 +1,5800 @@
+{
+  "profile_resolution": {
+    "total_profile_lookup_requests": 108,
+    "profiles_resolved": 108,
+    "profiles_not_resolved": 0,
+    "top_unresolved_profiles": []
+  },
+  "component_provider_count": 111,
+  "profile_used_counts": {
+    "web_app": 14,
+    "api_gateway": 10,
+    "lambda": 6,
+    "None": 10,
+    "database_nosql": 9,
+    "object_storage": 15,
+    "cloud_run": 7,
+    "api_management": 5,
+    "azure_functions": 6,
+    "cdn": 6,
+    "database_sql": 6,
+    "queue": 3,
+    "ai": 3,
+    "load_balancer": 3,
+    "ecs_fargate": 1,
+    "monitoring": 3,
+    "container_apps": 1,
+    "cache": 3
+  },
+  "catalog_coverage_gap_count": 0,
+  "catalog_coverage_gaps_by_service": [],
+  "role_missing_counts": [
+    [
+      "requests",
+      9
+    ],
+    [
+      "storage",
+      8
+    ],
+    [
+      "hosting",
+      8
+    ],
+    [
+      "write_operations",
+      7
+    ],
+    [
+      "gb_seconds",
+      6
+    ],
+    [
+      "read_operations",
+      6
+    ],
+    [
+      "input_tokens",
+      3
+    ],
+    [
+      "output_tokens",
+      3
+    ],
+    [
+      "egress",
+      2
+    ],
+    [
+      "queue_messages",
+      2
+    ],
+    [
+      "gateway_capacity",
+      1
+    ]
+  ],
+  "top_rejection_reasons": [
+    [
+      "unclassified SKU",
+      2495
+    ],
+    [
+      "classified as instance, not requests",
+      512
+    ],
+    [
+      "classified as instance, not egress",
+      469
+    ],
+    [
+      "classified as instance, not gb_seconds",
+      468
+    ],
+    [
+      "classified as instance, not storage",
+      418
+    ],
+    [
+      "classified as instance, not write_operations",
+      418
+    ],
+    [
+      "classified as instance, not read_operations",
+      418
+    ],
+    [
+      "classified as storage, not egress",
+      204
+    ],
+    [
+      "classified as storage, not write_operations",
+      186
+    ],
+    [
+      "classified as storage, not read_operations",
+      186
+    ],
+    [
+      "oversized or unsupported instance tier",
+      175
+    ],
+    [
+      "classified as instance, not backup",
+      152
+    ],
+    [
+      "classified as requests, not egress",
+      132
+    ],
+    [
+      "classified as requests, not storage",
+      124
+    ],
+    [
+      "classified as requests, not write_operations",
+      119
+    ],
+    [
+      "classified as requests, not read_operations",
+      119
+    ],
+    [
+      "classified as read_operations, not storage",
+      103
+    ],
+    [
+      "classified as read_operations, not write_operations",
+      103
+    ],
+    [
+      "classified as write_operations, not storage",
+      92
+    ],
+    [
+      "classified as write_operations, not read_operations",
+      92
+    ],
+    [
+      "classified as read_operations, not egress",
+      85
+    ],
+    [
+      "classified as write_operations, not egress",
+      82
+    ],
+    [
+      "classified as inference, not input_tokens",
+      61
+    ],
+    [
+      "classified as inference, not output_tokens",
+      61
+    ],
+    [
+      "classified as inference, not requests",
+      61
+    ],
+    [
+      "classified as egress, not requests",
+      59
+    ],
+    [
+      "classified as sms_mfa, not log_ingestion",
+      46
+    ],
+    [
+      "classified as sms_mfa, not requests",
+      46
+    ],
+    [
+      "classified as storage, not requests",
+      37
+    ],
+    [
+      "classified as log_ingestion, not requests",
+      36
+    ]
+  ],
+  "components": [
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component_name": "Web Client",
+      "component_type": "web_app",
+      "cloud_service": "Amplify Hosting",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "hosting",
+          "slot": "hosting",
+          "catalog_role": "duration",
+          "sku_id": "Z5WJKEG3PQCVNXQ3",
+          "unit_price_usd": 0.025
+        },
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "QRT9FFDUCFJTWSS6",
+          "unit_price_usd": 0.023
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "R782FWVAKEGNQS8S",
+          "unit_price_usd": 5.55556e-05
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "QPQD3RGPJYEKWHWU",
+          "unit_price_usd": 0.15
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 16,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as requests, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as storage, not hosting",
+          1
+        ],
+        [
+          "classified as requests, not storage",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.52,
+      "monthly_cost_max": 0.7,
+      "confidence": "high"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Gateway",
+      "profile_used": "api_gateway",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "FC2TWT2UEPTBKVBX",
+          "unit_price_usd": 1e-06
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          8
+        ],
+        [
+          "unclassified SKU",
+          4
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component_name": "Backend API",
+      "component_type": "app_service",
+      "cloud_service": "Lambda",
+      "profile_used": "lambda",
+      "required_roles": [
+        "gb_seconds",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "GU2ZS9HVP6QTQ7KE",
+          "unit_price_usd": 2e-07
+        }
+      ],
+      "missing_required_roles": [
+        "gb_seconds"
+      ],
+      "rejected_skus_count": 239,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          78
+        ],
+        [
+          "classified as instance, not gb_seconds",
+          78
+        ],
+        [
+          "classified as instance, not egress",
+          78
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ],
+        [
+          "classified as requests, not gb_seconds",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component_name": "Authentication",
+      "component_type": "auth",
+      "cloud_service": "Cognito",
+      "profile_used": null,
+      "required_roles": [],
+      "selected_skus_by_role": [],
+      "missing_required_roles": [],
+      "rejected_skus_count": 0,
+      "top_rejection_reasons": [],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component_name": "Database",
+      "component_type": "database",
+      "cloud_service": "DynamoDB",
+      "profile_used": "database_nosql",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "ddb_writeunitsia",
+          "sku_id": "4PEFGG9BW5Z8Z57U",
+          "unit_price_usd": 0.00081
+        }
+      ],
+      "missing_required_roles": [
+        "storage",
+        "write_operations"
+      ],
+      "rejected_skus_count": 35,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          18
+        ],
+        [
+          "classified as read_operations, not storage",
+          4
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          4
+        ],
+        [
+          "classified as requests, not storage",
+          3
+        ],
+        [
+          "classified as requests, not write_operations",
+          3
+        ]
+      ],
+      "monthly_cost_min": 0.14,
+      "monthly_cost_max": 0.19,
+      "confidence": "low"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "aws",
+      "component_name": "File Storage",
+      "component_type": "object_storage",
+      "cloud_service": "S3",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "earlydelete_sia",
+          "sku_id": "26EY5Q656QEFV8J2",
+          "unit_price_usd": 0.0125
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "vectors_put_bytes",
+          "sku_id": "QU7TVAHJTQAVXC4B",
+          "unit_price_usd": 0.2
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "s3_api_files_write",
+          "sku_id": "2VZ9XK6PS8MRHKCM",
+          "unit_price_usd": 0.06
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 254,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          144
+        ],
+        [
+          "classified as requests, not storage",
+          14
+        ],
+        [
+          "classified as requests, not write_operations",
+          14
+        ],
+        [
+          "classified as requests, not read_operations",
+          14
+        ],
+        [
+          "classified as requests, not egress",
+          14
+        ]
+      ],
+      "monthly_cost_min": 17.95,
+      "monthly_cost_max": 24.28,
+      "confidence": "high"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component_name": "Web Client",
+      "component_type": "web_app",
+      "cloud_service": "Firebase Hosting",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "6B36-F770-533F",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [
+        "hosting",
+        "requests"
+      ],
+      "rejected_skus_count": 7,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as storage, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not storage",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Gateway",
+      "profile_used": "api_gateway",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "manual-gcp-api-gateway-requests",
+          "unit_price_usd": 3.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 1,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component_name": "Backend API",
+      "component_type": "app_service",
+      "cloud_service": "Cloud Run",
+      "profile_used": "cloud_run",
+      "required_roles": [
+        "cpu",
+        "memory",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "0011-69F5-3E19",
+          "unit_price_usd": 2e-06
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "009A-0268-0ACE",
+          "unit_price_usd": 3.24e-07
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "2DA5-55D3-E679",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "00FE-0278-6D63",
+          "unit_price_usd": 0.11
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 37,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not memory",
+          4
+        ],
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not cpu",
+          4
+        ],
+        [
+          "classified as egress, not requests",
+          4
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.22,
+      "monthly_cost_max": 0.3,
+      "confidence": "high"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component_name": "Authentication",
+      "component_type": "auth",
+      "cloud_service": "Firebase Authentication",
+      "profile_used": null,
+      "required_roles": [],
+      "selected_skus_by_role": [],
+      "missing_required_roles": [],
+      "rejected_skus_count": 0,
+      "top_rejection_reasons": [],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component_name": "Database",
+      "component_type": "database",
+      "cloud_service": "Cloud Firestore",
+      "profile_used": "database_nosql",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "0044-3CA5-9B23",
+          "unit_price_usd": 0.033
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "firestorettldeleteops_ondemand",
+          "sku_id": "0382-5330-CA4D",
+          "unit_price_usd": 1.3e-07
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "firestorereadops_ondemand",
+          "sku_id": "022B-519F-7B91",
+          "unit_price_usd": 3.3e-07
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 25,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          15
+        ],
+        [
+          "classified as write_operations, not storage",
+          3
+        ],
+        [
+          "classified as write_operations, not read_operations",
+          3
+        ],
+        [
+          "classified as read_operations, not storage",
+          1
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.7,
+      "monthly_cost_max": 0.95,
+      "confidence": "high"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "gcp",
+      "component_name": "File Storage",
+      "component_type": "object_storage",
+      "cloud_service": "Cloud Storage",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "rapidbucket_ondemand",
+          "sku_id": "0805-9543-7BE3",
+          "unit_price_usd": 0.1265
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "nearlineops_ondemand",
+          "sku_id": "30FC-E1C2-D74E",
+          "unit_price_usd": 2e-05
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "archiveops_ondemand",
+          "sku_id": "1DBA-E3C9-B2A8",
+          "unit_price_usd": 5e-05
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "1193-6316-413E",
+          "unit_price_usd": 0.08
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 59,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          12
+        ],
+        [
+          "classified as read_operations, not storage",
+          5
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          5
+        ],
+        [
+          "classified as read_operations, not egress",
+          5
+        ],
+        [
+          "classified as storage, not write_operations",
+          4
+        ]
+      ],
+      "monthly_cost_min": 2.86,
+      "monthly_cost_max": 3.86,
+      "confidence": "high"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component_name": "Web Client",
+      "component_type": "web_app",
+      "cloud_service": "Azure App Service",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "DZH318Z08W5K/0005",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [
+        "hosting",
+        "storage",
+        "requests"
+      ],
+      "rejected_skus_count": 7,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not storage",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Management",
+      "profile_used": "api_management",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "consumption",
+          "sku_id": "DZH318Z0BQCM/005G",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          9
+        ],
+        [
+          "classified as gateway_capacity, not requests",
+          3
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component_name": "Backend API",
+      "component_type": "app_service",
+      "cloud_service": "Functions",
+      "profile_used": "azure_functions",
+      "required_roles": [
+        "execution"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "execution",
+          "slot": "execution",
+          "catalog_role": "execution",
+          "sku_id": "DZH318Z0DW2R/0094",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "DZH318Z0BXVK/000J",
+          "unit_price_usd": 0.013
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "DZH318Z0BXVK/000L",
+          "unit_price_usd": 0.175
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 17,
+      "top_rejection_reasons": [
+        [
+          "classified as memory, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not execution",
+          1
+        ],
+        [
+          "classified as gb_seconds, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ],
+        [
+          "classified as execution, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component_name": "Authentication",
+      "component_type": "auth",
+      "cloud_service": "Entra ID B2C",
+      "profile_used": null,
+      "required_roles": [],
+      "selected_skus_by_role": [],
+      "missing_required_roles": [],
+      "rejected_skus_count": 0,
+      "top_rejection_reasons": [],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component_name": "Database",
+      "component_type": "database",
+      "cloud_service": "Azure Cosmos DB",
+      "profile_used": "database_nosql",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "data_capacity",
+          "sku_id": "DZH318Z0BPJH/00X7",
+          "unit_price_usd": 0.002
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "compute_optimized_v6",
+          "sku_id": "DZH318Z0TF33/006X",
+          "unit_price_usd": 0.147697
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "standard",
+          "sku_id": "DZH318Z0CDGF/0019",
+          "unit_price_usd": 0.004
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 218,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          81
+        ],
+        [
+          "classified as instance, not storage",
+          38
+        ],
+        [
+          "classified as instance, not write_operations",
+          38
+        ],
+        [
+          "classified as instance, not read_operations",
+          38
+        ],
+        [
+          "classified as backup, not storage",
+          3
+        ]
+      ],
+      "monthly_cost_min": 0.72,
+      "monthly_cost_max": 0.98,
+      "confidence": "high"
+    },
+    {
+      "scenario": "TaskFlow",
+      "provider": "azure",
+      "component_name": "File Storage",
+      "component_type": "object_storage",
+      "cloud_service": "Blob Storage",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "p80_lrs",
+          "sku_id": "DZH318Z0BP0W/01TV",
+          "unit_price_usd": 3604.11
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "cool_grs",
+          "sku_id": "DZH318Z0C120/006M",
+          "unit_price_usd": 0.26
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "cold_gzrs",
+          "sku_id": "DZH318Z0C120/02BN",
+          "unit_price_usd": 0.13
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 279,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          144
+        ],
+        [
+          "classified as storage, not write_operations",
+          22
+        ],
+        [
+          "classified as storage, not read_operations",
+          22
+        ],
+        [
+          "classified as storage, not egress",
+          22
+        ],
+        [
+          "classified as read_operations, not storage",
+          10
+        ]
+      ],
+      "monthly_cost_min": 76613.86,
+      "monthly_cost_max": 103654.04,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component_name": "Storefront",
+      "component_type": "web_app",
+      "cloud_service": "Amplify Hosting",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "hosting",
+          "slot": "hosting",
+          "catalog_role": "duration",
+          "sku_id": "Z5WJKEG3PQCVNXQ3",
+          "unit_price_usd": 0.025
+        },
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "QRT9FFDUCFJTWSS6",
+          "unit_price_usd": 0.023
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "R782FWVAKEGNQS8S",
+          "unit_price_usd": 5.55556e-05
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "QPQD3RGPJYEKWHWU",
+          "unit_price_usd": 0.15
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 16,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as requests, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as storage, not hosting",
+          1
+        ],
+        [
+          "classified as requests, not storage",
+          1
+        ]
+      ],
+      "monthly_cost_min": 5.17,
+      "monthly_cost_max": 7.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component_name": "CDN",
+      "component_type": "cdn",
+      "cloud_service": "CloudFront",
+      "profile_used": "cdn",
+      "required_roles": [
+        "egress"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "UH5MRG7QT9XX6YBP",
+          "unit_price_usd": 6e-07
+        }
+      ],
+      "missing_required_roles": [
+        "egress"
+      ],
+      "rejected_skus_count": 3,
+      "top_rejection_reasons": [
+        [
+          "classified as requests, not egress",
+          1
+        ],
+        [
+          "classified as gb_seconds, not egress",
+          1
+        ],
+        [
+          "classified as gb_seconds, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Gateway",
+      "profile_used": "api_gateway",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "FC2TWT2UEPTBKVBX",
+          "unit_price_usd": 1e-06
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          8
+        ],
+        [
+          "unclassified SKU",
+          4
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component_name": "Order Service",
+      "component_type": "app_service",
+      "cloud_service": "Lambda",
+      "profile_used": "lambda",
+      "required_roles": [
+        "gb_seconds",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "GU2ZS9HVP6QTQ7KE",
+          "unit_price_usd": 2e-07
+        }
+      ],
+      "missing_required_roles": [
+        "gb_seconds"
+      ],
+      "rejected_skus_count": 239,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          78
+        ],
+        [
+          "classified as instance, not gb_seconds",
+          78
+        ],
+        [
+          "classified as instance, not egress",
+          78
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ],
+        [
+          "classified as requests, not gb_seconds",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component_name": "Product DB",
+      "component_type": "database",
+      "cloud_service": "RDS",
+      "profile_used": "database_sql",
+      "required_roles": [
+        "instance",
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "84K7WYHA9BB4ZQU3",
+          "unit_price_usd": 0.125
+        },
+        {
+          "role": "instance",
+          "slot": "instance",
+          "catalog_role": "instanceusage_db_t3_medium",
+          "sku_id": "K4SGPVDGPSJ8UZVP",
+          "unit_price_usd": 0.15
+        }
+      ],
+      "missing_required_roles": [
+        "write_operations",
+        "read_operations"
+      ],
+      "rejected_skus_count": 295,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not storage",
+          77
+        ],
+        [
+          "classified as instance, not write_operations",
+          77
+        ],
+        [
+          "classified as instance, not read_operations",
+          77
+        ],
+        [
+          "oversized or unsupported instance tier",
+          53
+        ],
+        [
+          "classified as cpu, not storage",
+          1
+        ]
+      ],
+      "monthly_cost_min": 136.06,
+      "monthly_cost_max": 145.44,
+      "confidence": "low"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component_name": "Product Images",
+      "component_type": "object_storage",
+      "cloud_service": "S3",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "earlydelete_sia",
+          "sku_id": "26EY5Q656QEFV8J2",
+          "unit_price_usd": 0.0125
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "vectors_put_bytes",
+          "sku_id": "QU7TVAHJTQAVXC4B",
+          "unit_price_usd": 0.2
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "s3_api_files_write",
+          "sku_id": "2VZ9XK6PS8MRHKCM",
+          "unit_price_usd": 0.06
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 254,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          144
+        ],
+        [
+          "classified as requests, not storage",
+          14
+        ],
+        [
+          "classified as requests, not write_operations",
+          14
+        ],
+        [
+          "classified as requests, not read_operations",
+          14
+        ],
+        [
+          "classified as requests, not egress",
+          14
+        ]
+      ],
+      "monthly_cost_min": 179.46,
+      "monthly_cost_max": 242.79,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "aws",
+      "component_name": "Payments",
+      "component_type": "payment",
+      "cloud_service": "N/A",
+      "profile_used": null,
+      "required_roles": [],
+      "selected_skus_by_role": [],
+      "missing_required_roles": [],
+      "rejected_skus_count": 0,
+      "top_rejection_reasons": [],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component_name": "Storefront",
+      "component_type": "web_app",
+      "cloud_service": "Firebase Hosting",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "6B36-F770-533F",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [
+        "hosting",
+        "requests"
+      ],
+      "rejected_skus_count": 7,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as storage, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not storage",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component_name": "CDN",
+      "component_type": "cdn",
+      "cloud_service": "Networking",
+      "profile_used": "cdn",
+      "required_roles": [
+        "egress"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "cdncacheegress_ondemand",
+          "sku_id": "016A-DBA5-499B",
+          "unit_price_usd": 0.11
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "0A6D-B3AF-D81E",
+          "unit_price_usd": 7.5e-07
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 52,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          36
+        ],
+        [
+          "classified as requests, not egress",
+          3
+        ],
+        [
+          "classified as storage, not egress",
+          3
+        ],
+        [
+          "classified as storage, not requests",
+          3
+        ],
+        [
+          "classified as egress, not requests",
+          3
+        ]
+      ],
+      "monthly_cost_min": 33.0,
+      "monthly_cost_max": 33.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Gateway",
+      "profile_used": "api_gateway",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "manual-gcp-api-gateway-requests",
+          "unit_price_usd": 3.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 1,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.04,
+      "monthly_cost_max": 0.05,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component_name": "Order Service",
+      "component_type": "app_service",
+      "cloud_service": "Cloud Run",
+      "profile_used": "cloud_run",
+      "required_roles": [
+        "cpu",
+        "memory",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "0011-69F5-3E19",
+          "unit_price_usd": 2e-06
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "009A-0268-0ACE",
+          "unit_price_usd": 3.24e-07
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "2DA5-55D3-E679",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "00FE-0278-6D63",
+          "unit_price_usd": 0.11
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 37,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not memory",
+          4
+        ],
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not cpu",
+          4
+        ],
+        [
+          "classified as egress, not requests",
+          4
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 2.24,
+      "monthly_cost_max": 3.04,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component_name": "Product DB",
+      "component_type": "database",
+      "cloud_service": "Cloud SQL",
+      "profile_used": "database_sql",
+      "required_roles": [
+        "instance",
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage_ondemand",
+          "sku_id": "3DB9-26E8-83EE",
+          "unit_price_usd": 0.24
+        },
+        {
+          "role": "instance",
+          "slot": "instance",
+          "catalog_role": "sqlgen2instancesf1micro_ondemand",
+          "sku_id": "00FF-CE73-9FEC",
+          "unit_price_usd": 0.042
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "computeunit_developeredition_ondemand",
+          "sku_id": "226E-AC95-8E90",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [
+        "read_operations"
+      ],
+      "rejected_skus_count": 60,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          8
+        ],
+        [
+          "classified as egress, not storage",
+          4
+        ],
+        [
+          "classified as instance, not storage",
+          4
+        ],
+        [
+          "classified as egress, not instance",
+          4
+        ],
+        [
+          "classified as egress, not write_operations",
+          4
+        ]
+      ],
+      "monthly_cost_min": 81.66,
+      "monthly_cost_max": 99.66,
+      "confidence": "low"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component_name": "Product Images",
+      "component_type": "object_storage",
+      "cloud_service": "Cloud Storage",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "rapidbucket_ondemand",
+          "sku_id": "0805-9543-7BE3",
+          "unit_price_usd": 0.1265
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "nearlineops_ondemand",
+          "sku_id": "30FC-E1C2-D74E",
+          "unit_price_usd": 2e-05
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "archiveops_ondemand",
+          "sku_id": "1DBA-E3C9-B2A8",
+          "unit_price_usd": 5e-05
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "1193-6316-413E",
+          "unit_price_usd": 0.08
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 59,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          12
+        ],
+        [
+          "classified as read_operations, not storage",
+          5
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          5
+        ],
+        [
+          "classified as read_operations, not egress",
+          5
+        ],
+        [
+          "classified as storage, not write_operations",
+          4
+        ]
+      ],
+      "monthly_cost_min": 28.56,
+      "monthly_cost_max": 38.64,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "gcp",
+      "component_name": "Payments",
+      "component_type": "payment",
+      "cloud_service": "N/A",
+      "profile_used": null,
+      "required_roles": [],
+      "selected_skus_by_role": [],
+      "missing_required_roles": [],
+      "rejected_skus_count": 0,
+      "top_rejection_reasons": [],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component_name": "Storefront",
+      "component_type": "web_app",
+      "cloud_service": "Azure App Service",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "DZH318Z08W5K/0005",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [
+        "hosting",
+        "storage",
+        "requests"
+      ],
+      "rejected_skus_count": 7,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not storage",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component_name": "CDN",
+      "component_type": "cdn",
+      "cloud_service": "Content Delivery Network",
+      "profile_used": "cdn",
+      "required_roles": [
+        "egress"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "DZH318Z0BXV8/000V",
+          "unit_price_usd": 0.431
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "DZH318Z0BXV7/000F",
+          "unit_price_usd": 0.6
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 10,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          6
+        ],
+        [
+          "classified as storage, not egress",
+          1
+        ],
+        [
+          "classified as requests, not egress",
+          1
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 129.3,
+      "monthly_cost_max": 129.3,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Management",
+      "profile_used": "api_management",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "consumption",
+          "sku_id": "DZH318Z0BQCM/005G",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          9
+        ],
+        [
+          "classified as gateway_capacity, not requests",
+          3
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component_name": "Order Service",
+      "component_type": "app_service",
+      "cloud_service": "Functions",
+      "profile_used": "azure_functions",
+      "required_roles": [
+        "execution"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "execution",
+          "slot": "execution",
+          "catalog_role": "execution",
+          "sku_id": "DZH318Z0DW2R/0094",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "DZH318Z0BXVK/000J",
+          "unit_price_usd": 0.013
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "DZH318Z0BXVK/000L",
+          "unit_price_usd": 0.175
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 17,
+      "top_rejection_reasons": [
+        [
+          "classified as memory, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not execution",
+          1
+        ],
+        [
+          "classified as gb_seconds, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ],
+        [
+          "classified as execution, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.02,
+      "monthly_cost_max": 0.03,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component_name": "Product DB",
+      "component_type": "database",
+      "cloud_service": "SQL Database",
+      "profile_used": "database_sql",
+      "required_roles": [
+        "instance",
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "DZH318Z0BQCL/002Z",
+          "unit_price_usd": 0.5712
+        },
+        {
+          "role": "instance",
+          "slot": "instance",
+          "catalog_role": "s0_secondary",
+          "sku_id": "DZH318Z0BQHF/0065",
+          "unit_price_usd": 0.3796
+        }
+      ],
+      "missing_required_roles": [
+        "write_operations",
+        "read_operations"
+      ],
+      "rejected_skus_count": 248,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not storage",
+          71
+        ],
+        [
+          "classified as instance, not write_operations",
+          71
+        ],
+        [
+          "classified as instance, not read_operations",
+          71
+        ],
+        [
+          "unclassified SKU",
+          16
+        ],
+        [
+          "classified as requests, not storage",
+          4
+        ]
+      ],
+      "monthly_cost_min": 132.77,
+      "monthly_cost_max": 175.61,
+      "confidence": "low"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component_name": "Product Images",
+      "component_type": "object_storage",
+      "cloud_service": "Blob Storage",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "p80_lrs",
+          "sku_id": "DZH318Z0BP0W/01TV",
+          "unit_price_usd": 3604.11
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "cool_grs",
+          "sku_id": "DZH318Z0C120/006M",
+          "unit_price_usd": 0.26
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "cold_gzrs",
+          "sku_id": "DZH318Z0C120/02BN",
+          "unit_price_usd": 0.13
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 279,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          144
+        ],
+        [
+          "classified as storage, not write_operations",
+          22
+        ],
+        [
+          "classified as storage, not read_operations",
+          22
+        ],
+        [
+          "classified as storage, not egress",
+          22
+        ],
+        [
+          "classified as read_operations, not storage",
+          10
+        ]
+      ],
+      "monthly_cost_min": 766138.58,
+      "monthly_cost_max": 1036540.42,
+      "confidence": "high"
+    },
+    {
+      "scenario": "ShopLite",
+      "provider": "azure",
+      "component_name": "Payments",
+      "component_type": "payment",
+      "cloud_service": "N/A",
+      "profile_used": null,
+      "required_roles": [],
+      "selected_skus_by_role": [],
+      "missing_required_roles": [],
+      "rejected_skus_count": 0,
+      "top_rejection_reasons": [],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component_name": "Web App",
+      "component_type": "web_app",
+      "cloud_service": "Amplify Hosting",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "hosting",
+          "slot": "hosting",
+          "catalog_role": "duration",
+          "sku_id": "Z5WJKEG3PQCVNXQ3",
+          "unit_price_usd": 0.025
+        },
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "QRT9FFDUCFJTWSS6",
+          "unit_price_usd": 0.023
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "R782FWVAKEGNQS8S",
+          "unit_price_usd": 5.55556e-05
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "QPQD3RGPJYEKWHWU",
+          "unit_price_usd": 0.15
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 16,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as requests, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as storage, not hosting",
+          1
+        ],
+        [
+          "classified as requests, not storage",
+          1
+        ]
+      ],
+      "monthly_cost_min": 5.17,
+      "monthly_cost_max": 7.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Gateway",
+      "profile_used": "api_gateway",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "FC2TWT2UEPTBKVBX",
+          "unit_price_usd": 1e-06
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          8
+        ],
+        [
+          "unclassified SKU",
+          4
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component_name": "API Service",
+      "component_type": "app_service",
+      "cloud_service": "Lambda",
+      "profile_used": "lambda",
+      "required_roles": [
+        "gb_seconds",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "GU2ZS9HVP6QTQ7KE",
+          "unit_price_usd": 2e-07
+        }
+      ],
+      "missing_required_roles": [
+        "gb_seconds"
+      ],
+      "rejected_skus_count": 239,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          78
+        ],
+        [
+          "classified as instance, not gb_seconds",
+          78
+        ],
+        [
+          "classified as instance, not egress",
+          78
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ],
+        [
+          "classified as requests, not gb_seconds",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component_name": "Job Worker",
+      "component_type": "queue_worker",
+      "cloud_service": "Lambda",
+      "profile_used": "lambda",
+      "required_roles": [
+        "gb_seconds",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "GU2ZS9HVP6QTQ7KE",
+          "unit_price_usd": 2e-07
+        }
+      ],
+      "missing_required_roles": [
+        "gb_seconds"
+      ],
+      "rejected_skus_count": 239,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          78
+        ],
+        [
+          "classified as instance, not gb_seconds",
+          78
+        ],
+        [
+          "classified as instance, not egress",
+          78
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ],
+        [
+          "classified as requests, not gb_seconds",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component_name": "Message Queue",
+      "component_type": "queue",
+      "cloud_service": "SQS",
+      "profile_used": "queue",
+      "required_roles": [
+        "queue_messages"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "VUY9G3EK3YXBUD92",
+          "unit_price_usd": 1e-07
+        }
+      ],
+      "missing_required_roles": [
+        "queue_messages"
+      ],
+      "rejected_skus_count": 1,
+      "top_rejection_reasons": [
+        [
+          "classified as requests, not queue_messages",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component_name": "Document Storage",
+      "component_type": "object_storage",
+      "cloud_service": "S3",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "earlydelete_sia",
+          "sku_id": "26EY5Q656QEFV8J2",
+          "unit_price_usd": 0.0125
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "vectors_put_bytes",
+          "sku_id": "QU7TVAHJTQAVXC4B",
+          "unit_price_usd": 0.2
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "s3_api_files_write",
+          "sku_id": "2VZ9XK6PS8MRHKCM",
+          "unit_price_usd": 0.06
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 254,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          144
+        ],
+        [
+          "classified as requests, not storage",
+          14
+        ],
+        [
+          "classified as requests, not write_operations",
+          14
+        ],
+        [
+          "classified as requests, not read_operations",
+          14
+        ],
+        [
+          "classified as requests, not egress",
+          14
+        ]
+      ],
+      "monthly_cost_min": 179.46,
+      "monthly_cost_max": 242.79,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component_name": "AI Inference",
+      "component_type": "ai_provider",
+      "cloud_service": "Bedrock",
+      "profile_used": "ai",
+      "required_roles": [
+        "input_tokens",
+        "output_tokens"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "CB8QS8B7HQHPTBRG",
+          "unit_price_usd": 0.03
+        },
+        {
+          "role": "inference",
+          "slot": "inference",
+          "catalog_role": "use1_zai_glm_4_7_flash_mantle_input_tokens_flex",
+          "sku_id": "CJX6F5BKJUECSZQG",
+          "unit_price_usd": 3.5e-05
+        }
+      ],
+      "missing_required_roles": [
+        "input_tokens",
+        "output_tokens"
+      ],
+      "rejected_skus_count": 260,
+      "top_rejection_reasons": [
+        [
+          "classified as inference, not input_tokens",
+          59
+        ],
+        [
+          "classified as inference, not output_tokens",
+          59
+        ],
+        [
+          "classified as inference, not requests",
+          59
+        ],
+        [
+          "classified as write_operations, not input_tokens",
+          20
+        ],
+        [
+          "classified as write_operations, not output_tokens",
+          20
+        ]
+      ],
+      "monthly_cost_min": 51.18,
+      "monthly_cost_max": 69.24,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "aws",
+      "component_name": "Metadata DB",
+      "component_type": "database",
+      "cloud_service": "DynamoDB",
+      "profile_used": "database_nosql",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "ddb_writeunitsia",
+          "sku_id": "4PEFGG9BW5Z8Z57U",
+          "unit_price_usd": 0.00081
+        }
+      ],
+      "missing_required_roles": [
+        "storage",
+        "write_operations"
+      ],
+      "rejected_skus_count": 35,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          18
+        ],
+        [
+          "classified as read_operations, not storage",
+          4
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          4
+        ],
+        [
+          "classified as requests, not storage",
+          3
+        ],
+        [
+          "classified as requests, not write_operations",
+          3
+        ]
+      ],
+      "monthly_cost_min": 1.38,
+      "monthly_cost_max": 1.86,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component_name": "Web App",
+      "component_type": "web_app",
+      "cloud_service": "Firebase Hosting",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "6B36-F770-533F",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [
+        "hosting",
+        "requests"
+      ],
+      "rejected_skus_count": 7,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as storage, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not storage",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Gateway",
+      "profile_used": "api_gateway",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "manual-gcp-api-gateway-requests",
+          "unit_price_usd": 3.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 1,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.04,
+      "monthly_cost_max": 0.05,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component_name": "API Service",
+      "component_type": "app_service",
+      "cloud_service": "Cloud Run",
+      "profile_used": "cloud_run",
+      "required_roles": [
+        "cpu",
+        "memory",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "0011-69F5-3E19",
+          "unit_price_usd": 2e-06
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "009A-0268-0ACE",
+          "unit_price_usd": 3.24e-07
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "2DA5-55D3-E679",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "00FE-0278-6D63",
+          "unit_price_usd": 0.11
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 37,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not memory",
+          4
+        ],
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not cpu",
+          4
+        ],
+        [
+          "classified as egress, not requests",
+          4
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 2.24,
+      "monthly_cost_max": 3.04,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component_name": "Job Worker",
+      "component_type": "queue_worker",
+      "cloud_service": "Cloud Run",
+      "profile_used": "cloud_run",
+      "required_roles": [
+        "cpu",
+        "memory",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "0011-69F5-3E19",
+          "unit_price_usd": 2e-06
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "009A-0268-0ACE",
+          "unit_price_usd": 3.24e-07
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "2DA5-55D3-E679",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "00FE-0278-6D63",
+          "unit_price_usd": 0.11
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 37,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not memory",
+          4
+        ],
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not cpu",
+          4
+        ],
+        [
+          "classified as egress, not requests",
+          4
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 2.24,
+      "monthly_cost_max": 3.04,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component_name": "Message Queue",
+      "component_type": "queue",
+      "cloud_service": "Cloud Pub/Sub",
+      "profile_used": "queue",
+      "required_roles": [
+        "queue_messages"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "queue_messages",
+          "slot": "requests",
+          "catalog_role": "message_ondemand",
+          "sku_id": "027D-B6C7-CCA2",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 7,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not queue_messages",
+          4
+        ],
+        [
+          "classified as storage, not queue_messages",
+          2
+        ],
+        [
+          "unclassified SKU",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component_name": "Document Storage",
+      "component_type": "object_storage",
+      "cloud_service": "Cloud Storage",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "rapidbucket_ondemand",
+          "sku_id": "0805-9543-7BE3",
+          "unit_price_usd": 0.1265
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "nearlineops_ondemand",
+          "sku_id": "30FC-E1C2-D74E",
+          "unit_price_usd": 2e-05
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "archiveops_ondemand",
+          "sku_id": "1DBA-E3C9-B2A8",
+          "unit_price_usd": 5e-05
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "1193-6316-413E",
+          "unit_price_usd": 0.08
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 59,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          12
+        ],
+        [
+          "classified as read_operations, not storage",
+          5
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          5
+        ],
+        [
+          "classified as read_operations, not egress",
+          5
+        ],
+        [
+          "classified as storage, not write_operations",
+          4
+        ]
+      ],
+      "monthly_cost_min": 28.56,
+      "monthly_cost_max": 38.64,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component_name": "AI Inference",
+      "component_type": "ai_provider",
+      "cloud_service": "Vertex AI",
+      "profile_used": "ai",
+      "required_roles": [
+        "input_tokens",
+        "output_tokens"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "inference",
+          "slot": "inference",
+          "catalog_role": "gemini_ondemand",
+          "sku_id": "E8B2-D01D-CE7B",
+          "unit_price_usd": 0.06
+        }
+      ],
+      "missing_required_roles": [
+        "input_tokens",
+        "output_tokens"
+      ],
+      "rejected_skus_count": 31,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          16
+        ],
+        [
+          "classified as cpu, not input_tokens",
+          1
+        ],
+        [
+          "classified as storage, not input_tokens",
+          1
+        ],
+        [
+          "classified as memory, not input_tokens",
+          1
+        ],
+        [
+          "classified as inference, not input_tokens",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.31,
+      "monthly_cost_max": 0.41,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "gcp",
+      "component_name": "Metadata DB",
+      "component_type": "database",
+      "cloud_service": "Cloud Firestore",
+      "profile_used": "database_nosql",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "0044-3CA5-9B23",
+          "unit_price_usd": 0.033
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "firestorettldeleteops_ondemand",
+          "sku_id": "0382-5330-CA4D",
+          "unit_price_usd": 1.3e-07
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "firestorereadops_ondemand",
+          "sku_id": "022B-519F-7B91",
+          "unit_price_usd": 3.3e-07
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 25,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          15
+        ],
+        [
+          "classified as write_operations, not storage",
+          3
+        ],
+        [
+          "classified as write_operations, not read_operations",
+          3
+        ],
+        [
+          "classified as read_operations, not storage",
+          1
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          1
+        ]
+      ],
+      "monthly_cost_min": 7.01,
+      "monthly_cost_max": 9.49,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component_name": "Web App",
+      "component_type": "web_app",
+      "cloud_service": "Azure App Service",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "DZH318Z08W5K/0005",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [
+        "hosting",
+        "storage",
+        "requests"
+      ],
+      "rejected_skus_count": 7,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not storage",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Management",
+      "profile_used": "api_management",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "consumption",
+          "sku_id": "DZH318Z0BQCM/005G",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          9
+        ],
+        [
+          "classified as gateway_capacity, not requests",
+          3
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component_name": "API Service",
+      "component_type": "app_service",
+      "cloud_service": "Functions",
+      "profile_used": "azure_functions",
+      "required_roles": [
+        "execution"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "execution",
+          "slot": "execution",
+          "catalog_role": "execution",
+          "sku_id": "DZH318Z0DW2R/0094",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "DZH318Z0BXVK/000J",
+          "unit_price_usd": 0.013
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "DZH318Z0BXVK/000L",
+          "unit_price_usd": 0.175
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 17,
+      "top_rejection_reasons": [
+        [
+          "classified as memory, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not execution",
+          1
+        ],
+        [
+          "classified as gb_seconds, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ],
+        [
+          "classified as execution, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.02,
+      "monthly_cost_max": 0.03,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component_name": "Job Worker",
+      "component_type": "queue_worker",
+      "cloud_service": "Functions",
+      "profile_used": "azure_functions",
+      "required_roles": [
+        "execution"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "execution",
+          "slot": "execution",
+          "catalog_role": "execution",
+          "sku_id": "DZH318Z0DW2R/0094",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "DZH318Z0BXVK/000J",
+          "unit_price_usd": 0.013
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "DZH318Z0BXVK/000L",
+          "unit_price_usd": 0.175
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 17,
+      "top_rejection_reasons": [
+        [
+          "classified as memory, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not execution",
+          1
+        ],
+        [
+          "classified as gb_seconds, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ],
+        [
+          "classified as execution, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.01,
+      "monthly_cost_max": 0.01,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component_name": "Message Queue",
+      "component_type": "queue",
+      "cloud_service": "Service Bus",
+      "profile_used": "queue",
+      "required_roles": [
+        "queue_messages"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "basic",
+          "sku_id": "DZH318Z0BQN0/00DQ",
+          "unit_price_usd": 0.05
+        }
+      ],
+      "missing_required_roles": [
+        "queue_messages"
+      ],
+      "rejected_skus_count": 11,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          8
+        ],
+        [
+          "classified as requests, not queue_messages",
+          1
+        ],
+        [
+          "classified as egress, not queue_messages",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component_name": "Document Storage",
+      "component_type": "object_storage",
+      "cloud_service": "Blob Storage",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "p80_lrs",
+          "sku_id": "DZH318Z0BP0W/01TV",
+          "unit_price_usd": 3604.11
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "cool_grs",
+          "sku_id": "DZH318Z0C120/006M",
+          "unit_price_usd": 0.26
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "cold_gzrs",
+          "sku_id": "DZH318Z0C120/02BN",
+          "unit_price_usd": 0.13
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 279,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          144
+        ],
+        [
+          "classified as storage, not write_operations",
+          22
+        ],
+        [
+          "classified as storage, not read_operations",
+          22
+        ],
+        [
+          "classified as storage, not egress",
+          22
+        ],
+        [
+          "classified as read_operations, not storage",
+          10
+        ]
+      ],
+      "monthly_cost_min": 766138.58,
+      "monthly_cost_max": 1036540.42,
+      "confidence": "high"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component_name": "AI Inference",
+      "component_type": "ai_provider",
+      "cloud_service": "Foundry Models",
+      "profile_used": "ai",
+      "required_roles": [
+        "input_tokens",
+        "output_tokens"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "search",
+          "sku_id": "DZH318Z0HHG7/1SFR",
+          "unit_price_usd": 2.75
+        },
+        {
+          "role": "inference",
+          "slot": "inference",
+          "catalog_role": "tokens",
+          "sku_id": "DZH318Z0T9WD/0HNH",
+          "unit_price_usd": 16.5
+        }
+      ],
+      "missing_required_roles": [
+        "input_tokens",
+        "output_tokens"
+      ],
+      "rejected_skus_count": 318,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          216
+        ],
+        [
+          "classified as hosting, not input_tokens",
+          21
+        ],
+        [
+          "classified as hosting, not output_tokens",
+          21
+        ],
+        [
+          "classified as hosting, not requests",
+          21
+        ],
+        [
+          "classified as hosting, not inference",
+          21
+        ]
+      ],
+      "monthly_cost_min": 4759.15,
+      "monthly_cost_max": 6438.85,
+      "confidence": "low"
+    },
+    {
+      "scenario": "InsightAI",
+      "provider": "azure",
+      "component_name": "Metadata DB",
+      "component_type": "database",
+      "cloud_service": "Azure Cosmos DB",
+      "profile_used": "database_nosql",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "data_capacity",
+          "sku_id": "DZH318Z0BPJH/00X7",
+          "unit_price_usd": 0.002
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "compute_optimized_v6",
+          "sku_id": "DZH318Z0TF33/006X",
+          "unit_price_usd": 0.147697
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "standard",
+          "sku_id": "DZH318Z0CDGF/0019",
+          "unit_price_usd": 0.004
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 218,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          81
+        ],
+        [
+          "classified as instance, not storage",
+          38
+        ],
+        [
+          "classified as instance, not write_operations",
+          38
+        ],
+        [
+          "classified as instance, not read_operations",
+          38
+        ],
+        [
+          "classified as backup, not storage",
+          3
+        ]
+      ],
+      "monthly_cost_min": 7.22,
+      "monthly_cost_max": 9.78,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component_name": "Patient Portal",
+      "component_type": "web_app",
+      "cloud_service": "Amplify Hosting",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "hosting",
+          "slot": "hosting",
+          "catalog_role": "duration",
+          "sku_id": "Z5WJKEG3PQCVNXQ3",
+          "unit_price_usd": 0.025
+        },
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "QRT9FFDUCFJTWSS6",
+          "unit_price_usd": 0.023
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "R782FWVAKEGNQS8S",
+          "unit_price_usd": 5.55556e-05
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "QPQD3RGPJYEKWHWU",
+          "unit_price_usd": 0.15
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 16,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as requests, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as storage, not hosting",
+          1
+        ],
+        [
+          "classified as requests, not storage",
+          1
+        ]
+      ],
+      "monthly_cost_min": 106.25,
+      "monthly_cost_max": 143.76,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component_name": "Load Balancer",
+      "component_type": "load_balancer",
+      "cloud_service": "Application Load Balancer",
+      "profile_used": "load_balancer",
+      "required_roles": [
+        "gateway_capacity"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "gateway_capacity",
+          "slot": "instance",
+          "catalog_role": "elb_balancing",
+          "sku_id": "YKBGGP5EBGDU9T5W",
+          "unit_price_usd": 0.0225
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 2,
+      "top_rejection_reasons": [
+        [
+          "classified as gateway_capacity, not egress",
+          1
+        ],
+        [
+          "classified as gateway_capacity, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Gateway",
+      "profile_used": "api_gateway",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "FC2TWT2UEPTBKVBX",
+          "unit_price_usd": 1e-06
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          8
+        ],
+        [
+          "unclassified SKU",
+          4
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component_name": "Core API",
+      "component_type": "app_service",
+      "cloud_service": "ECS Fargate",
+      "profile_used": "ecs_fargate",
+      "required_roles": [
+        "cpu",
+        "memory"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "PBZNQUSEXZUC34C9",
+          "unit_price_usd": 0.004445
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "XSZATS4VYMDC9CYN",
+          "unit_price_usd": 0.03238
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 13,
+      "top_rejection_reasons": [
+        [
+          "classified as cpu, not memory",
+          2
+        ],
+        [
+          "classified as cpu, not egress",
+          2
+        ],
+        [
+          "classified as cpu, not requests",
+          2
+        ],
+        [
+          "classified as storage, not memory",
+          1
+        ],
+        [
+          "classified as memory, not cpu",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.61,
+      "monthly_cost_max": 0.83,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component_name": "Identity",
+      "component_type": "auth",
+      "cloud_service": "Cognito",
+      "profile_used": null,
+      "required_roles": [],
+      "selected_skus_by_role": [],
+      "missing_required_roles": [],
+      "rejected_skus_count": 0,
+      "top_rejection_reasons": [],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component_name": "Patient Records",
+      "component_type": "database",
+      "cloud_service": "RDS",
+      "profile_used": "database_sql",
+      "required_roles": [
+        "instance",
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "84K7WYHA9BB4ZQU3",
+          "unit_price_usd": 0.125
+        },
+        {
+          "role": "instance",
+          "slot": "instance",
+          "catalog_role": "instanceusage_db_t3_medium",
+          "sku_id": "K4SGPVDGPSJ8UZVP",
+          "unit_price_usd": 0.15
+        }
+      ],
+      "missing_required_roles": [
+        "write_operations",
+        "read_operations"
+      ],
+      "rejected_skus_count": 375,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not storage",
+          77
+        ],
+        [
+          "classified as instance, not write_operations",
+          77
+        ],
+        [
+          "classified as instance, not read_operations",
+          77
+        ],
+        [
+          "classified as instance, not backup",
+          77
+        ],
+        [
+          "oversized or unsupported instance tier",
+          53
+        ]
+      ],
+      "monthly_cost_min": 640.75,
+      "monthly_cost_max": 828.25,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component_name": "Medical Files",
+      "component_type": "object_storage",
+      "cloud_service": "S3",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "earlydelete_sia",
+          "sku_id": "26EY5Q656QEFV8J2",
+          "unit_price_usd": 0.0125
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "vectors_put_bytes",
+          "sku_id": "QU7TVAHJTQAVXC4B",
+          "unit_price_usd": 0.2
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "s3_api_files_write",
+          "sku_id": "2VZ9XK6PS8MRHKCM",
+          "unit_price_usd": 0.06
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 254,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          144
+        ],
+        [
+          "classified as requests, not storage",
+          14
+        ],
+        [
+          "classified as requests, not write_operations",
+          14
+        ],
+        [
+          "classified as requests, not read_operations",
+          14
+        ],
+        [
+          "classified as requests, not egress",
+          14
+        ]
+      ],
+      "monthly_cost_min": 5357.12,
+      "monthly_cost_max": 7247.88,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "aws",
+      "component_name": "Monitoring",
+      "component_type": "monitoring",
+      "cloud_service": "CloudWatch",
+      "profile_used": "monitoring",
+      "required_roles": [
+        "log_ingestion"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "log_ingestion",
+          "slot": "requests",
+          "catalog_role": "cw_promql_samplesscanned",
+          "sku_id": "HBN93D4THS5J5RB6",
+          "unit_price_usd": 1e-08
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "EDDRQFQPARRD3RXJ",
+          "unit_price_usd": 2e-05
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 54,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          24
+        ],
+        [
+          "classified as log_ingestion, not requests",
+          17
+        ],
+        [
+          "classified as instance, not log_ingestion",
+          3
+        ],
+        [
+          "classified as instance, not requests",
+          3
+        ],
+        [
+          "classified as cpu, not log_ingestion",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component_name": "Patient Portal",
+      "component_type": "web_app",
+      "cloud_service": "Firebase Hosting",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "6B36-F770-533F",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [
+        "hosting",
+        "requests"
+      ],
+      "rejected_skus_count": 7,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as storage, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not storage",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component_name": "Load Balancer",
+      "component_type": "load_balancer",
+      "cloud_service": "Networking",
+      "profile_used": "load_balancer",
+      "required_roles": [
+        "gateway_capacity"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "cdncacheegress_ondemand",
+          "sku_id": "016A-DBA5-499B",
+          "unit_price_usd": 0.11
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "0A6D-B3AF-D81E",
+          "unit_price_usd": 7.5e-07
+        }
+      ],
+      "missing_required_roles": [
+        "gateway_capacity"
+      ],
+      "rejected_skus_count": 81,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          54
+        ],
+        [
+          "classified as requests, not gateway_capacity",
+          3
+        ],
+        [
+          "classified as storage, not gateway_capacity",
+          3
+        ],
+        [
+          "classified as egress, not gateway_capacity",
+          3
+        ],
+        [
+          "classified as requests, not egress",
+          3
+        ]
+      ],
+      "monthly_cost_min": 56.1,
+      "monthly_cost_max": 75.9,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Gateway",
+      "profile_used": "api_gateway",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "manual-gcp-api-gateway-requests",
+          "unit_price_usd": 3.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 1,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 1.07,
+      "monthly_cost_max": 1.45,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component_name": "Core API",
+      "component_type": "app_service",
+      "cloud_service": "Cloud Run",
+      "profile_used": "cloud_run",
+      "required_roles": [
+        "cpu",
+        "memory",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "0011-69F5-3E19",
+          "unit_price_usd": 2e-06
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "009A-0268-0ACE",
+          "unit_price_usd": 3.24e-07
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "2DA5-55D3-E679",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "00FE-0278-6D63",
+          "unit_price_usd": 0.11
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 37,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not memory",
+          4
+        ],
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not cpu",
+          4
+        ],
+        [
+          "classified as egress, not requests",
+          4
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 56.1,
+      "monthly_cost_max": 75.9,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component_name": "Identity",
+      "component_type": "auth",
+      "cloud_service": "Identity Platform",
+      "profile_used": null,
+      "required_roles": [],
+      "selected_skus_by_role": [],
+      "missing_required_roles": [],
+      "rejected_skus_count": 0,
+      "top_rejection_reasons": [],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component_name": "Patient Records",
+      "component_type": "database",
+      "cloud_service": "Cloud SQL",
+      "profile_used": "database_sql",
+      "required_roles": [
+        "instance",
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage_ondemand",
+          "sku_id": "3DB9-26E8-83EE",
+          "unit_price_usd": 0.24
+        },
+        {
+          "role": "instance",
+          "slot": "instance",
+          "catalog_role": "sqlgen2instancesf1micro_ondemand",
+          "sku_id": "00FF-CE73-9FEC",
+          "unit_price_usd": 0.042
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "computeunit_developeredition_ondemand",
+          "sku_id": "226E-AC95-8E90",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "backup",
+          "slot": "backup",
+          "catalog_role": "pdsnapshot_ondemand",
+          "sku_id": "07D5-F6F2-0933",
+          "unit_price_usd": 0.088
+        }
+      ],
+      "missing_required_roles": [
+        "read_operations"
+      ],
+      "rejected_skus_count": 76,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          10
+        ],
+        [
+          "classified as egress, not storage",
+          4
+        ],
+        [
+          "classified as instance, not storage",
+          4
+        ],
+        [
+          "classified as egress, not instance",
+          4
+        ],
+        [
+          "classified as egress, not write_operations",
+          4
+        ]
+      ],
+      "monthly_cost_min": 1050.66,
+      "monthly_cost_max": 1410.66,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component_name": "Medical Files",
+      "component_type": "object_storage",
+      "cloud_service": "Cloud Storage",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "rapidbucket_ondemand",
+          "sku_id": "0805-9543-7BE3",
+          "unit_price_usd": 0.1265
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "nearlineops_ondemand",
+          "sku_id": "30FC-E1C2-D74E",
+          "unit_price_usd": 2e-05
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "archiveops_ondemand",
+          "sku_id": "1DBA-E3C9-B2A8",
+          "unit_price_usd": 5e-05
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "1193-6316-413E",
+          "unit_price_usd": 0.08
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 59,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          12
+        ],
+        [
+          "classified as read_operations, not storage",
+          5
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          5
+        ],
+        [
+          "classified as read_operations, not egress",
+          5
+        ],
+        [
+          "classified as storage, not write_operations",
+          4
+        ]
+      ],
+      "monthly_cost_min": 579.85,
+      "monthly_cost_max": 784.51,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "gcp",
+      "component_name": "Monitoring",
+      "component_type": "monitoring",
+      "cloud_service": "Cloud Monitoring",
+      "profile_used": "monitoring",
+      "required_roles": [
+        "log_ingestion"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "log_ingestion",
+          "slot": "requests",
+          "catalog_role": "monitoring_ondemand",
+          "sku_id": "55A9-89F6-775B",
+          "unit_price_usd": 1.5e-07
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 3,
+      "top_rejection_reasons": [
+        [
+          "classified as execution, not log_ingestion",
+          1
+        ],
+        [
+          "classified as log_ingestion, not requests",
+          1
+        ],
+        [
+          "classified as execution, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component_name": "Patient Portal",
+      "component_type": "web_app",
+      "cloud_service": "Azure App Service",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "DZH318Z08W5K/0005",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [
+        "hosting",
+        "storage",
+        "requests"
+      ],
+      "rejected_skus_count": 7,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not storage",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component_name": "Load Balancer",
+      "component_type": "load_balancer",
+      "cloud_service": "Application Gateway",
+      "profile_used": "load_balancer",
+      "required_roles": [
+        "gateway_capacity"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "gateway_capacity",
+          "slot": "instance",
+          "catalog_role": "small",
+          "sku_id": "DZH318Z0BNXC/00B7",
+          "unit_price_usd": 0.028
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          6
+        ],
+        [
+          "classified as gateway_capacity, not egress",
+          3
+        ],
+        [
+          "classified as gateway_capacity, not requests",
+          3
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Management",
+      "profile_used": "api_management",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "consumption",
+          "sku_id": "DZH318Z0BQCM/005G",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          9
+        ],
+        [
+          "classified as gateway_capacity, not requests",
+          3
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component_name": "Core API",
+      "component_type": "app_service",
+      "cloud_service": "Azure Container Apps",
+      "profile_used": "container_apps",
+      "required_roles": [
+        "cpu",
+        "memory",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "DZH318Z0B0NC/00BJ",
+          "unit_price_usd": 0.007567
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "DZH318Z0B0NC/004Q",
+          "unit_price_usd": 3.4e-05
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "DZH318Z0B0NC/0026",
+          "unit_price_usd": 0.4
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 21,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          8
+        ],
+        [
+          "classified as requests, not memory",
+          1
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ],
+        [
+          "classified as instance, not memory",
+          1
+        ],
+        [
+          "classified as requests, not cpu",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.35,
+      "monthly_cost_max": 0.47,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component_name": "Identity",
+      "component_type": "auth",
+      "cloud_service": "Entra ID B2C",
+      "profile_used": null,
+      "required_roles": [],
+      "selected_skus_by_role": [],
+      "missing_required_roles": [],
+      "rejected_skus_count": 0,
+      "top_rejection_reasons": [],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component_name": "Patient Records",
+      "component_type": "database",
+      "cloud_service": "SQL Database",
+      "profile_used": "database_sql",
+      "required_roles": [
+        "instance",
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "DZH318Z0BQCL/002Z",
+          "unit_price_usd": 0.5712
+        },
+        {
+          "role": "instance",
+          "slot": "instance",
+          "catalog_role": "s1_secondary",
+          "sku_id": "DZH318Z0BQHF/027T",
+          "unit_price_usd": 0.73
+        }
+      ],
+      "missing_required_roles": [
+        "write_operations",
+        "read_operations"
+      ],
+      "rejected_skus_count": 328,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not storage",
+          71
+        ],
+        [
+          "classified as instance, not write_operations",
+          71
+        ],
+        [
+          "classified as instance, not read_operations",
+          71
+        ],
+        [
+          "classified as instance, not backup",
+          71
+        ],
+        [
+          "unclassified SKU",
+          20
+        ]
+      ],
+      "monthly_cost_min": 2449.5,
+      "monthly_cost_max": 3306.3,
+      "confidence": "low"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component_name": "Medical Files",
+      "component_type": "object_storage",
+      "cloud_service": "Blob Storage",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "p80_lrs",
+          "sku_id": "DZH318Z0BP0W/01TV",
+          "unit_price_usd": 3604.11
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "cool_grs",
+          "sku_id": "DZH318Z0C120/006M",
+          "unit_price_usd": 0.26
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "cold_gzrs",
+          "sku_id": "DZH318Z0C120/02BN",
+          "unit_price_usd": 0.13
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 279,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          144
+        ],
+        [
+          "classified as storage, not write_operations",
+          22
+        ],
+        [
+          "classified as storage, not read_operations",
+          22
+        ],
+        [
+          "classified as storage, not egress",
+          22
+        ],
+        [
+          "classified as read_operations, not storage",
+          10
+        ]
+      ],
+      "monthly_cost_min": 15325423.5,
+      "monthly_cost_max": 20734396.5,
+      "confidence": "high"
+    },
+    {
+      "scenario": "HealthPortal",
+      "provider": "azure",
+      "component_name": "Monitoring",
+      "component_type": "monitoring",
+      "cloud_service": "Azure Monitor",
+      "profile_used": "monitoring",
+      "required_roles": [
+        "log_ingestion"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "log_ingestion",
+          "slot": "requests",
+          "catalog_role": "prometheus_metrics_queries",
+          "sku_id": "DZH318Z0BQLB/0BJT",
+          "unit_price_usd": 0.001
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "voice_calls",
+          "sku_id": "DZH318Z0BQLB/0B4G",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 144,
+      "top_rejection_reasons": [
+        [
+          "classified as sms_mfa, not log_ingestion",
+          46
+        ],
+        [
+          "classified as sms_mfa, not requests",
+          46
+        ],
+        [
+          "unclassified SKU",
+          32
+        ],
+        [
+          "classified as log_ingestion, not requests",
+          15
+        ],
+        [
+          "classified as requests, not log_ingestion",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component_name": "Mobile App",
+      "component_type": "mobile_app",
+      "cloud_service": "Amplify",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "hosting",
+          "slot": "hosting",
+          "catalog_role": "duration",
+          "sku_id": "Z5WJKEG3PQCVNXQ3",
+          "unit_price_usd": 0.025
+        },
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "QRT9FFDUCFJTWSS6",
+          "unit_price_usd": 0.023
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "R782FWVAKEGNQS8S",
+          "unit_price_usd": 5.55556e-05
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "QPQD3RGPJYEKWHWU",
+          "unit_price_usd": 0.15
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 16,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as requests, not hosting",
+          1
+        ],
+        [
+          "classified as egress, not hosting",
+          1
+        ],
+        [
+          "classified as storage, not hosting",
+          1
+        ],
+        [
+          "classified as requests, not storage",
+          1
+        ]
+      ],
+      "monthly_cost_min": 51.71,
+      "monthly_cost_max": 69.96,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component_name": "Media CDN",
+      "component_type": "cdn",
+      "cloud_service": "CloudFront",
+      "profile_used": "cdn",
+      "required_roles": [
+        "egress"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "UH5MRG7QT9XX6YBP",
+          "unit_price_usd": 6e-07
+        }
+      ],
+      "missing_required_roles": [
+        "egress"
+      ],
+      "rejected_skus_count": 3,
+      "top_rejection_reasons": [
+        [
+          "classified as requests, not egress",
+          1
+        ],
+        [
+          "classified as gb_seconds, not egress",
+          1
+        ],
+        [
+          "classified as gb_seconds, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Gateway",
+      "profile_used": "api_gateway",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "FC2TWT2UEPTBKVBX",
+          "unit_price_usd": 1e-06
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          8
+        ],
+        [
+          "unclassified SKU",
+          4
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component_name": "Feed API",
+      "component_type": "app_service",
+      "cloud_service": "Lambda",
+      "profile_used": "lambda",
+      "required_roles": [
+        "gb_seconds",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "GU2ZS9HVP6QTQ7KE",
+          "unit_price_usd": 2e-07
+        }
+      ],
+      "missing_required_roles": [
+        "gb_seconds"
+      ],
+      "rejected_skus_count": 239,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          78
+        ],
+        [
+          "classified as instance, not gb_seconds",
+          78
+        ],
+        [
+          "classified as instance, not egress",
+          78
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ],
+        [
+          "classified as requests, not gb_seconds",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.02,
+      "monthly_cost_max": 0.03,
+      "confidence": "low"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component_name": "Feed Cache",
+      "component_type": "cache",
+      "cloud_service": "ElastiCache",
+      "profile_used": "cache",
+      "required_roles": [
+        "cache_instance"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "cache_instance",
+          "slot": "instance",
+          "catalog_role": "nodeusage_cache_t4g_small",
+          "sku_id": "BYFG57CPZSFUXSSY",
+          "unit_price_usd": 0.032
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 69,
+      "top_rejection_reasons": [
+        [
+          "oversized or unsupported instance tier",
+          67
+        ],
+        [
+          "classified as storage, not cache_instance",
+          1
+        ],
+        [
+          "classified as memory, not cache_instance",
+          1
+        ]
+      ],
+      "monthly_cost_min": 23.36,
+      "monthly_cost_max": 23.36,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component_name": "User Data",
+      "component_type": "database",
+      "cloud_service": "DynamoDB",
+      "profile_used": "database_nosql",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "ddb_writeunitsia",
+          "sku_id": "4PEFGG9BW5Z8Z57U",
+          "unit_price_usd": 0.00081
+        }
+      ],
+      "missing_required_roles": [
+        "storage",
+        "write_operations"
+      ],
+      "rejected_skus_count": 35,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          18
+        ],
+        [
+          "classified as read_operations, not storage",
+          4
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          4
+        ],
+        [
+          "classified as requests, not storage",
+          3
+        ],
+        [
+          "classified as requests, not write_operations",
+          3
+        ]
+      ],
+      "monthly_cost_min": 13.77,
+      "monthly_cost_max": 18.63,
+      "confidence": "low"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component_name": "Media Storage",
+      "component_type": "object_storage",
+      "cloud_service": "S3",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "earlydelete_sia",
+          "sku_id": "26EY5Q656QEFV8J2",
+          "unit_price_usd": 0.0125
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "vectors_put_bytes",
+          "sku_id": "QU7TVAHJTQAVXC4B",
+          "unit_price_usd": 0.2
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "s3_api_files_write",
+          "sku_id": "2VZ9XK6PS8MRHKCM",
+          "unit_price_usd": 0.06
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 254,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          144
+        ],
+        [
+          "classified as requests, not storage",
+          14
+        ],
+        [
+          "classified as requests, not write_operations",
+          14
+        ],
+        [
+          "classified as requests, not read_operations",
+          14
+        ],
+        [
+          "classified as requests, not egress",
+          14
+        ]
+      ],
+      "monthly_cost_min": 1794.56,
+      "monthly_cost_max": 2427.94,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "aws",
+      "component_name": "Media Processor",
+      "component_type": "queue_worker",
+      "cloud_service": "Lambda",
+      "profile_used": "lambda",
+      "required_roles": [
+        "gb_seconds",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "GU2ZS9HVP6QTQ7KE",
+          "unit_price_usd": 2e-07
+        }
+      ],
+      "missing_required_roles": [
+        "gb_seconds"
+      ],
+      "rejected_skus_count": 239,
+      "top_rejection_reasons": [
+        [
+          "classified as instance, not requests",
+          78
+        ],
+        [
+          "classified as instance, not gb_seconds",
+          78
+        ],
+        [
+          "classified as instance, not egress",
+          78
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ],
+        [
+          "classified as requests, not gb_seconds",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.01,
+      "monthly_cost_max": 0.01,
+      "confidence": "low"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component_name": "Mobile App",
+      "component_type": "mobile_app",
+      "cloud_service": "Firebase",
+      "profile_used": "web_app",
+      "required_roles": [
+        "hosting",
+        "requests",
+        "storage"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "hosting",
+          "slot": "hosting",
+          "catalog_role": "firebasesubscription_ondemand",
+          "sku_id": "B85B-7BC6-07D9",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [
+        "storage",
+        "requests"
+      ],
+      "rejected_skus_count": 3,
+      "top_rejection_reasons": [
+        [
+          "classified as hosting, not storage",
+          1
+        ],
+        [
+          "classified as hosting, not requests",
+          1
+        ],
+        [
+          "classified as hosting, not egress",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component_name": "Media CDN",
+      "component_type": "cdn",
+      "cloud_service": "Networking",
+      "profile_used": "cdn",
+      "required_roles": [
+        "egress"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "cdncacheegress_ondemand",
+          "sku_id": "016A-DBA5-499B",
+          "unit_price_usd": 0.11
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "0A6D-B3AF-D81E",
+          "unit_price_usd": 7.5e-07
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 52,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          36
+        ],
+        [
+          "classified as requests, not egress",
+          3
+        ],
+        [
+          "classified as storage, not egress",
+          3
+        ],
+        [
+          "classified as storage, not requests",
+          3
+        ],
+        [
+          "classified as egress, not requests",
+          3
+        ]
+      ],
+      "monthly_cost_min": 330.0,
+      "monthly_cost_max": 330.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Gateway",
+      "profile_used": "api_gateway",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "manual-gcp-api-gateway-requests",
+          "unit_price_usd": 3.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 1,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.36,
+      "monthly_cost_max": 0.48,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component_name": "Feed API",
+      "component_type": "app_service",
+      "cloud_service": "Cloud Run",
+      "profile_used": "cloud_run",
+      "required_roles": [
+        "cpu",
+        "memory",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "0011-69F5-3E19",
+          "unit_price_usd": 2e-06
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "009A-0268-0ACE",
+          "unit_price_usd": 3.24e-07
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "2DA5-55D3-E679",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "00FE-0278-6D63",
+          "unit_price_usd": 0.11
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 37,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not memory",
+          4
+        ],
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not cpu",
+          4
+        ],
+        [
+          "classified as egress, not requests",
+          4
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 22.44,
+      "monthly_cost_max": 30.36,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component_name": "Feed Cache",
+      "component_type": "cache",
+      "cloud_service": "Cloud Memorystore for Redis",
+      "profile_used": "cache",
+      "required_roles": [
+        "cache_instance"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "cache_instance",
+          "slot": "instance",
+          "catalog_role": "redis_ondemand",
+          "sku_id": "0002-5BAA-E94D",
+          "unit_price_usd": 0.700854
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 2,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not cache_instance",
+          1
+        ],
+        [
+          "classified as cpu, not cache_instance",
+          1
+        ]
+      ],
+      "monthly_cost_min": 511.62,
+      "monthly_cost_max": 511.62,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component_name": "User Data",
+      "component_type": "database",
+      "cloud_service": "Cloud Firestore",
+      "profile_used": "database_nosql",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "storage",
+          "sku_id": "0044-3CA5-9B23",
+          "unit_price_usd": 0.033
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "firestorettldeleteops_ondemand",
+          "sku_id": "0382-5330-CA4D",
+          "unit_price_usd": 1.3e-07
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "firestorereadops_ondemand",
+          "sku_id": "022B-519F-7B91",
+          "unit_price_usd": 3.3e-07
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 25,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          15
+        ],
+        [
+          "classified as write_operations, not storage",
+          3
+        ],
+        [
+          "classified as write_operations, not read_operations",
+          3
+        ],
+        [
+          "classified as read_operations, not storage",
+          1
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          1
+        ]
+      ],
+      "monthly_cost_min": 70.13,
+      "monthly_cost_max": 94.88,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component_name": "Media Storage",
+      "component_type": "object_storage",
+      "cloud_service": "Cloud Storage",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "rapidbucket_ondemand",
+          "sku_id": "0805-9543-7BE3",
+          "unit_price_usd": 0.1265
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "nearlineops_ondemand",
+          "sku_id": "30FC-E1C2-D74E",
+          "unit_price_usd": 2e-05
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "archiveops_ondemand",
+          "sku_id": "1DBA-E3C9-B2A8",
+          "unit_price_usd": 5e-05
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "1193-6316-413E",
+          "unit_price_usd": 0.08
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 59,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          12
+        ],
+        [
+          "classified as read_operations, not storage",
+          5
+        ],
+        [
+          "classified as read_operations, not write_operations",
+          5
+        ],
+        [
+          "classified as read_operations, not egress",
+          5
+        ],
+        [
+          "classified as storage, not write_operations",
+          4
+        ]
+      ],
+      "monthly_cost_min": 285.61,
+      "monthly_cost_max": 386.41,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "gcp",
+      "component_name": "Media Processor",
+      "component_type": "queue_worker",
+      "cloud_service": "Cloud Run",
+      "profile_used": "cloud_run",
+      "required_roles": [
+        "cpu",
+        "memory",
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "0011-69F5-3E19",
+          "unit_price_usd": 2e-06
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "009A-0268-0ACE",
+          "unit_price_usd": 3.24e-07
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "2DA5-55D3-E679",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "interregionegress_ondemand",
+          "sku_id": "00FE-0278-6D63",
+          "unit_price_usd": 0.11
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 37,
+      "top_rejection_reasons": [
+        [
+          "classified as egress, not memory",
+          4
+        ],
+        [
+          "unclassified SKU",
+          4
+        ],
+        [
+          "classified as egress, not cpu",
+          4
+        ],
+        [
+          "classified as egress, not requests",
+          4
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 22.44,
+      "monthly_cost_max": 30.36,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component_name": "Mobile App",
+      "component_type": "mobile_app",
+      "cloud_service": "Azure App Center",
+      "profile_used": null,
+      "required_roles": [],
+      "selected_skus_by_role": [],
+      "missing_required_roles": [],
+      "rejected_skus_count": 0,
+      "top_rejection_reasons": [],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component_name": "Media CDN",
+      "component_type": "cdn",
+      "cloud_service": "Content Delivery Network",
+      "profile_used": "cdn",
+      "required_roles": [
+        "egress"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "egress",
+          "slot": "egress",
+          "catalog_role": "egress",
+          "sku_id": "DZH318Z0BXV8/000V",
+          "unit_price_usd": 0.431
+        },
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "requests",
+          "sku_id": "DZH318Z0BXV7/000F",
+          "unit_price_usd": 0.6
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 10,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          6
+        ],
+        [
+          "classified as storage, not egress",
+          1
+        ],
+        [
+          "classified as requests, not egress",
+          1
+        ],
+        [
+          "classified as storage, not requests",
+          1
+        ],
+        [
+          "classified as egress, not requests",
+          1
+        ]
+      ],
+      "monthly_cost_min": 1293.0,
+      "monthly_cost_max": 1293.0,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component_name": "API Gateway",
+      "component_type": "api_gateway",
+      "cloud_service": "API Management",
+      "profile_used": "api_management",
+      "required_roles": [
+        "requests"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "requests",
+          "slot": "requests",
+          "catalog_role": "consumption",
+          "sku_id": "DZH318Z0BQCM/005G",
+          "unit_price_usd": 0.0
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 12,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          9
+        ],
+        [
+          "classified as gateway_capacity, not requests",
+          3
+        ]
+      ],
+      "monthly_cost_min": 0.0,
+      "monthly_cost_max": 0.0,
+      "confidence": "low"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component_name": "Feed API",
+      "component_type": "app_service",
+      "cloud_service": "Functions",
+      "profile_used": "azure_functions",
+      "required_roles": [
+        "execution"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "execution",
+          "slot": "execution",
+          "catalog_role": "execution",
+          "sku_id": "DZH318Z0DW2R/0094",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "DZH318Z0BXVK/000J",
+          "unit_price_usd": 0.013
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "DZH318Z0BXVK/000L",
+          "unit_price_usd": 0.175
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 17,
+      "top_rejection_reasons": [
+        [
+          "classified as memory, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not execution",
+          1
+        ],
+        [
+          "classified as gb_seconds, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ],
+        [
+          "classified as execution, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.21,
+      "monthly_cost_max": 0.29,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component_name": "Feed Cache",
+      "component_type": "cache",
+      "cloud_service": "Redis Cache",
+      "profile_used": "cache",
+      "required_roles": [
+        "cache_instance"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "cache_instance",
+          "slot": "instance",
+          "catalog_role": "b1",
+          "sku_id": "DZH318Z08MJT/03PN",
+          "unit_price_usd": 0.038
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 23,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          21
+        ],
+        [
+          "oversized or unsupported instance tier",
+          2
+        ]
+      ],
+      "monthly_cost_min": 27.74,
+      "monthly_cost_max": 27.74,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component_name": "User Data",
+      "component_type": "database",
+      "cloud_service": "Azure Cosmos DB",
+      "profile_used": "database_nosql",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "data_capacity",
+          "sku_id": "DZH318Z0BPJH/00X7",
+          "unit_price_usd": 0.002
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "compute_optimized_v6",
+          "sku_id": "DZH318Z0TF33/006X",
+          "unit_price_usd": 0.147697
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "standard",
+          "sku_id": "DZH318Z0CDGF/0019",
+          "unit_price_usd": 0.004
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 218,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          81
+        ],
+        [
+          "classified as instance, not storage",
+          38
+        ],
+        [
+          "classified as instance, not write_operations",
+          38
+        ],
+        [
+          "classified as instance, not read_operations",
+          38
+        ],
+        [
+          "classified as backup, not storage",
+          3
+        ]
+      ],
+      "monthly_cost_min": 72.25,
+      "monthly_cost_max": 97.75,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component_name": "Media Storage",
+      "component_type": "object_storage",
+      "cloud_service": "Blob Storage",
+      "profile_used": "object_storage",
+      "required_roles": [
+        "read_operations",
+        "storage",
+        "write_operations"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "storage",
+          "slot": "storage",
+          "catalog_role": "p80_lrs",
+          "sku_id": "DZH318Z0BP0W/01TV",
+          "unit_price_usd": 3604.11
+        },
+        {
+          "role": "write_operations",
+          "slot": "write_ops",
+          "catalog_role": "cool_grs",
+          "sku_id": "DZH318Z0C120/006M",
+          "unit_price_usd": 0.26
+        },
+        {
+          "role": "read_operations",
+          "slot": "read_ops",
+          "catalog_role": "cold_gzrs",
+          "sku_id": "DZH318Z0C120/02BN",
+          "unit_price_usd": 0.13
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 279,
+      "top_rejection_reasons": [
+        [
+          "unclassified SKU",
+          144
+        ],
+        [
+          "classified as storage, not write_operations",
+          22
+        ],
+        [
+          "classified as storage, not read_operations",
+          22
+        ],
+        [
+          "classified as storage, not egress",
+          22
+        ],
+        [
+          "classified as read_operations, not storage",
+          10
+        ]
+      ],
+      "monthly_cost_min": 7661385.75,
+      "monthly_cost_max": 10365404.25,
+      "confidence": "high"
+    },
+    {
+      "scenario": "SocialFeed",
+      "provider": "azure",
+      "component_name": "Media Processor",
+      "component_type": "queue_worker",
+      "cloud_service": "Functions",
+      "profile_used": "azure_functions",
+      "required_roles": [
+        "execution"
+      ],
+      "selected_skus_by_role": [
+        {
+          "role": "execution",
+          "slot": "execution",
+          "catalog_role": "execution",
+          "sku_id": "DZH318Z0DW2R/0094",
+          "unit_price_usd": 0.0
+        },
+        {
+          "role": "memory",
+          "slot": "memory",
+          "catalog_role": "memory",
+          "sku_id": "DZH318Z0BXVK/000J",
+          "unit_price_usd": 0.013
+        },
+        {
+          "role": "cpu",
+          "slot": "cpu",
+          "catalog_role": "cpu",
+          "sku_id": "DZH318Z0BXVK/000L",
+          "unit_price_usd": 0.175
+        }
+      ],
+      "missing_required_roles": [],
+      "rejected_skus_count": 17,
+      "top_rejection_reasons": [
+        [
+          "classified as memory, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not execution",
+          1
+        ],
+        [
+          "classified as gb_seconds, not execution",
+          1
+        ],
+        [
+          "classified as cpu, not memory",
+          1
+        ],
+        [
+          "classified as execution, not memory",
+          1
+        ]
+      ],
+      "monthly_cost_min": 0.06,
+      "monthly_cost_max": 0.08,
+      "confidence": "high"
+    }
+  ],
+  "coverage_gaps": []
+}

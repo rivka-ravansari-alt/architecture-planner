@@ -36,13 +36,13 @@ router = APIRouter(tags=["projects"])
 
 
 @router.get("/project-types", response_model=list[ProjectTypeInfo])
-def list_project_types(controller: ProjectController = Depends(_controller)):
-    return controller.list_project_types()
+def list_project_types(catalog_service: CatalogService = Depends(get_catalog_service)):
+    return catalog_service.list_project_types()
 
 
 @router.get("/component-catalog", response_model=list[ComponentCatalogOut])
-def list_component_catalog(controller: ProjectController = Depends(_controller)):
-    return controller.list_component_catalog()
+def list_component_catalog(catalog_service: CatalogService = Depends(get_catalog_service)):
+    return catalog_service.list_component_catalog()
 
 
 @router.post("/projects", response_model=ProjectDetail, status_code=status.HTTP_201_CREATED)

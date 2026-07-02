@@ -20,6 +20,22 @@ from app.services.component_mapper_service import ComponentMapperService
 from app.services.prompt_builder_service import PromptBuilderService
 from app.validators.ai_response_validator import AIResponseValidator
 from tests.fixtures import VALID_AI_RESPONSE_JSON
+from tests.pricing_catalog_fixtures import seed_test_pricing_catalog
+
+
+@pytest.fixture(autouse=True)
+def seed_pricing_catalog(monkeypatch):
+    from app.pricing_ingestion.repositories.fake_firestore import FakeFirestoreClient
+    from app.pricing_ingestion.repositories.firestore_provider import FirestoreClientFactory
+
+    client = FakeFirestoreClient()
+    seed_test_pricing_catalog(client)
+    monkeypatch.setattr(
+        FirestoreClientFactory,
+        "create",
+        staticmethod(lambda injected=None: client if injected is None else injected),
+    )
+    return client
 
 
 def seed_component_catalog(db_session: Session) -> ComponentCatalogRepository:
