@@ -117,11 +117,6 @@ class DatabaseInitializer:
         )
         self._ensure_column(
             "project_components",
-            "implementation_options",
-            "ALTER TABLE project_components ADD COLUMN implementation_options JSON",
-        )
-        self._ensure_column(
-            "project_components",
             "source",
             "ALTER TABLE project_components ADD COLUMN source VARCHAR(20) DEFAULT 'ai_generated'",
         )

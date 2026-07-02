@@ -195,19 +195,7 @@ COMPONENT_REQUIRED_FIELDS: tuple[str, ...] = (
     "name",
     "type",
     "tag",
-    "implementation_options",
 )
-VALID_IMPLEMENTATION_MODELS: frozenset[str] = frozenset(
-    {"serverless", "container", "managed_service", "external_provider"}
-)
-
-IMPLEMENTATION_MODEL_LABELS: dict[str, str] = {
-    "serverless": "Serverless",
-    "container": "Container / Server",
-    "managed_service": "Managed Service",
-    "external_provider": "External Provider",
-}
-
 # ---------------------------------------------------------------------------
 # Cloud providers
 # ---------------------------------------------------------------------------

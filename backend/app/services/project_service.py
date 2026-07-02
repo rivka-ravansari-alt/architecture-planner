@@ -5,6 +5,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from app.config.params import (
+    CLOUD_PROVIDERS,
     COMPONENT_SOURCE_AI,
     ERR_INVALID_WORKFLOW_STATUS,
     ERR_PROJECT_FORBIDDEN,
@@ -96,7 +97,6 @@ class ProjectService:
                     optional=item.optional,
                     source=source,
                     cloud_mapping=cloud_mapping,
-                    implementation_options=item.implementation_options,
                 )
             )
         return normalized
@@ -107,18 +107,35 @@ class ProjectService:
         component_type: str,
     ) -> CloudMappingIn:
         cloud = item.cloud_mapping
-        aws = list(cloud.aws) if cloud else []
-        gcp = list(cloud.gcp) if cloud else []
-        azure = list(cloud.azure) if cloud else []
-        if aws or gcp or azure:
-            return CloudMappingIn(aws=aws, gcp=gcp, azure=azure)
-
-        defaults = self._cloud_defaults.default_cloud_options_for_type(component_type)
+        valid_options = self._cloud_defaults.default_cloud_options_for_type(component_type)
         return CloudMappingIn(
-            aws=defaults["aws"],
-            gcp=defaults["gcp"],
-            azure=defaults["azure"],
+            **{
+                provider: self._resolve_provider_mapping(
+                    provider=provider,
+                    requested=getattr(cloud, provider) if cloud else None,
+                    valid_options=valid_options[provider],
+                    component_name=item.name,
+                )
+                for provider in CLOUD_PROVIDERS
+            }
         )
+
+    @staticmethod
+    def _resolve_provider_mapping(
+        *,
+        provider: str,
+        requested: str | None,
+        valid_options: list[str],
+        component_name: str,
+    ) -> str | None:
+        valid = [option for option in valid_options if option]
+        if requested:
+            if requested not in valid:
+                raise BadRequestError(
+                    f"Component '{component_name}' has invalid {provider} mapping '{requested}'."
+                )
+            return requested
+        return valid[0] if valid else None
 
     def approve_architecture(self, project_id: str, user: User) -> Project:
         project = self.get_owned_project(project_id, user)

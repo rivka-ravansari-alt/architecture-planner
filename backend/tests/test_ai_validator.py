@@ -53,9 +53,9 @@ def test_normalizes_compact_ai_schema(ai_validator):
                 "tag": "required",
                 "description": "Browser-based user interface.",
                 "cloud_mappings": {
-                    "aws": ["Amplify Hosting"],
-                    "gcp": ["Firebase Hosting"],
-                    "azure": ["Static Web Apps"],
+                    "aws": "Amplify Hosting",
+                    "gcp": "Firebase Hosting",
+                    "azure": "Static Web Apps",
                 },
             }
         ],
@@ -73,8 +73,8 @@ def test_normalizes_compact_ai_schema(ai_validator):
         },
     }
     result = ai_validator.validate(json.dumps(payload))
-    assert result["components"][0]["cloud_options"]["aws"] == ["Amplify Hosting"]
-    assert result["components"][0]["cloud_options"]["gcp"] == ["Firebase Hosting"]
+    assert result["components"][0]["cloud_mappings"]["aws"] == "Amplify Hosting"
+    assert result["components"][0]["cloud_mappings"]["gcp"] == "Firebase Hosting"
     assert (
         result["components"][0]["reason"]
         == "Browser-based application that delivers the primary user experience."

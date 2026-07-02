@@ -4,7 +4,12 @@ import {
   getComponentTypeDescription,
   normalizeComponentType,
 } from "../constants/componentTypes.js";
-import { getCatalogTypeNames, getDefaultCatalogType } from "../constants/componentCatalog.js";
+import {
+  getCatalogCloudMapping,
+  getCatalogTypeNames,
+  getDefaultCatalogType,
+} from "../constants/componentCatalog.js";
+import { normalizeCloudMappings } from "./cloudMappings.js";
 
 export function slugifyComponentName(name) {
   return (
@@ -94,6 +99,10 @@ export function buildComponentFromForm(form, { existingKeys, currentComponent = 
   const key = uniqueComponentKey(name, existingKeys, currentComponent?.key ?? null);
   const typeChanged =
     currentComponent && normalizeFormType(form.type) !== normalizeFormType(currentComponent.type);
+  const cloudMapping =
+    typeChanged || !currentComponent
+      ? getCatalogCloudMapping(form.type)
+      : normalizeCloudMappings(currentComponent) || getCatalogCloudMapping(form.type);
 
   return {
     key,
@@ -102,10 +111,7 @@ export function buildComponentFromForm(form, { existingKeys, currentComponent = 
     reason,
     optional: Boolean(form.optional),
     source: currentComponent?.source || COMPONENT_SOURCE_USER,
-    cloud_mapping: typeChanged
-      ? { aws: [], gcp: [], azure: [] }
-      : currentComponent?.cloud_mapping || { aws: [], gcp: [], azure: [] },
-    implementation_options: currentComponent?.implementation_options ?? null,
+    cloud_mappings: cloudMapping,
   };
 }
 

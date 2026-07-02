@@ -40,6 +40,13 @@ class CloudDefaultsService:
             ],
         }
 
+    def default_cloud_mapping_for_type(self, component_type: str) -> dict[str, str | None]:
+        options = self.default_cloud_options_for_type(component_type)
+        return {
+            provider: self._first_valid_option(options.get(provider, []))
+            for provider in CLOUD_PROVIDERS
+        }
+
     def default_reason_for_type(self, component_type: str) -> str:
         normalized = self._normalize_type(component_type)
         entry = self._find_catalog_entry(normalized)
@@ -48,14 +55,18 @@ class CloudDefaultsService:
         label = normalized.replace("_", " ")
         return f"Provides {label} capabilities for this architecture."
 
-    def normalize_cloud_options(self, component: dict) -> dict[str, list[str]]:
+    def normalize_cloud_mapping(self, component: dict) -> dict[str, str | None]:
         component_type = normalize_component_type(
             str(component.get("type", DEFAULT_COMPONENT_TYPE))
         )
-        return self.default_cloud_options_for_type(component_type)
+        return self.default_cloud_mapping_for_type(component_type)
 
     def _find_catalog_entry(self, component_type: str) -> ComponentCatalog | None:
         return self._catalog_repo.find_by_name(component_type)
 
     def _normalize_type(self, component_type: str) -> str:
         return normalize_component_type(component_type)
+
+    @staticmethod
+    def _first_valid_option(options: list[str]) -> str | None:
+        return next((str(option).strip() for option in options if str(option).strip()), None)

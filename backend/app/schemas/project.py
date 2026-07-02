@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 from app.config.params import COMPONENT_SOURCE_AI, DESCRIPTION_MAX_CHARS
 from app.schemas.enums import ExpectedUsers, ProjectType, Stage, WorkflowStatus
@@ -53,20 +54,36 @@ class ProjectCreate(BaseModel):
 
 
 class CloudMappingIn(BaseModel):
-    aws: list[str] = []
-    gcp: list[str] = []
-    azure: list[str] = []
+    aws: str | None = None
+    gcp: str | None = None
+    azure: str | None = None
+
+    @field_validator("aws", "gcp", "azure", mode="before")
+    @classmethod
+    def normalize_selected_mapping(cls, value: Any) -> str | None:
+        if value is None:
+            return None
+        if isinstance(value, list):
+            value = next((item for item in value if str(item).strip()), None)
+            if value is None:
+                return None
+        text = str(value).strip()
+        return text or None
 
 
 class ComponentUpdateIn(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     key: str = Field(min_length=1, max_length=60)
     name: str = Field(min_length=1, max_length=120)
     type: str = Field(min_length=1, max_length=40)
     reason: str = ""
     optional: bool = False
     source: str = COMPONENT_SOURCE_AI
-    cloud_mapping: CloudMappingIn | None = None
-    implementation_options: dict[str, object] | None = None
+    cloud_mapping: CloudMappingIn | None = Field(
+        default=None,
+        validation_alias=AliasChoices("cloud_mapping", "cloud_mappings"),
+    )
 
 
 class ComponentsUpdate(BaseModel):
@@ -75,9 +92,14 @@ class ComponentsUpdate(BaseModel):
 
 class CloudMappingOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    aws: list[str]
-    gcp: list[str]
-    azure: list[str]
+    aws: str | None = None
+    gcp: str | None = None
+    azure: str | None = None
+
+    @field_validator("aws", "gcp", "azure", mode="before")
+    @classmethod
+    def normalize_selected_mapping(cls, value: Any) -> str | None:
+        return CloudMappingIn.normalize_selected_mapping(value)
 
 
 class ComponentOut(BaseModel):
@@ -92,8 +114,11 @@ class ComponentOut(BaseModel):
     source: str = COMPONENT_SOURCE_AI
     optional: bool
     order: int
-    cloud_mapping: CloudMappingOut | None = None
-    implementation_options: dict[str, object] | None = None
+    cloud_mappings: CloudMappingOut | None = Field(
+        default=None,
+        validation_alias="cloud_mapping",
+        serialization_alias="cloud_mappings",
+    )
 
 
 class CostEstimateOut(BaseModel):

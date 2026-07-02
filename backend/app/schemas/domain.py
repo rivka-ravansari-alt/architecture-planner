@@ -14,8 +14,7 @@ class MappedComponent:
     category: str
     optional: bool
     order: int
-    cloud: dict[str, list[str]]
-    implementation_options: dict[str, object]
+    cloud: dict[str, str | None]
     source: str = "ai_generated"
 
 
