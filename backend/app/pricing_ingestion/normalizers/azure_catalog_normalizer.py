@@ -44,6 +44,8 @@ class AzureCatalogNormalizer(CatalogNormalizer):
         if not sku_map:
             return None
 
+        sku_map = self._with_tier_aliases(sku_map, skus)
+
         catalog_id = slugify(display_name)
         return AzureCatalogRecord(
             id=catalog_id,
@@ -118,6 +120,10 @@ class AzureCatalogNormalizer(CatalogNormalizer):
             return "storage"
         if "queue" in lowered:
             return "queue"
+        if "namespace" in lowered or "base unit" in lowered:
+            return "namespace"
+        if "dtu" in lowered or ("database" in lowered and "storage" not in lowered):
+            return "instance"
         if "search" in lowered:
             return "search"
         if "token" in lowered:
@@ -128,3 +134,35 @@ class AzureCatalogNormalizer(CatalogNormalizer):
             return slugify(sku_name, fallback="usage")
 
         return slugify(fallback_id, fallback="usage")
+
+    def _with_tier_aliases(
+        self,
+        sku_map: dict[str, dict[str, Any]],
+        items: list[dict[str, Any]],
+    ) -> dict[str, dict[str, Any]]:
+        """Add tier/redundancy-specific keys for meter selection."""
+        enriched = dict(sku_map)
+
+        if "storage" in enriched:
+            for item in items:
+                description = str(item.get("meterName", "") or item.get("productName", "")).casefold()
+                access = "cool" if "cool" in description else "hot"
+                if "archive" in description:
+                    access = "archive"
+                redundancy = "grs" if "grs" in description else "zrs" if "zrs" in description else "lrs"
+                entry = self._normalize_price_entry(item)
+                if entry is None or entry["role"] != "storage":
+                    continue
+                key = f"storage:{access}:{redundancy}"
+                enriched[key] = {k: v for k, v in entry.items() if k != "role"}
+            if "storage:hot:lrs" not in enriched:
+                enriched["storage:hot:lrs"] = dict(enriched["storage"])
+
+        if "instance" in enriched:
+            enriched["instance:standard_s1"] = dict(enriched["instance"])
+            enriched["instance:standard s1"] = dict(enriched["instance"])
+
+        if "namespace" in enriched:
+            enriched["namespace:standard"] = dict(enriched["namespace"])
+
+        return enriched

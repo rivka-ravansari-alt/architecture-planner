@@ -31,7 +31,7 @@ def _completion_limit_kwargs(model: str, max_output_tokens: int) -> dict[str, in
 
 class BaseAIClient(ABC):
     @abstractmethod
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, *, system_prompt: str | None = None) -> str:
         """Return raw JSON text from the AI provider."""
 
 
@@ -50,13 +50,14 @@ class OpenAIClient(BaseAIClient):
         self._max_output_tokens = max_output_tokens
         self._logger = logger or AIClientLogger()
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, *, system_prompt: str | None = None) -> str:
+        system_content = system_prompt or AI_SYSTEM_PROMPT
         self._logger.log_started("openai_request", model=self._model, prompt_chars=len(prompt))
         try:
             response = self._client.chat.completions.create(
                 model=self._model,
                 messages=[
-                    {"role": "system", "content": AI_SYSTEM_PROMPT},
+                    {"role": "system", "content": system_content},
                     {"role": "user", "content": prompt},
                 ],
                 response_format=AI_RESPONSE_FORMAT,

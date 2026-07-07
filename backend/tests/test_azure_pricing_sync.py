@@ -162,13 +162,16 @@ def test_sync_upserts_pricing_only_for_registered_services(sync_service, fake_fi
     assert result.services_total == 3
     assert result.services_succeeded == 2
     assert result.services_failed == 1
-    assert result.skus_upserted == 3
+    assert result.skus_upserted == 4
 
     store = fake_firestore.dump()
     assert len(store[FIRESTORE_COLLECTION_AZURE_CATALOG]) == 2
     functions = store[FIRESTORE_COLLECTION_AZURE_CATALOG]["functions"]
     assert functions["name"] == "Functions"
     assert "execution" in functions["skus"]
+    blob = store[FIRESTORE_COLLECTION_AZURE_CATALOG]["blob_storage"]
+    assert "storage" in blob["skus"]
+    assert "storage:hot:lrs" in blob["skus"]
     assert store[FIRESTORE_COLLECTION_PRICE_IMPORT_RUNS][result.import_run_id]["status"] == (
         PRICE_IMPORT_STATUS_COMPLETED_WITH_ERRORS
     )

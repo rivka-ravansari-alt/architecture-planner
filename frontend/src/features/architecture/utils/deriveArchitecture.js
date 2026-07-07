@@ -18,7 +18,7 @@ function bandFor(component, provider) {
   return null;
 }
 
-export function computeCosts(project, components) {
+function computeHeuristicCosts(project, components) {
   const multiplier = COST_USER_MULTIPLIER[project.expected_users] ?? 1.0;
   const hasRequired = components.some((component) => !component.optional);
   const reqProd = components.some(
@@ -73,8 +73,123 @@ export function computeCosts(project, components) {
       totalLow: requiredLow + optionalLow,
       totalHigh: requiredHigh + optionalHigh,
       currency: COST_CURRENCY,
+      source: "heuristic",
     };
   });
+}
+
+function componentSubtotal(component) {
+  const direct = Number(component.subtotal_usd ?? 0);
+  if (direct > 0) {
+    return direct;
+  }
+  return (component.line_items ?? []).reduce(
+    (sum, line) => sum + Number(line.monthly_cost_usd ?? 0),
+    0
+  );
+}
+
+function buildOptionalLookup(project, wizardComponents) {
+  const lookup = new Map();
+  for (const component of [...(project?.components ?? []), ...wizardComponents]) {
+    if (component?.key != null) {
+      lookup.set(component.key, Boolean(component.optional));
+    }
+  }
+  return lookup;
+}
+
+function isOptionalCostComponent(pricingComponent, optionalLookup) {
+  if (pricingComponent.optional === true) {
+    return true;
+  }
+  if (pricingComponent.optional === false) {
+    return false;
+  }
+  return optionalLookup.get(pricingComponent.component_id) === true;
+}
+
+function splitCatalogCostByOptional(estimate, project, wizardComponents) {
+  const detail = estimate.pricing_detail ?? null;
+  const fallbackLow = Number(estimate.monthly_low ?? 0);
+  const fallbackHigh = Number(estimate.monthly_high ?? fallbackLow);
+
+  if (!detail?.components?.length) {
+    return {
+      requiredLow: fallbackLow,
+      requiredHigh: fallbackHigh,
+      optionalLow: 0,
+      optionalHigh: 0,
+      totalLow: fallbackLow,
+      totalHigh: fallbackHigh,
+    };
+  }
+
+  const optionalLookup = buildOptionalLookup(project, wizardComponents);
+  let requiredTotal = 0;
+  let optionalTotal = 0;
+
+  for (const component of detail.components) {
+    const amount = componentSubtotal(component);
+    if (isOptionalCostComponent(component, optionalLookup)) {
+      optionalTotal += amount;
+    } else {
+      requiredTotal += amount;
+    }
+  }
+
+  const splitTotal = requiredTotal + optionalTotal;
+  const totalLow = splitTotal > 0 ? splitTotal : fallbackLow;
+  const totalHigh = splitTotal > 0 ? splitTotal : fallbackHigh;
+
+  return {
+    requiredLow: requiredTotal,
+    requiredHigh: requiredTotal,
+    optionalLow: optionalTotal,
+    optionalHigh: optionalTotal,
+    totalLow,
+    totalHigh,
+  };
+}
+
+function costFromApiEstimate(estimate, project, wizardComponents) {
+  const split = splitCatalogCostByOptional(estimate, project, wizardComponents);
+  const pricingDetail = estimate.pricing_detail ?? null;
+
+  return {
+    provider: estimate.provider,
+    requiredLow: split.requiredLow,
+    requiredHigh: split.requiredHigh,
+    optionalLow: split.optionalLow,
+    optionalHigh: split.optionalHigh,
+    totalLow: split.totalLow,
+    totalHigh: split.totalHigh,
+    monthly_low: estimate.monthly_low ?? split.totalLow,
+    monthly_high: estimate.monthly_high ?? split.totalHigh,
+    currency: estimate.currency ?? COST_CURRENCY,
+    notes: estimate.notes ?? "",
+    pricingDetail,
+    pricing_detail: pricingDetail,
+    source: pricingDetail ? "catalog" : "heuristic",
+  };
+}
+
+export function computeCosts(project, components) {
+  const apiEstimates = project?.cost_estimates ?? [];
+  const hasApiPricing = apiEstimates.length > 0;
+
+  if (hasApiPricing) {
+    const byProvider = new Map(apiEstimates.map((estimate) => [estimate.provider, estimate]));
+    return COST_PROVIDERS.map((provider) => {
+      const estimate = byProvider.get(provider);
+      if (estimate) {
+        return costFromApiEstimate(estimate, project, components);
+      }
+      return computeHeuristicCosts(project, components).find((cost) => cost.provider === provider);
+    });
+  }
+
+  return computeHeuristicCosts(project, components);
 }
 
 export function deriveArchitecture(project, components) {

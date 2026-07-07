@@ -1,5 +1,4 @@
 import { INTAKE_FORM_CONFIG } from "../../config/intakeFormConfig.js";
-import { DESCRIPTION_MAX_CHARS } from "../../constants/wizard.js";
 import {
   setFeatureEnabled,
   setFeatureField,
@@ -31,9 +30,6 @@ export default function DynamicForm({
   const showBasic = section === "basic" || section === "all";
   const showFeatures = section === "features" || section === "all";
 
-  const descriptionLength = String(value.product.description || "").length;
-  const descriptionOverLimit = descriptionLength > DESCRIPTION_MAX_CHARS;
-
   const handleProductChange = (fieldKey, fieldValue) => {
     if (fieldKey === "stage" && fieldValue === "production") {
       return;
@@ -55,20 +51,14 @@ export default function DynamicForm({
   };
 
   const renderProductField = (field) => (
-    <div key={field.key}>
-      <FieldRenderer
-        field={field}
-        value={value.product[field.key]}
-        onChange={(fieldValue) => handleProductChange(field.key, fieldValue)}
-        error={errors[field.key]}
-        onPlatformToggle={field.key === "platforms" ? handlePlatformToggle : undefined}
-      />
-      {field.key === "description" && (
-        <div className={`field-hint-sm ${descriptionOverLimit ? "error-text" : ""}`}>
-          {descriptionLength} / {DESCRIPTION_MAX_CHARS}
-        </div>
-      )}
-    </div>
+    <FieldRenderer
+      key={field.key}
+      field={field}
+      value={value.product[field.key]}
+      onChange={(fieldValue) => handleProductChange(field.key, fieldValue)}
+      error={errors[field.key]}
+      onPlatformToggle={field.key === "platforms" ? handlePlatformToggle : undefined}
+    />
   );
 
   const primaryFields = productSection.fields.filter((field) => !SCALE_FIELD_KEYS.has(field.key));

@@ -136,6 +136,11 @@ class DatabaseInitializer:
             "ALTER TABLE architecture_components ADD COLUMN category VARCHAR(40) "
             "DEFAULT 'main_architecture' NOT NULL",
         )
+        self._ensure_column(
+            "cost_estimates",
+            "pricing_detail",
+            "ALTER TABLE cost_estimates ADD COLUMN pricing_detail JSON",
+        )
         for legacy_column in ("user_flow", "data_flow"):
             self._drop_column_if_exists("projects", legacy_column)
 

@@ -32,7 +32,7 @@ class AwsCatalogNormalizer(CatalogNormalizer):
                 continue
 
             role = entry["role"]
-            if role in seen_roles:
+            if role in seen_roles or "experimenthour" in role.casefold():
                 continue
             seen_roles.add(role)
 
@@ -49,7 +49,11 @@ class AwsCatalogNormalizer(CatalogNormalizer):
             id=catalog_id,
             name=display_name,
             skus=sku_map,
-            formula=formula_for_service(service_code, list(sku_map.keys())),
+            formula=formula_for_service(
+                service_code,
+                list(sku_map.keys()),
+                catalog_id=catalog_id,
+            ),
         )
 
     def _normalize_price_entry(self, item: dict[str, Any]) -> dict[str, Any] | None:

@@ -174,5 +174,6 @@ class ProjectRepository(BaseRepository):
                     monthly_high=cost.monthly_high,
                     currency=cost.currency,
                     notes=cost.notes,
+                    pricing_detail=cost.pricing_detail,
                 )
             )

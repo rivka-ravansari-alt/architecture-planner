@@ -39,7 +39,7 @@ class MockAIClient(BaseAIClient):
     def __init__(self, response: str = VALID_AI_RESPONSE_JSON) -> None:
         self._response = response
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, *, system_prompt: str | None = None) -> str:
         return self._response
 
 

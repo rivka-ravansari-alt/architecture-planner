@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 _CLOUD_RUN_SERVICE_ID = "152E-C115-5142"
+_API_GATEWAY_CATALOG_ID = "api-gateway"
 
 GCP_FORMULAS: dict[str, dict[str, str]] = {
     _CLOUD_RUN_SERVICE_ID: {
@@ -15,8 +16,23 @@ GCP_FORMULAS: dict[str, dict[str, str]] = {
     },
 }
 
+GCP_FORMULAS_BY_CATALOG_ID: dict[str, dict[str, str]] = {
+    _API_GATEWAY_CATALOG_ID: {
+        "requests_cost": "(requests / 1000000) * skus.requests.unit_price_usd",
+        "egress_cost": "egress_gb * skus.egress.unit_price_usd",
+        "total": "requests_cost + egress_cost",
+    },
+}
 
-def formula_for_service(service_id: str, sku_roles: list[str]) -> dict[str, str]:
+
+def formula_for_service(
+    service_id: str,
+    sku_roles: list[str],
+    *,
+    catalog_id: str | None = None,
+) -> dict[str, str]:
+    if catalog_id and catalog_id in GCP_FORMULAS_BY_CATALOG_ID:
+        return dict(GCP_FORMULAS_BY_CATALOG_ID[catalog_id])
     override = GCP_FORMULAS.get(service_id)
     if override is not None:
         return dict(override)

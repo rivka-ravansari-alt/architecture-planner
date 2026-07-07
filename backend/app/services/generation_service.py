@@ -18,15 +18,17 @@ from app.config.params import (
 from app.core.exceptions import AIClientError, AIValidationError, ArchitectureGenerationError, BadRequestError
 from app.core.logging import GenerationLogger
 from app.models import ArchitectureGenerationRequest, Project
+from app.pricing.usage.service import UsageAssumptionsService
+from app.pricing.schemas import ComponentPricingInput
 from app.repositories.generation_request_repository import GenerationRequestRepository
 from app.repositories.project_repository import ProjectRepository
 from app.services.architecture_guardrail_service import ArchitectureGuardrailService
 from app.services.catalog_service import CatalogService
 from app.services.cloud_defaults_service import CloudDefaultsService
 from app.services.component_mapper_service import ComponentMapperService
-from app.services.cost_estimator_service import CostEstimatorService
 from app.services.diagram_rules_service import DiagramRulesService
 from app.services.generation_storage_service import GenerationStorageService
+from app.services.project_pricing_service import ProjectPricingService
 from app.services.prompt_builder_service import PromptBuilderService
 from app.validators.ai_response_validator import AIResponseValidator
 
@@ -66,7 +68,7 @@ class GenerationService:
         guardrails: ArchitectureGuardrailService | None = None,
         diagram_rules: DiagramRulesService | None = None,
         mapper: ComponentMapperService | None = None,
-        cost_estimator: CostEstimatorService | None = None,
+        project_pricing: ProjectPricingService | None = None,
         project_repo: ProjectRepository | None = None,
         request_repo: GenerationRequestRepository | None = None,
         generation_storage: GenerationStorageService | None = None,
@@ -84,7 +86,7 @@ class GenerationService:
             main_architecture_types=self._catalog.main_architecture_types(),
         )
         self._mapper = mapper or ComponentMapperService(self._catalog)
-        self._cost_estimator = cost_estimator or CostEstimatorService()
+        self._project_pricing = project_pricing
         self._project_repo = project_repo or ProjectRepository(db)
         self._request_repo = request_repo or GenerationRequestRepository(db)
         self._generation_storage = generation_storage or GenerationStorageService()
@@ -136,17 +138,35 @@ class GenerationService:
 
         run = self._start_generation(project)
         try:
-            run.current_step = "estimate_costs"
             mapped_components = self._mapper.map_components_from_db(project.components)
+            pricing_inputs, aws_pricing_inputs, gcp_pricing_inputs, inference_source, aws_inference_source, gcp_inference_source = (
+                self._infer_usage_assumptions(
+                    run,
+                    mapped_components,
+                )
+            )
             costs = self._estimate_costs(
                 run.project,
                 mapped_components,
                 run.project_id,
                 run.request_id,
+                pricing_inputs=pricing_inputs,
+                aws_pricing_inputs=aws_pricing_inputs,
+                gcp_pricing_inputs=gcp_pricing_inputs,
+                inference_source=inference_source,
+                aws_inference_source=aws_inference_source,
+                gcp_inference_source=gcp_inference_source,
             )
             run.current_step = "persist_pricing"
             self._project_repo.persist_pricing(run.project, costs)
             self._complete_request(run.request, run.project_id, run.request_id)
+            self._logger.log_step(
+                "infer_usage_assumptions",
+                project_id=run.project_id,
+                request_id=run.request_id,
+                status="completed",
+                reason=f"source={inference_source},components={len(pricing_inputs)}",
+            )
         except Exception as exc:
             reason = f"{type(exc).__name__}: {exc}"
             self._fail_generation(run, reason)
@@ -189,6 +209,9 @@ class GenerationService:
             persist(run, validated)
             self._complete_request(run.request, run.project_id, run.request_id)
         except (AIClientError, AIValidationError) as exc:
+            if isinstance(exc, AIValidationError) and run.request_saved:
+                run.errors.append(str(exc))
+                self._save_run_response(run)
             self._fail_generation(run, str(exc))
             raise ArchitectureGenerationError(str(exc)) from exc
         except BadRequestError:
@@ -411,17 +434,176 @@ class GenerationService:
         )
         return raw_response
 
-    def _estimate_costs(self, project: Project, components, project_id: str, request_id: str):
+    def _infer_usage_assumptions(
+        self,
+        run: _GenerationRun,
+        mapped_components: list,
+    ) -> tuple[list[ComponentPricingInput], list[ComponentPricingInput], list[ComponentPricingInput], str, str, str]:
+        self._logger.log_step(
+            "infer_usage_assumptions",
+            project_id=run.project_id,
+            request_id=run.request_id,
+            status="started",
+        )
+        usage_service = UsageAssumptionsService(ai_client=self._ai_client)
+        feature_flags = self._mapper.feature_flags_from_components(mapped_components)
+
+        run.current_step = "generate_pricing_build_prompt"
+        try:
+            prompt = usage_service.build_shared_prompt(
+                run.project,
+                mapped_components,
+                feature_flags=feature_flags,
+            )
+        except ValueError as exc:
+            provider_results = usage_service.infer_all_providers_heuristic(
+                run.project,
+                mapped_components,
+                feature_flags=feature_flags,
+                inference_source="heuristic_only",
+            )
+            run.parsed_response = self._serialize_provider_inference(provider_results)
+            run.validation_result = {"valid": True, "source": "heuristic_only", "reason": str(exc)}
+            self._record_successful_response(run)
+            return self._provider_results_tuple(provider_results)
+
+        run.current_step = "generate_pricing_save_generation_request"
+        self._persist_request_artifact(run, prompt)
+        self._release_db_lock_for_ai(run)
+
+        ai_started = time.monotonic()
+        raw_response: str | None = None
+        errors: list[str] = []
+
+        run.current_step = "generate_pricing_call_ai"
+        try:
+            raw_response = self._call_ai(prompt, run.project_id, run.request_id)
+        except AIClientError as exc:
+            errors.append(str(exc))
+
+        run.duration_seconds = time.monotonic() - ai_started
+        run.raw_response = raw_response
+
+        provider_results: dict
+        if raw_response:
+            run.current_step = "generate_pricing_validate_response"
+            try:
+                shared = usage_service.parse_shared_response(
+                    raw_response,
+                    run.project,
+                    mapped_components,
+                    feature_flags=feature_flags,
+                )
+                provider_results = usage_service.map_shared_to_providers(
+                    shared,
+                    project=run.project,
+                    components=mapped_components,
+                    feature_flags=feature_flags,
+                )
+                run.validation_result = {
+                    "valid": True,
+                    "source": "shared_llm",
+                    "providers": {
+                        provider: result.inference_source for provider, result in provider_results.items()
+                    },
+                }
+            except AIValidationError as exc:
+                errors.append(str(exc))
+                provider_results = usage_service.infer_all_providers_heuristic(
+                    run.project,
+                    mapped_components,
+                    feature_flags=feature_flags,
+                    inference_source="heuristic_fallback",
+                )
+                run.validation_result = {
+                    "valid": True,
+                    "source": "heuristic_fallback",
+                    "reason": str(exc),
+                }
+        else:
+            provider_results = usage_service.infer_all_providers_heuristic(
+                run.project,
+                mapped_components,
+                feature_flags=feature_flags,
+                inference_source="heuristic_fallback",
+            )
+            run.validation_result = {"valid": True, "source": "heuristic_fallback"}
+
+        run.parsed_response = self._serialize_provider_inference(provider_results)
+        if errors:
+            run.errors = errors
+        self._save_run_response(run, errors=errors or None)
+        return self._provider_results_tuple(provider_results)
+
+    @staticmethod
+    def _provider_results_tuple(
+        provider_results: dict,
+    ) -> tuple[list[ComponentPricingInput], list[ComponentPricingInput], list[ComponentPricingInput], str, str, str]:
+        azure = provider_results["azure"]
+        aws = provider_results["aws"]
+        gcp = provider_results["gcp"]
+        return (
+            list(azure.components),
+            list(aws.components),
+            list(gcp.components),
+            azure.inference_source,
+            aws.inference_source,
+            gcp.inference_source,
+        )
+
+    @staticmethod
+    def _serialize_provider_inference(provider_results: dict) -> dict:
+        return {
+            "providers": {
+                provider: {
+                    "source": result.inference_source,
+                    "warnings": list(result.warnings),
+                    "components": [
+                        item.model_dump(mode="json") for item in result.components
+                    ],
+                }
+                for provider, result in provider_results.items()
+            }
+        }
+
+    @staticmethod
+    def _serialize_pricing_inputs(
+        pricing_inputs: list[ComponentPricingInput],
+        source: str,
+    ) -> dict:
+        return {
+            "source": source,
+            "components": [item.model_dump(mode="json") for item in pricing_inputs],
+        }
+
+    def _estimate_costs(
+        self,
+        project: Project,
+        components,
+        project_id: str,
+        request_id: str,
+        *,
+        pricing_inputs: list[ComponentPricingInput] | None = None,
+        aws_pricing_inputs: list[ComponentPricingInput] | None = None,
+        gcp_pricing_inputs: list[ComponentPricingInput] | None = None,
+        inference_source: str | None = None,
+        aws_inference_source: str | None = None,
+        gcp_inference_source: str | None = None,
+    ):
         self._logger.log_step(
             "estimate_costs", project_id=project_id, request_id=request_id, status="started"
         )
-        flags = self._mapper.feature_flags_from_components(components)
-        costs = self._cost_estimator.estimate(
-            expected_users=project.expected_users,
-            stage=project.stage,
-            file_upload=flags["file_upload"],
-            ai=flags["ai"],
-            background_processing=flags["background_processing"],
+        pricing = self._project_pricing or ProjectPricingService.create_default(self._mapper)
+        costs = pricing.estimate(
+            project,
+            components,
+            mapper=self._mapper,
+            pricing_inputs=pricing_inputs,
+            aws_pricing_inputs=aws_pricing_inputs,
+            gcp_pricing_inputs=gcp_pricing_inputs,
+            inference_source=inference_source,
+            aws_inference_source=aws_inference_source,
+            gcp_inference_source=gcp_inference_source,
         )
         self._logger.log_step(
             "estimate_costs",

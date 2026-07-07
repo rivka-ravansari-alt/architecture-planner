@@ -73,7 +73,12 @@ def test_invalid_ai_response_marks_request_failed(db_session, sample_project, ai
     with pytest.raises(ArchitectureGenerationError):
         service.generate(sample_project)
 
-    request = db_session.scalar(select(ArchitectureGenerationRequest))
+    request = db_session.scalar(
+        select(ArchitectureGenerationRequest).where(
+            ArchitectureGenerationRequest.project_id == sample_project.id
+        ).order_by(ArchitectureGenerationRequest.created_at.desc())
+    )
+    assert request is not None
     assert request.status == "failed"
     assert sample_project.components == []
 
@@ -101,7 +106,11 @@ def test_ai_client_error_raises_and_marks_failed(db_session, sample_project, ai_
     with pytest.raises(ArchitectureGenerationError, match="network down"):
         service.generate(sample_project)
 
-    request = db_session.scalar(select(ArchitectureGenerationRequest))
+    request = db_session.scalar(
+        select(ArchitectureGenerationRequest).where(
+            ArchitectureGenerationRequest.project_id == sample_project.id
+        ).order_by(ArchitectureGenerationRequest.created_at.desc())
+    )
     assert request.status == "failed"
 
     response_json = json.loads(
@@ -126,6 +135,11 @@ def test_regeneration_replaces_previous_output(
     service.generate(sample_project)
     assert len(sample_project.components) == first_count
 
-    requests = db_session.scalars(select(ArchitectureGenerationRequest)).all()
-    assert len(requests) == 2
+    requests = db_session.scalars(
+        select(ArchitectureGenerationRequest).where(
+            ArchitectureGenerationRequest.project_id == sample_project.id
+        ).order_by(ArchitectureGenerationRequest.created_at)
+    ).all()
+    # Full pipeline runs components, diagrams, and pricing — one request per stage.
+    assert len(requests) == 6
     assert requests[-1].status == "completed"

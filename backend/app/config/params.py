@@ -442,6 +442,130 @@ Node groups:
 Use only the approved components listed above. Do not add new components.
 """
 
+USAGE_ASSUMPTIONS_SYSTEM_PROMPT = (
+    "You are a cloud cost analyst. Infer realistic per-user usage behavior for a specific "
+    "application based on its product context, requirements, and architecture. "
+    "Derive database and object storage from entity/category storage_model breakdowns — "
+    "never use generic storage defaults. Return only valid JSON. "
+    "Do NOT compute project totals — only per-user behavioral values and storage_model details."
+)
+
+PROMPT_USAGE_ASSUMPTIONS_TEMPLATE = """You are a cloud cost analyst.
+
+Infer realistic per-user usage behavior for each architecture component below.
+Base estimates on this specific application — not generic defaults or industry averages.
+
+## Product
+
+- Product name: {product_name}
+- Product description: {description}
+- Stage: {stage_label}
+- Expected users: {expected_users_label} ({expected_users:,} monthly active users)
+- Architecture summary: {architecture_summary}
+
+## Requirements
+{requirement_lines}
+
+{stage_guidance}
+
+## How to reason (per-user behavior only)
+
+The pricing engine will scale your per-user assumptions by {expected_users:,} users.
+Infer behavioral characteristics for ONE typical user. Do NOT multiply by user count.
+
+Before filling in each component, reason about this application's behavior:
+
+1. **User engagement** — How often does one user open the app? (sessions per user per month)
+2. **API traffic** — What happens per session? (requests per session, not monthly totals)
+3. **Payload sizes** — Typical request/response or download sizes in KB
+4. **Compute sizing** — CPU, memory, replicas appropriate for workload (configuration, not per-user)
+5. **Storage data model** — Derive database and object storage from storage_model entities/categories for THIS app
+6. **Background work** — Messages or notifications per user per month
+7. **Cross-component consistency** — Split traffic realistically across API, workers, queues, storage
+
+Output per-user behavioral inputs and configuration inputs only.
+Never output project-level monthly totals (e.g. requests_per_month, queue_operations).
+Never put storage_gb_per_user or backup storage in assumptions — use storage_model on database/object_storage components.
+
+## Components to price
+
+{component_sections}
+
+Return JSON only.
+
+The JSON must contain:
+{{
+  "components": [
+    {{
+      "component_id": "<id>",
+      "storage_model": {{ ... }} ,
+      "assumptions": [
+        {{
+          "key": "<input_key>",
+          "value": <number or string or boolean>,
+          "unit": "<unit from schema>",
+          "confidence": "high" | "medium" | "low",
+          "reasoning": "<1-3 sentences citing this specific app and one user's behavior>"
+        }}
+      ]
+    }}
+  ]
+}}
+
+storage_model for database (RDS / SQL) components:
+{{
+  "entities": [
+    {{
+      "entity": "user_profile",
+      "records_per_user_per_month": 0.1,
+      "average_record_size_kb": 2,
+      "retention_months": 120,
+      "reasoning": "<why this entity exists and these numbers>"
+    }}
+  ],
+  "backup_retention_days": 7
+}}
+
+storage_model for object_storage (S3 / Blob) components:
+{{
+  "categories": [
+    {{
+      "category": "static_assets",
+      "scaling": "static",
+      "total_storage_gb": 0.5,
+      "writes_per_user_per_month": 0,
+      "reads_per_user_per_month": 20,
+      "average_object_size_kb": 80,
+      "reasoning": "<shared dashboard assets, not per-user>"
+    }},
+    {{
+      "category": "user_uploads",
+      "scaling": "per_user",
+      "storage_gb_per_user": 0.05,
+      "writes_per_user_per_month": 2,
+      "reads_per_user_per_month": 5,
+      "average_object_size_kb": 512,
+      "reasoning": "<only if file_upload=true>"
+    }}
+  ]
+}}
+
+Rules:
+- Include every component listed above.
+- Include storage_model for every database and object_storage component.
+- Include every required per-user behavioral input for each component (except storage — use storage_model).
+- Include every required configuration input for each component.
+- Every assumption must have non-empty reasoning tied to this application.
+- Values describe ONE user's behavior — never the whole project.
+- Respect min/max bounds when provided.
+- Split traffic realistically across API, worker, queue, and storage components.
+- MVP stage: leaner per-user usage; Production: higher engagement and headroom.
+- Do not invent prices or SKU costs — only usage quantities.
+- CRUD/Self-Esteem at 1K users: RDS typically well under 50 GB and S3 under 10 GB unless uploads dominate.
+- Static S3 assets must use scaling=static and must not scale linearly with users.
+- RDS storage must be justified by the sum of entity breakdowns — never default all scenarios to the same GB.
+"""
+
 
 # ---------------------------------------------------------------------------
 # Generation lifecycle

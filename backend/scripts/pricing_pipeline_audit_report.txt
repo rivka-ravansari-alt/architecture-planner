@@ -1,0 +1,592 @@
+====================================================================================================
+PRICING PIPELINE AUDIT — Sarika Self-Esteem (100 users, MVP)
+====================================================================================================
+
+## 1. Product Input
+  Name: Sarika Self-Esteem
+  Description: A self-esteem improvement application that provides users with daily exercises designed to build confidence, positive se...
+  Expected users: 100
+  Stage: mvp
+  Requirements: auth=0, file_upload=0, ai=0, background_processing=0, dashboards=0, payments=0
+  Status: ✅ Executed
+
+## 2. Architecture Generation
+  Components (7):
+    - client_web: Sarika Web Application [web_app] optional=False
+    - api_layer: API Gateway [api_gateway] optional=False
+    - database: User Progress Database [database] optional=False
+    - push_notifications: User Notification Service [notification] optional=True
+    - monitoring: Monitoring Service [monitoring] optional=True
+    - logging: Logging Service [logging] optional=True
+    - config: Configuration Management [config] optional=True
+  Status: ✅ Executed (components persisted from prior generate-components step)
+
+
+################################################################################
+# AZURE PIPELINE
+################################################################################
+✅ 1. Product Input
+    Loaded from DB
+✅ 2. Architecture Generation
+    7 logical components persisted (LLM step ran earlier in workflow)
+✅ 3. Cloud Service Mapping
+    client_web -> Azure App Service; api_layer -> API Management; database -> Azure Cosmos DB; push_notifications -> Notification Hubs; monitoring -> Azure Monitor; logging -> Log Analytics; config -> App Configuration
+✅ 4. Usage Assumptions
+    inference_source=heuristic_only; 7 components
+      [client_web] service=Azure App Service
+        instance_hours_per_month=730.0 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        requests_per_month=24000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        data_egress_gb=22.56 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [api_layer] service=API Management
+        requests_per_month=24000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        data_egress_gb=8.46 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        sku_tier=Consumption | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [database] service=Azure Cosmos DB
+        request_units_per_month=100000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        storage_gb=6.25 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        data_egress_gb=5.64 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [push_notifications] service=Notification Hubs
+        push_notifications_per_month=250 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        namespace_hours_per_month=730.0 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [monitoring] service=Azure Monitor
+        metrics_count=1 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        alert_rules_count=1 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        api_requests_per_month=15 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [logging] service=Log Analytics
+        log_ingestion_gb_per_month=0.03 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        log_retention_gb=0.12 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [config] service=Azure App Configuration
+        configuration_stores=1 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        requests_per_month=30 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+⚠️ 5. Validation
+    LLM validation skipped; heuristic provider resolves against pricing model required_inputs
+✅ 6. SKU Quantity Calculation
+    17 SKU lines
+      [client_web] service=Azure App Service ready=True
+        instance_hours: raw=730.0 billable=730.0 hours/month
+          formula: instance_hours_per_month
+          inputs: {"instance_hours_per_month": 730.0}
+        requests: raw=24000.0 billable=24000.0 requests/month
+          formula: requests_per_month
+          inputs: {"requests_per_month": 24000}
+        egress_gb: raw=22.56 billable=22.56 GB/month
+          formula: data_egress_gb
+          inputs: {"data_egress_gb": 22.56}
+      [api_layer] service=API Management ready=True
+        requests: raw=24000.0 billable=24000.0 requests/month
+          formula: requests_per_month
+          inputs: {"requests_per_month": 24000, "sku_tier": "Consumption"}
+        egress_gb: raw=8.46 billable=8.46 GB/month
+          formula: data_egress_gb
+          inputs: {"data_egress_gb": 8.46}
+      [database] service=Azure Cosmos DB ready=True
+        request_units: raw=100000.0 billable=0.0 RU/month free_tier_deducted=100000.0
+          formula: request_units_per_month
+          inputs: {"request_units_per_month": 100000}
+        storage_gb_month: raw=6.25 billable=0.0 GB-months free_tier_deducted=6.25
+          formula: storage_gb
+          inputs: {"storage_gb": 6.25}
+        egress_gb: raw=5.64 billable=5.64 GB/month
+          formula: data_egress_gb
+          inputs: {"data_egress_gb": 5.64}
+      [push_notifications] service=Notification Hubs ready=True
+        notifications: raw=250.0 billable=0.0 notifications/month free_tier_deducted=250.0
+          formula: push_notifications_per_month
+          inputs: {"push_notifications_per_month": 250}
+        namespace_hours: raw=730.0 billable=730.0 hours/month
+          formula: namespace_hours_per_month
+          inputs: {"namespace_hours_per_month": 730.0}
+      [monitoring] service=Azure Monitor ready=True
+        custom_metrics: raw=1.0 billable=0.0 metric-months free_tier_deducted=1.0
+          formula: metrics_count
+          inputs: {"metrics_count": 1}
+        alert_rules: raw=1.0 billable=0.0 rule-months free_tier_deducted=1.0
+          formula: alert_rules_count
+          inputs: {"alert_rules_count": 1}
+        requests: raw=15.0 billable=15.0 requests/month
+          formula: api_requests_per_month
+          inputs: {"api_requests_per_month": 15}
+      [logging] service=Log Analytics ready=True
+        ingestion_gb: raw=0.03 billable=0.0 GB/month free_tier_deducted=0.03
+          formula: log_ingestion_gb_per_month
+          inputs: {"log_ingestion_gb_per_month": 0.03}
+        storage_gb_month: raw=0.12 billable=0.12 GB-months
+          formula: log_retention_gb
+          inputs: {"log_retention_gb": 0.12}
+      [config] service=Azure App Configuration ready=True
+        store_months: raw=1.0 billable=1.0 store-months
+          formula: configuration_stores
+          inputs: {"configuration_stores": 1}
+        requests: raw=30.0 billable=0.0 requests/month free_tier_deducted=30.0
+          formula: requests_per_month
+          inputs: {"requests_per_month": 30}
+✅ 7. Free Tier / Included Usage
+    free_tier_deducted=True; pool_summary={"azure_cosmos_db_free": {"initial": {"request_units": 2592000, "storage_gb_months": 25}, "remaining": {"request_units": 2492000.0, "storage_gb_months": 18.75}, "consumed": {"request_units": 100000.0,
+⚠️ 8. Catalog Lookup
+    0 priced; 10 missing
+        missing: ["Azure App Service/instance_hours: Catalog role 'cpu' not found in azure_catalog.", "Azure App Service/requests: Catalog role 'requests' not found in azure_catalog.", "Azure App Service/egress_gb: Catalog role 'egress' not found in azure_catalog.", "API Management/requests: Catalog role 'requests' not found in azure_catalog.", "API Management/egress_gb: Catalog role 'egress' not found in azure_catalog.", "Azure Cosmos DB/egress_gb: Catalog role 'egress' not found in azure_catalog.", "Notification Hubs/namespace_hours: Catalog role 'cpu' not found in azure_catalog.", "Azure Monitor/requests: Catalog role 'requests' not found in azure_catalog.", "Log Analytics/storage_gb_month: Catalog role 'storage' not found in azure_catalog.", "App Configuration/store_months: Catalog role 'storage' not found in azure_catalog."]
+      [client_web] Azure App Service status=supported subtotal=$0.0000
+        MISSING CATALOG: instance_hours — Catalog role 'cpu' not found in azure_catalog.
+        MISSING CATALOG: requests — Catalog role 'requests' not found in azure_catalog.
+        MISSING CATALOG: egress_gb — Catalog role 'egress' not found in azure_catalog.
+        WARNING: Azure App Service has no subscription free-tier allowances modeled.
+      [api_layer] API Management status=supported subtotal=$0.0000
+        MISSING CATALOG: requests — Catalog role 'requests' not found in azure_catalog.
+        MISSING CATALOG: egress_gb — Catalog role 'egress' not found in azure_catalog.
+        WARNING: API Management has no subscription free-tier allowances modeled.
+      [database] Azure Cosmos DB status=supported subtotal=$0.0000
+        MISSING CATALOG: egress_gb — Catalog role 'egress' not found in azure_catalog.
+        WARNING: No free-tier allowance mapping for sku_key 'egress_gb' on 'Azure Cosmos DB'.
+      [push_notifications] Notification Hubs status=supported subtotal=$0.0000
+        MISSING CATALOG: namespace_hours — Catalog role 'cpu' not found in azure_catalog.
+        WARNING: No free-tier allowance mapping for sku_key 'namespace_hours' on 'Notification Hubs'.
+      [monitoring] Azure Monitor status=supported subtotal=$0.0000
+        MISSING CATALOG: requests — Catalog role 'requests' not found in azure_catalog.
+        WARNING: No free-tier allowance mapping for sku_key 'requests' on 'Azure Monitor'.
+      [logging] Log Analytics status=supported subtotal=$0.0000
+        MISSING CATALOG: storage_gb_month — Catalog role 'storage' not found in azure_catalog.
+        WARNING: No free-tier allowance mapping for sku_key 'storage_gb_month' on 'Log Analytics'.
+      [config] App Configuration status=supported subtotal=$0.0000
+        MISSING CATALOG: store_months — Catalog role 'storage' not found in azure_catalog.
+        WARNING: No free-tier allowance mapping for sku_key 'store_months' on 'Azure App Configuration'.
+⚠️ 9. Cost Calculation
+    silent_zero_components=['client_web', 'api_layer', 'database', 'push_notifications', 'monitoring', 'logging', 'config']
+      [client_web] Azure App Service status=supported subtotal=$0.0000
+        MISSING CATALOG: instance_hours — Catalog role 'cpu' not found in azure_catalog.
+        MISSING CATALOG: requests — Catalog role 'requests' not found in azure_catalog.
+        MISSING CATALOG: egress_gb — Catalog role 'egress' not found in azure_catalog.
+        WARNING: Azure App Service has no subscription free-tier allowances modeled.
+      [api_layer] API Management status=supported subtotal=$0.0000
+        MISSING CATALOG: requests — Catalog role 'requests' not found in azure_catalog.
+        MISSING CATALOG: egress_gb — Catalog role 'egress' not found in azure_catalog.
+        WARNING: API Management has no subscription free-tier allowances modeled.
+      [database] Azure Cosmos DB status=supported subtotal=$0.0000
+        MISSING CATALOG: egress_gb — Catalog role 'egress' not found in azure_catalog.
+        WARNING: No free-tier allowance mapping for sku_key 'egress_gb' on 'Azure Cosmos DB'.
+      [push_notifications] Notification Hubs status=supported subtotal=$0.0000
+        MISSING CATALOG: namespace_hours — Catalog role 'cpu' not found in azure_catalog.
+        WARNING: No free-tier allowance mapping for sku_key 'namespace_hours' on 'Notification Hubs'.
+      [monitoring] Azure Monitor status=supported subtotal=$0.0000
+        MISSING CATALOG: requests — Catalog role 'requests' not found in azure_catalog.
+        WARNING: No free-tier allowance mapping for sku_key 'requests' on 'Azure Monitor'.
+      [logging] Log Analytics status=supported subtotal=$0.0000
+        MISSING CATALOG: storage_gb_month — Catalog role 'storage' not found in azure_catalog.
+        WARNING: No free-tier allowance mapping for sku_key 'storage_gb_month' on 'Log Analytics'.
+      [config] App Configuration status=supported subtotal=$0.0000
+        MISSING CATALOG: store_months — Catalog role 'storage' not found in azure_catalog.
+        WARNING: No free-tier allowance mapping for sku_key 'store_months' on 'Azure App Configuration'.
+✅ 10. Component Cost
+    client_web=$0.0; api_layer=$0.0; database=$0.0; push_notifications=$0.0; monitoring=$0.0; logging=$0.0; config=$0.0
+✅ 11. Project Cost
+    $0.00/mo
+
+  Persisted DB notes format: legacy JSON
+  pricing_detail in DB: null (legacy)
+  Live catalog estimate: $0.00/mo
+
+################################################################################
+# AWS PIPELINE
+################################################################################
+✅ 1. Product Input
+    Loaded from DB
+✅ 2. Architecture Generation
+    7 logical components persisted (LLM step ran earlier in workflow)
+✅ 3. Cloud Service Mapping
+    client_web -> Amplify Hosting; api_layer -> API Gateway; database -> DynamoDB; push_notifications -> SNS; monitoring -> CloudWatch; logging -> CloudWatch Logs; config -> AppConfig
+✅ 4. Usage Assumptions
+    inference_source=heuristic_only; 7 components
+      [client_web] service=Amplify Hosting
+        hosting_requests_per_month=48000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        data_transfer_gb=45.12 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        build_minutes_per_month=30.0 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [api_layer] service=API Gateway
+        requests_per_month=24000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        data_egress_gb=56.4 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        api_type=HTTP | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [database] service=DynamoDB
+        storage_gb=6.25 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        read_requests_per_month=48000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        write_requests_per_month=12000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        billing_mode=on_demand | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [push_notifications] service=SNS
+        messages_per_month=125 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        data_egress_gb=0.16 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [monitoring] service=CloudWatch
+        custom_metrics_count=5 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        api_requests_per_month=75 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [logging] service=CloudWatch Logs
+        log_ingestion_gb_per_month=0.25 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        log_storage_gb=0.12 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [config] service=AppConfig
+        configurations_count=2 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        deployment_events_per_month=4 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+⚠️ 5. Validation
+    LLM validation skipped; heuristic provider resolves against pricing model required_inputs
+✅ 6. SKU Quantity Calculation
+    16 SKU lines
+      [client_web] service=Amplify Hosting ready=True
+        requests: raw=48000.0 billable=48000.0 requests/month
+          formula: hosting_requests_per_month
+          inputs: {"hosting_requests_per_month": 48000}
+        build_minutes: raw=30.0 billable=30.0 minutes/month
+          formula: build_minutes_per_month
+          inputs: {"build_minutes_per_month": 30.0}
+        egress_gb: raw=45.12 billable=45.12 GB/month
+          formula: data_transfer_gb
+          inputs: {"data_transfer_gb": 45.12}
+      [api_layer] service=API Gateway ready=True
+        requests: raw=24000.0 billable=0.0 requests/month free_tier_deducted=24000.0
+          formula: requests_per_month
+          inputs: {"requests_per_month": 24000, "api_type": "HTTP"}
+        egress_gb: raw=56.4 billable=56.4 GB/month
+          formula: data_egress_gb
+          inputs: {"data_egress_gb": 56.4}
+      [database] service=DynamoDB ready=True
+        storage_gb_month: raw=6.25 billable=0.0 GB-months free_tier_deducted=6.25
+          formula: storage_gb
+          inputs: {"storage_gb": 6.25}
+        read_requests: raw=48000.0 billable=0.0 requests/month free_tier_deducted=48000.0
+          formula: read_requests_per_month
+          inputs: {"read_requests_per_month": 48000, "billing_mode": "on_demand"}
+        write_requests: raw=12000.0 billable=0.0 requests/month free_tier_deducted=12000.0
+          formula: write_requests_per_month
+          inputs: {"write_requests_per_month": 12000, "billing_mode": "on_demand"}
+      [push_notifications] service=SNS ready=True
+        requests: raw=125.0 billable=0.0 messages/month free_tier_deducted=125.0
+          formula: messages_per_month
+          inputs: {"messages_per_month": 125}
+        egress_gb: raw=0.16 billable=0.16 GB/month
+          formula: data_egress_gb
+          inputs: {"data_egress_gb": 0.16}
+      [monitoring] service=CloudWatch ready=True
+        custom_metrics: raw=5.0 billable=0.0 metric-months free_tier_deducted=5.0
+          formula: custom_metrics_count
+          inputs: {"custom_metrics_count": 5}
+        requests: raw=75.0 billable=0.0 requests/month free_tier_deducted=75.0
+          formula: api_requests_per_month
+          inputs: {"api_requests_per_month": 75}
+      [logging] service=CloudWatch Logs ready=True
+        ingestion_gb: raw=0.25 billable=0.0 GB/month free_tier_deducted=0.25
+          formula: log_ingestion_gb_per_month
+          inputs: {"log_ingestion_gb_per_month": 0.25}
+        storage_gb_month: raw=0.12 billable=0.0 GB-months free_tier_deducted=0.12
+          formula: log_storage_gb
+          inputs: {"log_storage_gb": 0.12}
+      [config] service=AppConfig ready=True
+        configuration_months: raw=2.0 billable=2.0 configuration-months
+          formula: configurations_count
+          inputs: {"configurations_count": 2}
+        requests: raw=4.0 billable=4.0 events/month
+          formula: deployment_events_per_month
+          inputs: {"deployment_events_per_month": 4}
+✅ 7. Free Tier / Included Usage
+    free_tier_deducted=True; pool_summary={"aws_api_gateway_free": {"initial": {"requests": 1000000}, "remaining": {"requests": 976000.0}, "consumed": {"requests": 24000.0}}, "aws_dynamodb_free": {"initial": {"storage_gb_month": 25, "read_req
+⚠️ 8. Catalog Lookup
+    5 priced; 2 missing
+        missing: ["AppConfig/configuration_months: Cannot scale 2 'configuration-months' to catalog meter 'Configurations'.", "AppConfig/requests: Cannot scale 4 'events/month' to catalog meter 'Requests'."]
+      [client_web] Amplify Hosting status=supported subtotal=$7.0776
+        catalog role=requests sku_key=requests unit=Requests price=$2e-07
+          48000.0 x $2e-07 = $0.0096
+        catalog role=cpu sku_key=build_minutes unit=Minutes price=$0.01
+          30.0 x $0.01 = $0.3000
+        catalog role=egress sku_key=egress_gb unit=GB price=$0.15
+          45.12 x $0.15 = $6.7680
+        WARNING: No free-tier rules defined for 'Amplify Hosting'.
+      [api_layer] API Gateway status=supported subtotal=$5.0760
+        catalog role=egress sku_key=egress_gb unit=GB price=$0.09
+          56.4 x $0.09 = $5.0760
+        WARNING: No free-tier allowance mapping for sku_key 'egress_gb' on 'API Gateway'.
+        WARNING: SKU 'requests': 24,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [database] DynamoDB status=supported subtotal=$0.0000
+        WARNING: SKU 'storage_gb_month': 6 GB-months calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'read_requests': 48,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'write_requests': 12,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [push_notifications] SNS status=supported subtotal=$0.0144
+        catalog role=egress sku_key=egress_gb unit=GB price=$0.09
+          0.16 x $0.09 = $0.0144
+        WARNING: No free-tier allowance mapping for sku_key 'egress_gb' on 'SNS'.
+        WARNING: SKU 'requests': 125 messages/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [monitoring] CloudWatch status=supported subtotal=$0.0000
+        WARNING: SKU 'custom_metrics': 5 metric-months calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'requests': 75 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [logging] CloudWatch Logs status=supported subtotal=$0.0000
+        WARNING: SKU 'ingestion_gb': 0 GB/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'storage_gb_month': 0 GB-months calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [config] AppConfig status=partial subtotal=$0.0000
+        MISSING CATALOG: configuration_months — Cannot scale 2 'configuration-months' to catalog meter 'Configurations'.
+        MISSING CATALOG: requests — Cannot scale 4 'events/month' to catalog meter 'Requests'.
+        WARNING: No free-tier rules defined for 'AppConfig'.
+        WARNING: Cannot scale 'configuration_months' (configuration-months) to catalog meter 'Configurations'.
+        WARNING: Cannot scale 'requests' (events/month) to catalog meter 'Requests'.
+        WARNING: Billable SKU quantities calculated but not priced: configuration_months, requests
+⚠️ 9. Cost Calculation
+    silent_zero_components=['database', 'monitoring', 'logging']
+      [client_web] Amplify Hosting status=supported subtotal=$7.0776
+        catalog role=requests sku_key=requests unit=Requests price=$2e-07
+          48000.0 x $2e-07 = $0.0096
+        catalog role=cpu sku_key=build_minutes unit=Minutes price=$0.01
+          30.0 x $0.01 = $0.3000
+        catalog role=egress sku_key=egress_gb unit=GB price=$0.15
+          45.12 x $0.15 = $6.7680
+        WARNING: No free-tier rules defined for 'Amplify Hosting'.
+      [api_layer] API Gateway status=supported subtotal=$5.0760
+        catalog role=egress sku_key=egress_gb unit=GB price=$0.09
+          56.4 x $0.09 = $5.0760
+        WARNING: No free-tier allowance mapping for sku_key 'egress_gb' on 'API Gateway'.
+        WARNING: SKU 'requests': 24,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [database] DynamoDB status=supported subtotal=$0.0000
+        WARNING: SKU 'storage_gb_month': 6 GB-months calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'read_requests': 48,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'write_requests': 12,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [push_notifications] SNS status=supported subtotal=$0.0144
+        catalog role=egress sku_key=egress_gb unit=GB price=$0.09
+          0.16 x $0.09 = $0.0144
+        WARNING: No free-tier allowance mapping for sku_key 'egress_gb' on 'SNS'.
+        WARNING: SKU 'requests': 125 messages/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [monitoring] CloudWatch status=supported subtotal=$0.0000
+        WARNING: SKU 'custom_metrics': 5 metric-months calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'requests': 75 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [logging] CloudWatch Logs status=supported subtotal=$0.0000
+        WARNING: SKU 'ingestion_gb': 0 GB/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'storage_gb_month': 0 GB-months calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [config] AppConfig status=partial subtotal=$0.0000
+        MISSING CATALOG: configuration_months — Cannot scale 2 'configuration-months' to catalog meter 'Configurations'.
+        MISSING CATALOG: requests — Cannot scale 4 'events/month' to catalog meter 'Requests'.
+        WARNING: No free-tier rules defined for 'AppConfig'.
+        WARNING: Cannot scale 'configuration_months' (configuration-months) to catalog meter 'Configurations'.
+        WARNING: Cannot scale 'requests' (events/month) to catalog meter 'Requests'.
+        WARNING: Billable SKU quantities calculated but not priced: configuration_months, requests
+✅ 10. Component Cost
+    client_web=$7.0776; api_layer=$5.076; database=$0.0; push_notifications=$0.0144; monitoring=$0.0; logging=$0.0; config=$0.0
+✅ 11. Project Cost
+    $12.17/mo
+
+  Persisted DB notes format: legacy JSON
+  pricing_detail in DB: null (legacy)
+  Live catalog estimate: $12.17/mo
+
+################################################################################
+# GCP PIPELINE
+################################################################################
+✅ 1. Product Input
+    Loaded from DB
+✅ 2. Architecture Generation
+    7 logical components persisted (LLM step ran earlier in workflow)
+✅ 3. Cloud Service Mapping
+    client_web -> Firebase Hosting; api_layer -> API Gateway; database -> Cloud Firestore; push_notifications -> Firebase; monitoring -> Cloud Monitoring; logging -> Cloud Logging; config -> Secret Manager
+✅ 4. Usage Assumptions
+    inference_source=heuristic_only; 6 components
+      [client_web] service=Firebase Hosting
+        hosting_requests_per_month=48000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        data_transfer_gb=45.12 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [api_layer] service=API Gateway
+        requests_per_month=24000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        data_egress_gb=56.4 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [database] service=Cloud Firestore
+        storage_gb=6.25 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        read_requests_per_month=48000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        write_requests_per_month=12000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        delete_requests_per_month=1200 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [push_notifications] service=Firebase
+        hosting_requests_per_month=3000 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        data_transfer_gb=0.16 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        messages_per_month=125 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [monitoring] service=Cloud Monitoring
+        custom_metrics_count=5 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        api_requests_per_month=75 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        alert_policies_count=1 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+      [logging] service=Cloud Logging
+        log_ingestion_gb_per_month=0.25 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+        log_storage_gb=0.12 | source=inferred | confidence=low | Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+⚠️ 5. Validation
+    LLM validation skipped; heuristic provider resolves against pricing model required_inputs
+✅ 6. SKU Quantity Calculation
+    15 SKU lines
+      [client_web] service=Firebase Hosting ready=True
+        requests: raw=48000.0 billable=0.0 requests/month free_tier_deducted=48000.0
+          formula: hosting_requests_per_month
+          inputs: {"hosting_requests_per_month": 48000}
+        egress_gb: raw=45.12 billable=0.0 GB/month free_tier_deducted=45.12
+          formula: data_transfer_gb
+          inputs: {"data_transfer_gb": 45.12}
+      [api_layer] service=API Gateway ready=True
+        requests: raw=24000.0 billable=0.0 requests/month free_tier_deducted=24000.0
+          formula: requests_per_month
+          inputs: {"requests_per_month": 24000}
+        egress_gb: raw=56.4 billable=56.4 GB/month
+          formula: data_egress_gb
+          inputs: {"data_egress_gb": 56.4}
+      [database] service=Cloud Firestore ready=True
+        storage_gb_month: raw=6.25 billable=5.25 GB-months free_tier_deducted=1
+          formula: storage_gb
+          inputs: {"storage_gb": 6.25}
+        read_requests: raw=48000.0 billable=0.0 requests/month free_tier_deducted=48000.0
+          formula: read_requests_per_month
+          inputs: {"read_requests_per_month": 48000}
+        write_requests: raw=12000.0 billable=0.0 requests/month free_tier_deducted=12000.0
+          formula: write_requests_per_month
+          inputs: {"write_requests_per_month": 12000}
+        delete_requests: raw=1200.0 billable=0.0 requests/month free_tier_deducted=1200.0
+          formula: delete_requests_per_month
+          inputs: {"delete_requests_per_month": 1200}
+      [push_notifications] service=Firebase ready=True
+        requests: raw=3125.0 billable=0.0 requests/month free_tier_deducted=3125.0
+          formula: hosting_requests_per_month + messages_per_month
+          inputs: {"hosting_requests_per_month": 3000, "messages_per_month": 125}
+        egress_gb: raw=0.16 billable=0.16 GB/month
+          formula: data_transfer_gb
+          inputs: {"data_transfer_gb": 0.16}
+      [monitoring] service=Cloud Monitoring ready=True
+        custom_metrics: raw=5.0 billable=0.0 metric-months free_tier_deducted=5.0
+          formula: custom_metrics_count
+          inputs: {"custom_metrics_count": 5}
+        requests: raw=75.0 billable=0.0 requests/month free_tier_deducted=75.0
+          formula: api_requests_per_month
+          inputs: {"api_requests_per_month": 75}
+        alert_policies: raw=1.0 billable=1.0 policy-months
+          formula: alert_policies_count
+          inputs: {"alert_policies_count": 1}
+      [logging] service=Cloud Logging ready=True
+        ingestion_gb: raw=0.25 billable=0.0 GB/month free_tier_deducted=0.25
+          formula: log_ingestion_gb_per_month
+          inputs: {"log_ingestion_gb_per_month": 0.25}
+        storage_gb_month: raw=0.12 billable=0.0 GB-months free_tier_deducted=0.12
+          formula: log_storage_gb
+          inputs: {"log_storage_gb": 0.12}
+✅ 7. Free Tier / Included Usage
+    free_tier_deducted=True; pool_summary={"gcp_firebase_hosting_free": {"initial": {"requests": 10000000, "egress_gb": 360}, "remaining": {"requests": 9952000.0, "egress_gb": 314.88}, "consumed": {"requests": 48000.0, "egress_gb": 45.1200000
+⚠️ 8. Catalog Lookup
+    3 priced; 1 missing
+        missing: ["Cloud Monitoring/alert_policies: Cannot scale 1 'policy-months' to catalog meter 'Policies'."]
+      [client_web] Firebase Hosting status=supported subtotal=$0.0000
+        WARNING: SKU 'requests': 48,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'egress_gb': 45 GB/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [api_layer] API Gateway status=supported subtotal=$5.0760
+        catalog role=egress sku_key=egress_gb unit=GB price=$0.09
+          56.4 x $0.09 = $5.0760
+        WARNING: No free-tier allowance mapping for sku_key 'egress_gb' on 'API Gateway'.
+        WARNING: SKU 'requests': 24,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [database] Cloud Firestore status=supported subtotal=$0.9450
+        catalog role=storage sku_key=storage_gb_month unit=GB-Mo price=$0.18
+          5.25 x $0.18 = $0.9450
+        WARNING: Free-tier pool 'gcp_cloud_firestore_free' exhausted for 'storage_gb_month'; 5 GB-months billable on 'Cloud Firestore'.
+        WARNING: SKU 'read_requests': 48,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'write_requests': 12,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'delete_requests': 1,200 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [push_notifications] Firebase status=supported subtotal=$0.0144
+        catalog role=egress sku_key=egress_gb unit=GB price=$0.09
+          0.16 x $0.09 = $0.0144
+        WARNING: No free-tier allowance mapping for sku_key 'egress_gb' on 'Firebase'.
+        WARNING: Free-tier pool 'gcp_cloud_firestore_free' exhausted for 'storage_gb_month'; 5 GB-months billable on 'Cloud Firestore'.
+        WARNING: SKU 'requests': 3,125 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [monitoring] Cloud Monitoring status=partial subtotal=$0.0000
+        MISSING CATALOG: alert_policies — Cannot scale 1 'policy-months' to catalog meter 'Policies'.
+        WARNING: No free-tier allowance mapping for sku_key 'alert_policies' on 'Cloud Monitoring'.
+        WARNING: Free-tier pool 'gcp_cloud_firestore_free' exhausted for 'storage_gb_month'; 5 GB-months billable on 'Cloud Firestore'.
+        WARNING: SKU 'custom_metrics': 5 metric-months calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'requests': 75 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: Cannot scale 'alert_policies' (policy-months) to catalog meter 'Policies'.
+        WARNING: Billable SKU quantities calculated but not priced: alert_policies
+      [logging] Cloud Logging status=supported subtotal=$0.0000
+        WARNING: Free-tier pool 'gcp_cloud_firestore_free' exhausted for 'storage_gb_month'; 5 GB-months billable on 'Cloud Firestore'.
+        WARNING: SKU 'ingestion_gb': 0 GB/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'storage_gb_month': 0 GB-months calculated but $0 billable after free tier — included usage not shown as a cost line.
+⚠️ 9. Cost Calculation
+    silent_zero_components=['client_web', 'logging']
+      [client_web] Firebase Hosting status=supported subtotal=$0.0000
+        WARNING: SKU 'requests': 48,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'egress_gb': 45 GB/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [api_layer] API Gateway status=supported subtotal=$5.0760
+        catalog role=egress sku_key=egress_gb unit=GB price=$0.09
+          56.4 x $0.09 = $5.0760
+        WARNING: No free-tier allowance mapping for sku_key 'egress_gb' on 'API Gateway'.
+        WARNING: SKU 'requests': 24,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [database] Cloud Firestore status=supported subtotal=$0.9450
+        catalog role=storage sku_key=storage_gb_month unit=GB-Mo price=$0.18
+          5.25 x $0.18 = $0.9450
+        WARNING: Free-tier pool 'gcp_cloud_firestore_free' exhausted for 'storage_gb_month'; 5 GB-months billable on 'Cloud Firestore'.
+        WARNING: SKU 'read_requests': 48,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'write_requests': 12,000 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'delete_requests': 1,200 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [push_notifications] Firebase status=supported subtotal=$0.0144
+        catalog role=egress sku_key=egress_gb unit=GB price=$0.09
+          0.16 x $0.09 = $0.0144
+        WARNING: No free-tier allowance mapping for sku_key 'egress_gb' on 'Firebase'.
+        WARNING: Free-tier pool 'gcp_cloud_firestore_free' exhausted for 'storage_gb_month'; 5 GB-months billable on 'Cloud Firestore'.
+        WARNING: SKU 'requests': 3,125 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+      [monitoring] Cloud Monitoring status=partial subtotal=$0.0000
+        MISSING CATALOG: alert_policies — Cannot scale 1 'policy-months' to catalog meter 'Policies'.
+        WARNING: No free-tier allowance mapping for sku_key 'alert_policies' on 'Cloud Monitoring'.
+        WARNING: Free-tier pool 'gcp_cloud_firestore_free' exhausted for 'storage_gb_month'; 5 GB-months billable on 'Cloud Firestore'.
+        WARNING: SKU 'custom_metrics': 5 metric-months calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'requests': 75 requests/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: Cannot scale 'alert_policies' (policy-months) to catalog meter 'Policies'.
+        WARNING: Billable SKU quantities calculated but not priced: alert_policies
+      [logging] Cloud Logging status=supported subtotal=$0.0000
+        WARNING: Free-tier pool 'gcp_cloud_firestore_free' exhausted for 'storage_gb_month'; 5 GB-months billable on 'Cloud Firestore'.
+        WARNING: SKU 'ingestion_gb': 0 GB/month calculated but $0 billable after free tier — included usage not shown as a cost line.
+        WARNING: SKU 'storage_gb_month': 0 GB-months calculated but $0 billable after free tier — included usage not shown as a cost line.
+✅ 10. Component Cost
+    client_web=$0.0; api_layer=$5.076; database=$0.945; push_notifications=$0.0144; monitoring=$0.0; logging=$0.0
+✅ 11. Project Cost
+    $6.04/mo
+
+  Persisted DB notes format: legacy JSON
+  pricing_detail in DB: null (legacy)
+  Live catalog estimate: $6.04/mo
+
+====================================================================================================
+## 12. Cloud Comparison (Frontend)
+  deriveArchitecture.js uses API cost_estimates when present (source=catalog)
+  computeHeuristicCosts() ONLY when cost_estimates is empty
+  Status: ✅ Catalog-based when pricing generated; ⚠️ heuristic fallback if no pricing
+
+====================================================================================================
+MASTER CHECKLIST
+====================================================================================================
+Stage                                   AZURE       AWS       GCP
+-----------------------------------------------------------------
+1. Product Input                            ✅         ✅         ✅
+2. Architecture Generation                  ✅         ✅         ✅
+3. Cloud Service Mapping                    ✅         ✅         ✅
+4. Usage Assumptions                        ✅         ✅         ✅
+5. Validation                              ⚠️        ⚠️        ⚠️
+6. SKU Quantity Calculation                 ✅         ✅         ✅
+7. Free Tier / Included Usage               ✅         ✅         ✅
+8. Catalog Lookup                          ⚠️        ⚠️        ⚠️
+9. Cost Calculation                        ⚠️        ⚠️        ⚠️
+10. Component Cost                          ✅         ✅         ✅
+11. Project Cost                            ✅         ✅         ✅
+12. Cloud Comparison                        ✅         ✅         ✅
+
+LEGACY / DIVERGENT CODE PATHS STILL PRESENT
+--------------------------------------------------
+  • CostEstimatorService
+      backend/app/services/cost_estimator_service.py
+      NOT wired to generate_pricing; README only
+  • HeuristicProviderPricing.estimate_provider
+      backend/app/pricing/providers/heuristic.py
+      Injected but NEVER called by ProjectPricingService.estimate()
+  • Frontend computeHeuristicCosts
+      frontend/.../deriveArchitecture.js
+      Active ONLY when cost_estimates[] is empty
+  • DB notes JSON (component_costs)
+      cost_estimates.notes
+      Legacy format from removed formula engine; pricing_detail should be used
+  • Catalog formula linear engine
+      pricing_ingestion/data/*_formulas.py
+      Ingestion-time only; NOT used at runtime by catalog pipelines
+  • AWS/GCP heuristic-only usage when Azure uses LLM
+      generation_service._infer_usage_assumptions
+      Asymmetric: Azure LLM, AWS/GCP forced heuristic
+
+PROVIDER PIPELINE ARCHITECTURE DIFFERENCES
+--------------------------------------------------
+  • Azure: all mapped components priced; no unsupported/ui_only gates
+  • AWS: unsupported services explicitly flagged (coverage.py); no ui_only concept
+  • GCP: unsupported + ui_only ($0) component handling; GcpCatalogMeterSelector
+  • Azure: AzureCatalogMeterSelector for tier/storage class SKU selection
+  • AWS: direct catalog role lookup (no meter selector class)
+  • Usage inference: per-provider UsageModelBuilder (azure/aws/gcp) via HeuristicFallbackProvider
+  • All three: shared UsageAssumptionsService facade, same ComponentPricingInput schema
+  • All three: project_pricing -> free_tier -> cost_calculator -> project_costing pattern

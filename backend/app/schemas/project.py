@@ -128,6 +128,7 @@ class CostEstimateOut(BaseModel):
     monthly_high: float
     currency: str
     notes: str
+    pricing_detail: dict | None = None
 
 
 class DiagramNodeOut(BaseModel):

@@ -121,6 +121,7 @@ class CostEstimate(Base):
     monthly_high: Mapped[float] = mapped_column(Float, default=0.0)
     currency: Mapped[str] = mapped_column(String(8), default="USD")
     notes: Mapped[str] = mapped_column(Text, default="")
+    pricing_detail: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     project: Mapped[Project] = relationship(back_populates="cost_estimates")
 

@@ -49,7 +49,11 @@ class GcpCatalogNormalizer(CatalogNormalizer):
             id=catalog_id,
             name=display_name,
             skus=sku_map,
-            formula=formula_for_service(service_id, list(sku_map.keys())),
+            formula=formula_for_service(
+                service_id,
+                list(sku_map.keys()),
+                catalog_id=catalog_id,
+            ),
         )
 
     def _normalize_sku_entry(self, sku: dict[str, Any]) -> dict[str, Any] | None:

@@ -11,6 +11,9 @@ backend/local_execution.py
 backend/local_output.json
 backend/object-storage/
 
+# Generated validation reports and exports
+docs/
+
 # Node
 frontend/node_modules/
 frontend/dist/
@@ -19,3 +22,4 @@ frontend/dist/
 .DS_Store
 .idea/
 .vscode/
+.cursor/

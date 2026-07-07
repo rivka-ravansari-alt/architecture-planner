@@ -25,3 +25,4 @@ class ProviderCost:
     monthly_high: float
     currency: str
     notes: str
+    pricing_detail: dict | None = None

@@ -1,0 +1,410 @@
+﻿==========================================================================================
+PRICING AUDIT: Sarika Self-Esteem (100 users, MVP)
+Project ID: 91a67ae9-1691-40a2-bb17-d37b11317f33
+==========================================================================================
+
+ARCHITECTURE COMPONENTS & CLOUD MAPPINGS:
+  client_web: Sarika Web Application [web_app] optional=False
+    AWS: ["Amplify Hosting"]  GCP: ["Firebase Hosting"]  Azure: ["Azure App Service"]
+  api_layer: API Gateway [api_gateway] optional=False
+    AWS: ["API Gateway"]  GCP: ["API Gateway"]  Azure: ["API Management"]
+  database: User Progress Database [database] optional=False
+    AWS: ["DynamoDB", "RDS"]  GCP: ["Cloud Firestore", "Cloud SQL"]  Azure: ["Azure Cosmos DB", "SQL Database"]
+  push_notifications: User Notification Service [notification] optional=True
+    AWS: ["SNS", "SES"]  GCP: ["Firebase", "SendGrid"]  Azure: ["Notification Hubs", "Voice Core"]
+  monitoring: Monitoring Service [monitoring] optional=True
+    AWS: ["CloudWatch"]  GCP: ["Cloud Monitoring"]  Azure: ["Azure Monitor"]
+  logging: Logging Service [logging] optional=True
+    AWS: ["CloudWatch Logs"]  GCP: ["Cloud Logging"]  Azure: ["Log Analytics"]
+  config: Configuration Management [config] optional=True
+    AWS: ["AppConfig", "SSM Parameter Store"]  GCP: ["Secret Manager", "Cloud Firestore"]  Azure: ["App Configuration"]
+
+
+Global usage model (identical across all providers):
+  - Expected users: 100 (MVP stage)
+  - Requests per user per month: 40 (total 4,000/month)
+  - Request share split by component type (api_gateway 35%, web_app 15%, database 5%, etc.)
+  - Avg request duration: 0.15 seconds
+  - CPU: 0.25 vCPU, Memory: 0.5 GiB
+  - Storage: 0.05 GiB/user = 5 GiB total
+  - Egress: 2.4 GB/month
+  - No AI, auth, file upload, background processing, or payments features enabled
+  - Inference: heuristic (not LLM) ù same usage_variables injected into formula engine
+
+
+##########################################################################################
+# AZURE ù $48.18 û $58.58/month
+##########################################################################################
+
+## 1. Total Cost Per Component
+
+Component                           Service                          Min        Max % of Total
+-----------------------------------------------------------------------------------------------
+Sarika Web Application              Azure App Service         $    17.52 $    17.52      36.4%
+API Gateway                         API Management            $     0.00 $     0.00       0.0%
+User Progress Database              Azure Cosmos DB           $     0.00 $     0.00       0.0%
+User Notification Service           Notification Hubs         $     0.00 $     0.00       0.0%
+Monitoring Service                  Azure Monitor             $     0.00 $     0.00       0.0%
+Logging Service                     Log Analytics             $    29.41 $    39.79      61.0%
+Configuration Management            App Configuration         $     1.25 $     1.27       2.6%
+TOTAL                                                         $    48.18 $    58.58     100.0%
+
+## 2. Total Cost Per SKU (aggregated across components)
+
+SKU (service/role)                                       Cost
+--------------------------------------------------------------
+Log Analytics/premium                              $    19.64
+Azure App Service/standard                         $    17.52
+Log Analytics/standard                             $     9.78
+App Configuration/standard                         $     1.20
+App Configuration/premium                          $     0.05
+Azure App Service/egress                           $     0.00
+API Management/consumption                         $     0.00
+Log Analytics/analytics_logs                       $     0.00
+Log Analytics/free                                 $     0.00
+App Configuration/developer                        $     0.00
+App Configuration/free                             $     0.00
+
+## 3. Usage Assumptions (per component)
+
+  [Sarika Web Application] -> Azure App Service
+    users=100 stage=mvp req/user/mo=40 share=0.15
+    monthly_requests=600.0 storage_gib=5.0 egress_gb=2.4 executions=120.0
+  [API Gateway] -> API Management
+    users=100 stage=mvp req/user/mo=40 share=0.35
+    monthly_requests=1400.0 storage_gib=5.0 egress_gb=2.4 executions=280.0
+  [User Progress Database] -> Azure Cosmos DB
+    users=100 stage=mvp req/user/mo=40 share=0.05
+    monthly_requests=200.0 storage_gib=5.0 egress_gb=2.4 executions=40.0
+  [User Notification Service] -> Notification Hubs
+    users=100 stage=mvp req/user/mo=40 share=0.02
+    monthly_requests=80.0 storage_gib=5.0 egress_gb=2.4 executions=16.0
+  [Monitoring Service] -> Azure Monitor
+    users=100 stage=mvp req/user/mo=40 share=0.01
+    monthly_requests=40.0 storage_gib=5.0 egress_gb=2.4 executions=8.0
+  [Logging Service] -> Log Analytics
+    users=100 stage=mvp req/user/mo=40 share=0.01
+    monthly_requests=40.0 storage_gib=5.0 egress_gb=2.4 executions=8.0
+  [Configuration Management] -> App Configuration
+    users=100 stage=mvp req/user/mo=40 share=0.01
+    monthly_requests=40.0 storage_gib=5.0 egress_gb=2.4 executions=8.0
+
+## 4û6. SKU Line Items: Billable Qty | Free Tier | Unit Price | Cost
+
+Component                    SKU Role                                   Qty  Free Tier       Unit $ Unit                  Cost
+----------------------------------------------------------------------------------------------------------------------------------
+Logging Service              premium                                    5.0        0.0 $   4.620000 1 GB            $    19.64
+Sarika Web Application       standard                                 730.0        0.0 $   0.024000 1 Hour          $    17.52
+Logging Service              standard                                   5.0        0.0 $   2.300000 1 GB            $     9.78
+Configuration Management     standard                                   1.0        0.0 $   1.200000 1/Day           $     1.20
+Configuration Management     premium                                   40.0        0.0 $   0.001600 1 MB/Day        $     0.05
+Sarika Web Application       egress                                     2.4        0.0 $   0.000000 1 GB            $     0.00
+API Gateway                  consumption                            1,400.0        0.0 $   0.000000 10K             $     0.00
+Logging Service              analytics_logs                             5.0        0.0 $   0.000000 1 GB            $     0.00
+Logging Service              free                                       5.0        0.0 $   0.000000 1 GB            $     0.00
+Configuration Management     developer                                 40.0        0.0 $   0.000000 1K              $     0.00
+Configuration Management     free                                      40.0        0.0 $   0.000000 1K              $     0.00
+
+  UNPRICED COMPONENTS (formula/catalog failure):
+    - User Progress Database (Azure Cosmos DB): Formula evaluation failed for 'Azure Cosmos DB': invalid decimal literal (<unknown>, line 1)
+    - User Notification Service (Notification Hubs): Formula evaluation failed for 'Notification Hubs': invalid decimal literal (<unknown>, line 1)
+    - Monitoring Service (Azure Monitor): Formula evaluation failed for 'Azure Monitor': invalid decimal literal (<unknown>, line 1)
+
+## 7. Top 10 Most Expensive SKU Line Items
+
+   1. $    19.64  Logging Service / premium (5 1 GB @ $4.62/unit)
+   2. $    17.52  Sarika Web Application / standard (730 1 Hour @ $0.024/unit)
+   3. $     9.78  Logging Service / standard (5 1 GB @ $2.3/unit)
+   4. $     1.20  Configuration Management / standard (1 1/Day @ $1.2/unit)
+   5. $     0.05  Configuration Management / premium (40 1 MB/Day @ $0.0016/unit)
+   6. $     0.00  Sarika Web Application / egress (2 1 GB @ $0.0/unit)
+   7. $     0.00  API Gateway / consumption (1,400 10K @ $0.0/unit)
+   8. $     0.00  Logging Service / analytics_logs (5 1 GB @ $0.0/unit)
+   9. $     0.00  Logging Service / free (5 1 GB @ $0.0/unit)
+  10. $     0.00  Configuration Management / developer (40 1K @ $0.0/unit)
+
+## 8. Component % Contribution to Total
+
+  Logging Service                      61.0%  ##############################
+  Sarika Web Application               36.4%  ##################
+  Configuration Management              2.6%  #
+  API Gateway                           0.0%  
+  User Progress Database                0.0%  
+  User Notification Service             0.0%  
+  Monitoring Service                    0.0%  
+
+##########################################################################################
+# AWS ù $659.55 û $660.46/month
+##########################################################################################
+
+## 1. Total Cost Per Component
+
+Component                           Service                          Min        Max % of Total
+-----------------------------------------------------------------------------------------------
+Sarika Web Application              Amplify Hosting           $     0.00 $     0.00       0.0%
+API Gateway                         API Gateway               $     0.00 $     0.00       0.0%
+User Progress Database              DynamoDB                  $     0.43 $     0.58       0.1%
+User Notification Service           SNS                       $     0.00 $     0.00       0.0%
+Monitoring Service                  CloudWatch                $     0.00 $     0.00       0.0%
+Logging Service                     CloudWatch Logs           $     2.12 $     2.88       0.3%
+Configuration Management            AppConfig                 $   657.00 $   657.00      99.6%
+TOTAL                                                         $   659.55 $   660.46     100.0%
+
+## 2. Total Cost Per SKU (aggregated across components)
+
+SKU (service/role)                                       Cost
+--------------------------------------------------------------
+AppConfig/use1_appconfig_experimenthours           $   657.00
+CloudWatch Logs/ingested_logs                      $     2.12
+DynamoDB/use1_exportdatasize_bytes                 $     0.42
+SNS/egress                                         $     0.00
+AppConfig/use1_appconfig_deployments               $     0.00
+API Gateway/use1_apigatewayminute                  $     0.00
+DynamoDB/requests                                  $     0.00
+SNS/requests                                       $     0.00
+SNS/deliveryattempts_lambda                        $     0.00
+AppConfig/requests                                 $     0.00
+
+## 3. Usage Assumptions (per component)
+
+  [Sarika Web Application] -> Amplify Hosting
+    users=100 stage=mvp req/user/mo=40 share=0.15
+    monthly_requests=600.0 storage_gib=5.0 egress_gb=2.4 executions=120.0
+  [API Gateway] -> API Gateway
+    users=100 stage=mvp req/user/mo=40 share=0.35
+    monthly_requests=1400.0 storage_gib=5.0 egress_gb=2.4 executions=280.0
+  [User Progress Database] -> DynamoDB
+    users=100 stage=mvp req/user/mo=40 share=0.05
+    monthly_requests=200.0 storage_gib=5.0 egress_gb=2.4 executions=40.0
+  [User Notification Service] -> SNS
+    users=100 stage=mvp req/user/mo=40 share=0.02
+    monthly_requests=80.0 storage_gib=5.0 egress_gb=2.4 executions=16.0
+  [Monitoring Service] -> CloudWatch
+    users=100 stage=mvp req/user/mo=40 share=0.01
+    monthly_requests=40.0 storage_gib=5.0 egress_gb=2.4 executions=8.0
+  [Logging Service] -> CloudWatch Logs
+    users=100 stage=mvp req/user/mo=40 share=0.01
+    monthly_requests=40.0 storage_gib=5.0 egress_gb=2.4 executions=8.0
+  [Configuration Management] -> AppConfig
+    users=100 stage=mvp req/user/mo=40 share=0.01
+    monthly_requests=40.0 storage_gib=5.0 egress_gb=2.4 executions=8.0
+
+## 4û6. SKU Line Items: Billable Qty | Free Tier | Unit Price | Cost
+
+Component                    SKU Role                                   Qty  Free Tier       Unit $ Unit                  Cost
+----------------------------------------------------------------------------------------------------------------------------------
+Configuration Management     use1_appconfig_experimenthours           730.0        0.0 $   0.900000 Hours           $   657.00
+Logging Service              ingested_logs                              5.0        0.0 $   0.500000 GB              $     2.12
+User Progress Database       use1_exportdatasize_bytes                  5.0        0.0 $   0.100000 GB              $     0.42
+User Notification Service    egress                                     2.4        0.0 $   0.001000 GB              $     0.00
+Configuration Management     use1_appconfig_deployments                 1.0        0.0 $   0.000800 Configuration   $     0.00
+API Gateway                  use1_apigatewayminute                  1,400.0        0.0 $   0.000000 minutes         $     0.00
+User Progress Database       requests                                 200.0        0.0 $   0.000000 ReadRequestUni  $     0.00
+User Notification Service    requests                                  80.0        0.0 $   0.000000 Requests        $     0.00
+User Notification Service    deliveryattempts_lambda                   16.0        0.0 $   0.000000 Notifications   $     0.00
+Configuration Management     requests                                  40.0        0.0 $   0.000000 Configuration   $     0.00
+
+  UNPRICED COMPONENTS (formula/catalog failure):
+    - Sarika Web Application (Amplify Hosting): Formula evaluation failed for 'Amplify Hosting': 'use1_amplifywaf'
+    - Monitoring Service (CloudWatch): Formula evaluation failed for 'CloudWatch': 'ia_vended_ingested_logs'
+
+## 7. Top 10 Most Expensive SKU Line Items
+
+   1. $   657.00  Configuration Management / use1_appconfig_experimenthours (730 Hours @ $0.9/unit)
+   2. $     2.12  Logging Service / ingested_logs (5 GB @ $0.5/unit)
+   3. $     0.42  User Progress Database / use1_exportdatasize_bytes (5 GB @ $0.1/unit)
+   4. $     0.00  User Notification Service / egress (2 GB @ $0.001/unit)
+   5. $     0.00  Configuration Management / use1_appconfig_deployments (1 Configuration Received @ $0.0008/unit)
+   6. $     0.00  API Gateway / use1_apigatewayminute (1,400 minutes @ $2.5e-07/unit)
+   7. $     0.00  User Progress Database / requests (200 ReadRequestUnits @ $1.25e-07/unit)
+   8. $     0.00  User Notification Service / requests (80 Requests @ $3e-07/unit)
+   9. $     0.00  User Notification Service / deliveryattempts_lambda (16 Notifications @ $0.0/unit)
+  10. $     0.00  Configuration Management / requests (40 Configuration Requests @ $2e-07/unit)
+
+## 8. Component % Contribution to Total
+
+  Configuration Management             99.6%  #################################################
+  Logging Service                       0.3%  
+  User Progress Database                0.1%  
+  Sarika Web Application                0.0%  
+  API Gateway                           0.0%  
+  User Notification Service             0.0%  
+  Monitoring Service                    0.0%  
+
+##########################################################################################
+# GCP ù $3570.40 û $4830.53/month
+##########################################################################################
+
+## 1. Total Cost Per Component
+
+Component                           Service                          Min        Max % of Total
+-----------------------------------------------------------------------------------------------
+Sarika Web Application              Firebase Hosting          $     0.00 $     0.00       0.0%
+API Gateway                         API Gateway               $  3570.39 $  4830.52     100.0%
+User Progress Database              Cloud Firestore           $     0.00 $     0.00       0.0%
+User Notification Service           Firebase                  $     0.00 $     0.00       0.0%
+Monitoring Service                  Cloud Monitoring          $     0.00 $     0.00       0.0%
+Logging Service                     Cloud Logging             $     0.01 $     0.01       0.0%
+Configuration Management            Secret Manager            $     0.00 $     0.00       0.0%
+TOTAL                                                         $  3570.40 $  4830.53     100.0%
+
+## 2. Total Cost Per SKU (aggregated across components)
+
+SKU (service/role)                                       Cost
+--------------------------------------------------------------
+API Gateway/requests                               $  3570.00
+API Gateway/egress                                 $     0.39
+Cloud Logging/logs_ondemand                        $     0.01
+Firebase Hosting/cdncacheegress_ondemand           $     0.00
+Firebase Hosting/storage                           $     0.00
+Cloud Firestore/firestorebandwidth_ondemand        $     0.00
+Cloud Firestore/firestoreentityputops_ondemand     $     0.00
+Firebase/firebasesubscription_ondemand             $     0.00
+Cloud Monitoring/monitoring_ondemand               $     0.00
+Cloud Monitoring/ops_ondemand                      $     0.00
+Cloud Logging/storage                              $     0.00
+Secret Manager/secretmanager_ondemand              $     0.00
+Secret Manager/storage                             $     0.00
+
+## 3. Usage Assumptions (per component)
+
+  [Sarika Web Application] -> Firebase Hosting
+    users=100 stage=mvp req/user/mo=40 share=0.15
+    monthly_requests=600.0 storage_gib=5.0 egress_gb=2.4 executions=120.0
+  [API Gateway] -> API Gateway
+    users=100 stage=mvp req/user/mo=40 share=0.35
+    monthly_requests=1400.0 storage_gib=5.0 egress_gb=2.4 executions=280.0
+  [User Progress Database] -> Cloud Firestore
+    users=100 stage=mvp req/user/mo=40 share=0.05
+    monthly_requests=200.0 storage_gib=5.0 egress_gb=2.4 executions=40.0
+  [User Notification Service] -> Firebase
+    users=100 stage=mvp req/user/mo=40 share=0.02
+    monthly_requests=80.0 storage_gib=5.0 egress_gb=2.4 executions=16.0
+  [Monitoring Service] -> Cloud Monitoring
+    users=100 stage=mvp req/user/mo=40 share=0.01
+    monthly_requests=40.0 storage_gib=5.0 egress_gb=2.4 executions=8.0
+  [Logging Service] -> Cloud Logging
+    users=100 stage=mvp req/user/mo=40 share=0.01
+    monthly_requests=40.0 storage_gib=5.0 egress_gb=2.4 executions=8.0
+  [Configuration Management] -> Secret Manager
+    users=100 stage=mvp req/user/mo=40 share=0.01
+    monthly_requests=40.0 storage_gib=5.0 egress_gb=2.4 executions=8.0
+
+## 4û6. SKU Line Items: Billable Qty | Free Tier | Unit Price | Cost
+
+Component                    SKU Role                                   Qty  Free Tier       Unit $ Unit                  Cost
+----------------------------------------------------------------------------------------------------------------------------------
+API Gateway                  requests                               1,400.0        0.0 $   3.000000 1M requests     $  3570.00
+API Gateway                  egress                                     2.4        0.0 $   0.190000 GiBy            $     0.39
+Logging Service              logs_ondemand                              1.0        0.0 $   0.010000 GiBy.mo         $     0.01
+Sarika Web Application       cdncacheegress_ondemand                    5.0        0.0 $   0.000000 GiBy            $     0.00
+Sarika Web Application       storage                                    5.0        0.0 $   0.000000 GiBy.mo         $     0.00
+User Progress Database       firestorebandwidth_ondemand                5.0        0.0 $   0.000000 GiBy            $     0.00
+User Progress Database       firestoreentityputops_ondemand           200.0        0.0 $   0.000000 count           $     0.00
+User Notification Service    firebasesubscription_ondemand              1.0        0.0 $   0.000000 mo              $     0.00
+Monitoring Service           monitoring_ondemand                       40.0        0.0 $   0.000000 count           $     0.00
+Monitoring Service           ops_ondemand                               8.0        0.0 $   0.000000 count           $     0.00
+Logging Service              storage                                    5.0        0.0 $   0.000000 GiBy            $     0.00
+Configuration Management     secretmanager_ondemand                    40.0        0.0 $   0.000000 count           $     0.00
+Configuration Management     storage                                    5.0        0.0 $   0.000000 mo              $     0.00
+
+## 7. Top 10 Most Expensive SKU Line Items
+
+   1. $  3570.00  API Gateway / requests (1,400 1M requests @ $3.0/unit)
+   2. $     0.39  API Gateway / egress (2 GiBy @ $0.19/unit)
+   3. $     0.01  Logging Service / logs_ondemand (1 GiBy.mo @ $0.01/unit)
+   4. $     0.00  Sarika Web Application / cdncacheegress_ondemand (5 GiBy @ $0.0/unit)
+   5. $     0.00  Sarika Web Application / storage (5 GiBy.mo @ $0.0/unit)
+   6. $     0.00  User Progress Database / firestorebandwidth_ondemand (5 GiBy @ $0.0/unit)
+   7. $     0.00  User Progress Database / firestoreentityputops_ondemand (200 count @ $0.0/unit)
+   8. $     0.00  User Notification Service / firebasesubscription_ondemand (1 mo @ $0.0/unit)
+   9. $     0.00  Monitoring Service / monitoring_ondemand (40 count @ $1.5e-07/unit)
+  10. $     0.00  Monitoring Service / ops_ondemand (8 count @ $0.0/unit)
+
+## 8. Component % Contribution to Total
+
+  API Gateway                         100.0%  #################################################
+  Logging Service                       0.0%  
+  Sarika Web Application                0.0%  
+  User Progress Database                0.0%  
+  User Notification Service             0.0%  
+  Monitoring Service                    0.0%  
+  Configuration Management              0.0%  
+
+==========================================================================================
+ROOT CAUSE ANALYSIS
+==========================================================================================
+
+VERDICT: The cross-cloud gap is NOT caused by different LLM usage assumptions.
+python : Traceback (most recent call last):
+At C:\Users\rivka\AppData\Local\Temp\ps-script-9fb10f25-2d11-4517-8b43-0456ea68c390.ps1:104 char:80
++ ... anner\backend"; python scripts/_generate_audit_report.py 2>&1 | Out-F ...
++                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\rivka\OneDrive\Desktop\cursor-apps\architecture-planner\backend\scripts\_generate_audit_report.py", 
+line 236, in <module>
+    with open("scripts/_pricing_audit_report.txt", "w", encoding="utf-8") as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: 'scripts/_pricing_audit_report.txt'
+All three providers use identical heuristic usage_variables (100 users, 40 req/user/mo,
+same request-share splits, 5 GiB storage, 2.4 GB egress). The gap is caused by
+calculation bugs and catalog SKU role mismatches ù not architecture mapping differences
+(with one Azure caveat noted below).
+
+--- AWS ($659.55) vs Azure ($48.18) ---
+
+PRIMARY BUG ù AWS AppConfig Experiment Hours ($657.00, 99.5% of AWS total):
+  Component: Configuration Management -> AppConfig
+  SKU: use1_appconfig_experimenthours
+  Quantity: 730 hours (full month, likely defaulted from hours_per_month)
+  Unit price: $0.90/hour (AppConfig feature-flag experimentation pricing)
+  Cost: 730 x $0.90 = $657.00
+
+  This is a catalog role mismatch / formula bug. A simple config-management component
+  for 100 users should NOT bill 730 hours of AppConfig experimentation. Azure's
+  equivalent (App Configuration) correctly prices at $1.25/mo using per-day/per-event SKUs.
+
+SECONDARY ISSUES (minor):
+  - DynamoDB matched export-data SKU (use1_exportdatasize_bytes) instead of storage/RCU
+  - CloudWatch and Amplify Hosting formula evaluation failed ($0)
+  - CloudWatch Logs matched CloudFront vended logs SKU ($2.12) ù wrong log class
+
+Without the AppConfig bug, AWS would be ~$2.55û$3.46/mo (consistent with other
+project runs for the same app that predate this pricing generation).
+
+--- GCP ($3,570.40) vs Azure ($48.18) ---
+
+PRIMARY BUG ù GCP API Gateway request unit scaling ($3,570.00, 99.99% of GCP total):
+  Component: API Gateway -> API Gateway
+  SKU: manual-gcp-api-gateway-requests (requests role)
+  Quantity: 1,400 requests/month
+  Unit price: $3.00 per "1M requests"
+  Calculated cost: 1,400 x $3.00 = $3,570.00  <- WRONG
+
+  Correct cost: (1,400 / 1,000,000) x $3.00 = $0.0042
+  The linear formula engine multiplies raw request count by the per-million price
+  without dividing by 1,000,000. Azure API Management correctly prices 1,400 calls at $0
+  (consumption tier within free tier).
+
+--- Azure ($48.18) - likely UNDERPRICED ---
+
+Azure appears cheapest partly due to pricing FAILURES (components priced at $0):
+  - User Progress Database -> Azure Cosmos DB: formula evaluation failed ($0)
+    (SQL Database is also mapped but never priced as a second service)
+  - Notification Hubs: formula failed ($0)
+  - Azure Monitor: formula failed ($0)
+
+Azure Log Analytics may OVER-count: both premium ($4.62/GB) and standard ($2.30/GB)
+tiers applied to the same 5 GB of logs = $29.41û$39.79 (should pick one tier).
+
+If Cosmos DB/SQL Database were priced (~$30/mo SQL floor), Azure would be ~$78û$88/mo,
+still far below the buggy AWS/GCP figures.
+
+--- Architecture mapping note ---
+
+Database component maps to TWO services per provider (e.g., DynamoDB + RDS on AWS,
+Cosmos DB + SQL Database on Azure) but only the FIRST listed service is priced per
+component. This affects completeness but is NOT the primary cause of the AWS/GCP spike.
+

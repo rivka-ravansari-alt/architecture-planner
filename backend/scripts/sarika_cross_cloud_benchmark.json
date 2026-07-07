@@ -1,0 +1,55 @@
+{
+  "product": "Sarika Self-Esteem",
+  "description": "A self-esteem improvement application that provides users with daily exercises designed to build confidence, positive self-image, and emotional well-being. Users can complete exercises, track their progress, maintain daily streaks, and receive personalized recommendations. The system stores user progress and provides a simple dashboard to visualize growth over time",
+  "stage": "mvp",
+  "components": 7,
+  "inference_mode": "heuristic",
+  "currency": "USD",
+  "catalog": "test_fixtures",
+  "rows": [
+    {
+      "users": 100,
+      "azure_usd": 0.0,
+      "aws_usd": 12.17,
+      "gcp_usd": 6.04,
+      "inference": {
+        "azure": "heuristic_fallback",
+        "aws": "heuristic_fallback",
+        "gcp": "heuristic_fallback"
+      }
+    },
+    {
+      "users": 1000,
+      "azure_usd": 0.0,
+      "aws_usd": 128.35,
+      "gcp_usd": 70.21,
+      "inference": {
+        "azure": "heuristic_fallback",
+        "aws": "heuristic_fallback",
+        "gcp": "heuristic_fallback"
+      }
+    },
+    {
+      "users": 10000,
+      "azure_usd": 0.0,
+      "aws_usd": 1348.69,
+      "gcp_usd": 996.57,
+      "inference": {
+        "azure": "heuristic_fallback",
+        "aws": "heuristic_fallback",
+        "gcp": "heuristic_fallback"
+      }
+    },
+    {
+      "users": 100000,
+      "azure_usd": 0.0,
+      "aws_usd": 13573.34,
+      "gcp_usd": 10421.53,
+      "inference": {
+        "azure": "heuristic_fallback",
+        "aws": "heuristic_fallback",
+        "gcp": "heuristic_fallback"
+      }
+    }
+  ]
+}

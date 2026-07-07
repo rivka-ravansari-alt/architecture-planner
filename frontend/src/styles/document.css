@@ -640,6 +640,143 @@
   color: var(--text-faint);
 }
 
+.usage-assumptions-panel {
+  margin-top: 1.5rem;
+}
+
+.usage-assumptions-source {
+  margin-bottom: 1rem;
+}
+
+.usage-assumptions-component {
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-subtle, #e5e7eb);
+  border-radius: 8px;
+  background: var(--surface-subtle, #f9fafb);
+}
+
+.usage-assumptions-component-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.usage-assumptions-subheading {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.usage-assumptions-list-scaled {
+  margin-top: 0.25rem;
+}
+
+.usage-assumptions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.usage-assumption-item {
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--border-subtle, #e5e7eb);
+}
+
+.usage-assumption-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.usage-assumption-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.usage-assumption-key {
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.usage-assumption-value {
+  color: var(--text-primary, #111827);
+}
+
+.usage-assumption-reasoning {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted, #6b7280);
+  line-height: 1.45;
+}
+
+.azure-pricing-breakdown {
+  margin-top: 1.5rem;
+}
+
+.azure-pricing-component {
+  margin-bottom: 1rem;
+}
+
+.cloud-costs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cloud-cost-item {
+  margin-bottom: 1.25rem;
+}
+
+.cloud-cost-item:last-child {
+  margin-bottom: 0;
+}
+
+.cloud-cost-line {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.cloud-cost-detail-json {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-soft);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+
+.cloud-mappings-summary {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.cloud-mappings-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  line-height: 1.65;
+}
+
+.cloud-mappings-list li + li {
+  margin-top: 0.35rem;
+}
+
 @media (max-width: 960px) {
   .arch-doc-shell {
     flex-direction: column;

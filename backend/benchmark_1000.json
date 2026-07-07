@@ -1,0 +1,1790 @@
+{
+  "provider": "aws",
+  "inference_mode": "llm",
+  "user_counts": [
+    100,
+    1000,
+    10000,
+    100000
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "simple_crud_saas",
+      "name": "Simple CRUD SaaS",
+      "product_description": "A lightweight B2B SaaS product for managing records (customers, tasks, or inventory). Users sign in, create and edit records, search lists, and export CSV reports. Traffic is steady with moderate read/write ratios and minimal background processing.",
+      "feature_flags": {
+        "file_upload": false,
+        "ai": false,
+        "background_processing": false
+      },
+      "architecture_components": [
+        {
+          "component_id": "api",
+          "name": "Backend API",
+          "component_type": "service",
+          "aws_service": "Lambda",
+          "azure_service": "Azure Container Apps"
+        },
+        {
+          "component_id": "database",
+          "name": "Primary Database",
+          "component_type": "database",
+          "aws_service": "RDS PostgreSQL",
+          "azure_service": "SQL Database"
+        },
+        {
+          "component_id": "files",
+          "name": "Object Storage",
+          "component_type": "object_storage",
+          "aws_service": "S3",
+          "azure_service": "Blob Storage"
+        }
+      ],
+      "rows": [
+        {
+          "users": 1000,
+          "total_usd": 0.4,
+          "inference_source": "llm",
+          "components": [
+            {
+              "component_id": "api",
+              "aws_service": "Lambda",
+              "subtotal_usd": 0.09,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_response_size_kb",
+                  "value": 10.0,
+                  "unit": "KB/invocation",
+                  "confidence": "medium",
+                  "reasoning": "The response size is relatively small, primarily consisting of JSON data for records, averaging around 10 KB."
+                },
+                {
+                  "key": "invocations_per_session",
+                  "value": 5.0,
+                  "unit": "invocations/session",
+                  "confidence": "high",
+                  "reasoning": "Each session involves multiple CRUD operations, averaging around 5 function invocations per session."
+                },
+                {
+                  "key": "sessions_per_user_per_month",
+                  "value": 20.0,
+                  "unit": "sessions/user/month",
+                  "confidence": "high",
+                  "reasoning": "A typical user will engage with the application regularly to manage records, leading to about 20 sessions per month."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "executions_per_month",
+                  "value": 100000,
+                  "unit": "executions/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 20.0 sessions/user/month \u00d7 5.0 invocations/session = 100,000 executions/month."
+                },
+                {
+                  "key": "avg_execution_duration_ms",
+                  "value": 200.0,
+                  "unit": "milliseconds",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "memory_mb",
+                  "value": 512,
+                  "unit": "MB",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "network_egress_gb",
+                  "value": 0.95,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled from per-request egress (10.0 KB/request) across 1,000 users \u2192 0.95 GB/month."
+                }
+              ]
+            },
+            {
+              "component_id": "database",
+              "aws_service": "RDS",
+              "subtotal_usd": 0.04,
+              "behavioral_assumptions": [
+                {
+                  "key": "backup_retention_days",
+                  "value": 7,
+                  "unit": "days",
+                  "confidence": "high",
+                  "reasoning": "Backup storage derived from DB size \u00d7 7/30 retention window (not guessed independently)."
+                },
+                {
+                  "key": "backup_storage_gb_per_user",
+                  "value": 0.00030713,
+                  "unit": "GB/user/month",
+                  "confidence": "high",
+                  "reasoning": "Derived from 0.001316 GB/user database storage \u00d7 7-day backup retention policy."
+                },
+                {
+                  "key": "storage_entity:application_records",
+                  "value": 0.001316,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "10.0 rec/user/mo \u00d7 5.0 KB \u00d7 24.0 mo retention \u2192 0.001316 GB/user. Each user creates and manages several records each month, leading to an average of 10 records, which are retained for two years."
+                },
+                {
+                  "key": "storage_entity:user_profile",
+                  "value": 0.0,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "0.1 rec/user/mo \u00d7 2.0 KB \u00d7 120.0 mo retention \u2192 0.000000 GB/user. User profiles are essential for managing user-specific settings and preferences, with minimal updates each month."
+                },
+                {
+                  "key": "storage_gb_per_user",
+                  "value": 0.00131629,
+                  "unit": "GB/user",
+                  "confidence": "high",
+                  "reasoning": "Sum of entity-level storage: user_profile=0.000000 GB/user, application_records=0.001316 GB/user"
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "instance_class",
+                  "value": "db.t3.micro",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "storage_gb",
+                  "value": 1.32,
+                  "unit": "GB",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 0.00131629 GB/user = 1.32 GB."
+                },
+                {
+                  "key": "backup_storage_gb",
+                  "value": 0.31,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 0.00030713 GB/user/month = 0.31 GB/month."
+                },
+                {
+                  "key": "hours_per_month",
+                  "value": 730.0,
+                  "unit": "hours/month",
+                  "confidence": "medium",
+                  "reasoning": ""
+                }
+              ]
+            },
+            {
+              "component_id": "files",
+              "aws_service": "S3",
+              "subtotal_usd": 0.28,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_download_size_kb",
+                  "value": 81.82,
+                  "unit": "KB/read",
+                  "confidence": "medium",
+                  "reasoning": "Read-weighted average object size across S3 categories."
+                },
+                {
+                  "key": "reads_per_user_per_month",
+                  "value": 22.0,
+                  "unit": "operations/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Summed reads across S3 storage categories."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Static assets and shared content \u2014 does not scale with user count."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Sum of static (non-user-scaling) S3 categories."
+                },
+                {
+                  "key": "storage_category:generated_files",
+                  "value": 0.01,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "Users generate CSV exports occasionally, leading to minimal storage needs for these files."
+                },
+                {
+                  "key": "storage_category:static_assets",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "medium",
+                  "reasoning": "Static assets like logos and scripts are shared across all users and do not scale with user count."
+                },
+                {
+                  "key": "storage_gb_per_user",
+                  "value": 0.01,
+                  "unit": "GB/user",
+                  "confidence": "high",
+                  "reasoning": "Sum of per-user S3 categories: generated_files=0.010000 GB/user"
+                },
+                {
+                  "key": "writes_per_user_per_month",
+                  "value": 1.0,
+                  "unit": "operations/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Summed writes across S3 storage categories."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "storage_gb",
+                  "value": 10.5,
+                  "unit": "GB",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 0.5 GB static + 1,000 users \u00d7 0.01 GB/user = 10.5 GB."
+                },
+                {
+                  "key": "storage_class",
+                  "value": "Standard",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "write_operations",
+                  "value": 1000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 1.0 writes/user/month = 1,000 write operations/month."
+                },
+                {
+                  "key": "read_operations",
+                  "value": 22000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 22.0 reads/user/month = 22,000 read operations/month."
+                },
+                {
+                  "key": "data_egress_gb",
+                  "value": 1.72,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 22.0 reads/user \u00d7 81.82 KB/read \u2192 1.72 GB/month egress."
+                },
+                {
+                  "key": "data_retrieval_gb",
+                  "value": 0.0,
+                  "unit": "",
+                  "confidence": "high",
+                  "reasoning": "Scaled deterministically from per-user behavioral assumptions for 1,000 users."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Static assets and shared content \u2014 does not scale with user count."
+                }
+              ]
+            }
+          ],
+          "warnings": [
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'Lambda'.",
+            "No free-tier allowance mapping for sku_key 'backup_storage_gb_month' on 'RDS'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'storage_gb_month'; 6 GB-months billable on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'requests'; 3,000 operations/month billable on 'S3'.",
+            "Cannot scale 'requests' (operations/month) to catalog meter 'Requests'."
+          ]
+        }
+      ]
+    },
+    {
+      "scenario_id": "self_esteem_habit",
+      "name": "Self-Esteem / Habit Tracking",
+      "product_description": "A self-esteem improvement application that provides users with daily exercises designed to build confidence, positive self-image, and emotional well-being. Users complete exercises, track progress, maintain daily streaks, and receive personalized recommendations. The system stores user progress and provides a simple dashboard to visualize growth over time.",
+      "feature_flags": {
+        "file_upload": false,
+        "ai": false,
+        "background_processing": true
+      },
+      "architecture_components": [
+        {
+          "component_id": "api",
+          "name": "Backend/API",
+          "component_type": "service",
+          "aws_service": "Lambda",
+          "azure_service": "Azure Container Apps"
+        },
+        {
+          "component_id": "database",
+          "name": "Database",
+          "component_type": "database",
+          "aws_service": "RDS PostgreSQL",
+          "azure_service": "SQL Database"
+        },
+        {
+          "component_id": "files",
+          "name": "Object Storage",
+          "component_type": "object_storage",
+          "aws_service": "S3",
+          "azure_service": "Blob Storage"
+        },
+        {
+          "component_id": "notifications",
+          "name": "Daily Recommendations Queue",
+          "component_type": "queue",
+          "aws_service": "SQS",
+          "azure_service": "Queue Storage"
+        }
+      ],
+      "rows": [
+        {
+          "users": 1000,
+          "total_usd": 0.99,
+          "inference_source": "llm",
+          "components": [
+            {
+              "component_id": "api",
+              "aws_service": "Lambda",
+              "subtotal_usd": 0.64,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_response_size_kb",
+                  "value": 50.0,
+                  "unit": "KB/invocation",
+                  "confidence": "medium",
+                  "reasoning": "Responses include exercise details and user progress, which are relatively lightweight but still substantial."
+                },
+                {
+                  "key": "invocations_per_session",
+                  "value": 5.0,
+                  "unit": "invocations/session",
+                  "confidence": "high",
+                  "reasoning": "Each session involves multiple interactions, such as fetching exercises and submitting progress updates."
+                },
+                {
+                  "key": "sessions_per_user_per_month",
+                  "value": 30.0,
+                  "unit": "sessions/user/month",
+                  "confidence": "high",
+                  "reasoning": "A self-esteem app encourages daily engagement, leading to approximately one session per day."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "executions_per_month",
+                  "value": 150000,
+                  "unit": "executions/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 30.0 sessions/user/month \u00d7 5.0 invocations/session = 150,000 executions/month."
+                },
+                {
+                  "key": "avg_execution_duration_ms",
+                  "value": 200.0,
+                  "unit": "milliseconds",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "memory_mb",
+                  "value": 512,
+                  "unit": "MB",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "network_egress_gb",
+                  "value": 7.15,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled from per-request egress (50.0 KB/request) across 1,000 users \u2192 7.15 GB/month."
+                }
+              ]
+            },
+            {
+              "component_id": "database",
+              "aws_service": "RDS",
+              "subtotal_usd": 0.21,
+              "behavioral_assumptions": [
+                {
+                  "key": "backup_retention_days",
+                  "value": 7,
+                  "unit": "days",
+                  "confidence": "high",
+                  "reasoning": "Backup storage derived from DB size \u00d7 7/30 retention window (not guessed independently)."
+                },
+                {
+                  "key": "backup_storage_gb_per_user",
+                  "value": 0.00184301,
+                  "unit": "GB/user/month",
+                  "confidence": "high",
+                  "reasoning": "Derived from 0.007899 GB/user database storage \u00d7 7-day backup retention policy."
+                },
+                {
+                  "key": "storage_entity:application_records",
+                  "value": 0.003948,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "30.0 rec/user/mo \u00d7 1.0 KB \u00d7 120.0 mo retention \u2192 0.003948 GB/user. Users complete daily exercises, generating records that track their activities and progress."
+                },
+                {
+                  "key": "storage_entity:history_events",
+                  "value": 0.003948,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "30.0 rec/user/mo \u00d7 1.0 KB \u00d7 120.0 mo retention \u2192 0.003948 GB/user. Each session generates history events that log user interactions with the app."
+                },
+                {
+                  "key": "storage_entity:user_profile",
+                  "value": 2e-06,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "1.0 rec/user/mo \u00d7 2.0 KB \u00d7 120.0 mo retention \u2192 0.000002 GB/user. Each user has a profile that is updated monthly with their progress and preferences."
+                },
+                {
+                  "key": "storage_gb_per_user",
+                  "value": 0.00789861,
+                  "unit": "GB/user",
+                  "confidence": "high",
+                  "reasoning": "Sum of entity-level storage: user_profile=0.000002 GB/user, application_records=0.003948 GB/user, history_events=0.003948 GB/user"
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "instance_class",
+                  "value": "db.t3.micro",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "storage_gb",
+                  "value": 7.9,
+                  "unit": "GB",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 0.00789861 GB/user = 7.9 GB."
+                },
+                {
+                  "key": "backup_storage_gb",
+                  "value": 1.84,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 0.00184301 GB/user/month = 1.84 GB/month."
+                },
+                {
+                  "key": "hours_per_month",
+                  "value": 730.0,
+                  "unit": "hours/month",
+                  "confidence": "medium",
+                  "reasoning": ""
+                }
+              ]
+            },
+            {
+              "component_id": "files",
+              "aws_service": "S3",
+              "subtotal_usd": 0.14,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_download_size_kb",
+                  "value": 80.0,
+                  "unit": "KB/read",
+                  "confidence": "medium",
+                  "reasoning": "Read-weighted average object size across S3 categories."
+                },
+                {
+                  "key": "reads_per_user_per_month",
+                  "value": 20.0,
+                  "unit": "operations/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Summed reads across S3 storage categories."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Static assets and shared content \u2014 does not scale with user count."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Sum of static (non-user-scaling) S3 categories."
+                },
+                {
+                  "key": "storage_category:static_assets",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "medium",
+                  "reasoning": "Static assets like logos and JS bundles are shared across all users and do not scale with user count."
+                },
+                {
+                  "key": "storage_category:user_uploads",
+                  "value": 0.0,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "No file uploads are allowed in this application."
+                },
+                {
+                  "key": "storage_gb_per_user",
+                  "value": 0.0,
+                  "unit": "GB/user",
+                  "confidence": "high",
+                  "reasoning": "Sum of per-user S3 categories: user_uploads=0.000000 GB/user"
+                },
+                {
+                  "key": "writes_per_user_per_month",
+                  "value": 0.0,
+                  "unit": "operations/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Summed writes across S3 storage categories."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "storage_gb",
+                  "value": 0.5,
+                  "unit": "GB",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 0.5 GB static + 1,000 users \u00d7 0.0 GB/user = 0.5 GB."
+                },
+                {
+                  "key": "storage_class",
+                  "value": "Standard",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "write_operations",
+                  "value": 0,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 0.0 writes/user/month = 0 write operations/month."
+                },
+                {
+                  "key": "read_operations",
+                  "value": 20000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 20.0 reads/user/month = 20,000 read operations/month."
+                },
+                {
+                  "key": "data_egress_gb",
+                  "value": 1.53,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 20.0 reads/user \u00d7 80.0 KB/read \u2192 1.53 GB/month egress."
+                },
+                {
+                  "key": "data_retrieval_gb",
+                  "value": 0.0,
+                  "unit": "",
+                  "confidence": "high",
+                  "reasoning": "Scaled deterministically from per-user behavioral assumptions for 1,000 users."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Static assets and shared content \u2014 does not scale with user count."
+                }
+              ]
+            },
+            {
+              "component_id": "notifications",
+              "aws_service": "SQS",
+              "subtotal_usd": 0.0,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_message_size_kb",
+                  "value": 10.0,
+                  "unit": "KB/message",
+                  "confidence": "medium",
+                  "reasoning": "Messages contain brief recommendations and reminders, making them lightweight."
+                },
+                {
+                  "key": "messages_per_user_per_month",
+                  "value": 30.0,
+                  "unit": "messages/user/month",
+                  "confidence": "high",
+                  "reasoning": "Users receive daily recommendations, leading to one message per day."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "queue_type",
+                  "value": "Standard",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "queue_operations",
+                  "value": 30000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 30.0 messages/user/month = 30,000 queue operations/month."
+                },
+                {
+                  "key": "data_egress_gb",
+                  "value": 0.29,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled blob egress to 0.29 GB/month for 1,000 users."
+                }
+              ]
+            }
+          ],
+          "warnings": [
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'Lambda'.",
+            "No free-tier allowance mapping for sku_key 'backup_storage_gb_month' on 'RDS'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'S3'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'SQS'."
+          ]
+        }
+      ]
+    },
+    {
+      "scenario_id": "ecommerce",
+      "name": "E-Commerce Application",
+      "product_description": "An online store where customers browse catalogs, manage carts, place orders, and receive order confirmations. Merchants manage inventory and fulfill orders. The platform handles payment webhooks, order state transitions, and periodic inventory sync jobs with moderate peak traffic during promotions.",
+      "feature_flags": {
+        "file_upload": true,
+        "ai": false,
+        "background_processing": true
+      },
+      "architecture_components": [
+        {
+          "component_id": "api",
+          "name": "Storefront API",
+          "component_type": "service",
+          "aws_service": "Lambda",
+          "azure_service": "Azure Container Apps"
+        },
+        {
+          "component_id": "database",
+          "name": "Order Database",
+          "component_type": "database",
+          "aws_service": "RDS PostgreSQL",
+          "azure_service": "SQL Database"
+        },
+        {
+          "component_id": "files",
+          "name": "Product Media Storage",
+          "component_type": "object_storage",
+          "aws_service": "S3",
+          "azure_service": "Blob Storage"
+        },
+        {
+          "component_id": "queue",
+          "name": "Order Events",
+          "component_type": "queue",
+          "aws_service": "SQS",
+          "azure_service": "Service Bus"
+        },
+        {
+          "component_id": "webhooks",
+          "name": "Payment Webhooks",
+          "component_type": "worker",
+          "aws_service": "Lambda",
+          "azure_service": "Azure Functions"
+        }
+      ],
+      "rows": [
+        {
+          "users": 1000,
+          "total_usd": 0.6,
+          "inference_source": "llm",
+          "components": [
+            {
+              "component_id": "api",
+              "aws_service": "Lambda",
+              "subtotal_usd": 0.32,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_response_size_kb",
+                  "value": 50.0,
+                  "unit": "KB/invocation",
+                  "confidence": "medium",
+                  "reasoning": "The average response size includes product details and cart information, which is moderate in size."
+                },
+                {
+                  "key": "invocations_per_session",
+                  "value": 5.0,
+                  "unit": "invocations/session",
+                  "confidence": "high",
+                  "reasoning": "Each session involves multiple interactions such as browsing products, adding items to the cart, and checking out, resulting in about 5 API calls."
+                },
+                {
+                  "key": "sessions_per_user_per_month",
+                  "value": 15.0,
+                  "unit": "sessions/user/month",
+                  "confidence": "high",
+                  "reasoning": "A typical user will browse the e-commerce application multiple times a month, especially during promotions, leading to around 15 sessions."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "executions_per_month",
+                  "value": 75000,
+                  "unit": "executions/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 15.0 sessions/user/month \u00d7 5.0 invocations/session = 75,000 executions/month."
+                },
+                {
+                  "key": "avg_execution_duration_ms",
+                  "value": 200.0,
+                  "unit": "milliseconds",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "memory_mb",
+                  "value": 512,
+                  "unit": "MB",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "network_egress_gb",
+                  "value": 3.58,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled from per-request egress (50.0 KB/request) across 1,000 users \u2192 3.58 GB/month."
+                }
+              ]
+            },
+            {
+              "component_id": "database",
+              "aws_service": "RDS",
+              "subtotal_usd": 0.0,
+              "behavioral_assumptions": [
+                {
+                  "key": "backup_retention_days",
+                  "value": 7,
+                  "unit": "days",
+                  "confidence": "high",
+                  "reasoning": "Backup storage derived from DB size \u00d7 7/30 retention window (not guessed independently)."
+                },
+                {
+                  "key": "backup_storage_gb_per_user",
+                  "value": 3.25e-06,
+                  "unit": "GB/user/month",
+                  "confidence": "high",
+                  "reasoning": "Derived from 0.000100 GB/user database storage \u00d7 7-day backup retention policy."
+                },
+                {
+                  "key": "storage_entity:inventory",
+                  "value": 3e-06,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "0.5 rec/user/mo \u00d7 5.0 KB \u00d7 12.0 mo retention \u2192 0.000003 GB/user. Users may interact with inventory data when checking product availability, leading to a few records per user."
+                },
+                {
+                  "key": "storage_entity:orders_products",
+                  "value": 1.1e-05,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "1.0 rec/user/mo \u00d7 10.0 KB \u00d7 24.0 mo retention \u2192 0.000011 GB/user. Each user typically places one order per month, which includes details about the products purchased."
+                },
+                {
+                  "key": "storage_entity:user_profile",
+                  "value": 0.0,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "0.1 rec/user/mo \u00d7 2.0 KB \u00d7 120.0 mo retention \u2192 0.000000 GB/user. User profiles are created upon first interaction and retained for long-term engagement, with minimal updates."
+                },
+                {
+                  "key": "storage_gb_per_user",
+                  "value": 0.0001,
+                  "unit": "GB/user",
+                  "confidence": "high",
+                  "reasoning": "Sum of entity-level storage: user_profile=0.000000 GB/user, orders_products=0.000011 GB/user, inventory=0.000003 GB/user"
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "instance_class",
+                  "value": "db.t3.micro",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "storage_gb",
+                  "value": 1.0,
+                  "unit": "GB",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 0.0001 GB/user = 1.0 GB."
+                },
+                {
+                  "key": "backup_storage_gb",
+                  "value": 0.0,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 3.25e-06 GB/user/month = 0.0 GB/month."
+                },
+                {
+                  "key": "hours_per_month",
+                  "value": 730.0,
+                  "unit": "hours/month",
+                  "confidence": "medium",
+                  "reasoning": ""
+                }
+              ]
+            },
+            {
+              "component_id": "files",
+              "aws_service": "S3",
+              "subtotal_usd": 0.27,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_download_size_kb",
+                  "value": 76.67,
+                  "unit": "KB/read",
+                  "confidence": "medium",
+                  "reasoning": "Read-weighted average object size across S3 categories."
+                },
+                {
+                  "key": "reads_per_user_per_month",
+                  "value": 21.0,
+                  "unit": "operations/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Summed reads across S3 storage categories."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Static assets and shared content \u2014 does not scale with user count."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Sum of static (non-user-scaling) S3 categories."
+                },
+                {
+                  "key": "storage_category:generated_files",
+                  "value": 0.01,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "Generated files like downloadable receipts are created per order and are minimal in size."
+                },
+                {
+                  "key": "storage_category:static_assets",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "medium",
+                  "reasoning": "Static assets like product images and stylesheets are shared across all users and do not scale with user count."
+                },
+                {
+                  "key": "storage_category:user_uploads",
+                  "value": 0.0,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "There are no user uploads in this application."
+                },
+                {
+                  "key": "storage_gb_per_user",
+                  "value": 0.01,
+                  "unit": "GB/user",
+                  "confidence": "high",
+                  "reasoning": "Sum of per-user S3 categories: user_uploads=0.000000 GB/user, generated_files=0.010000 GB/user"
+                },
+                {
+                  "key": "writes_per_user_per_month",
+                  "value": 1.0,
+                  "unit": "operations/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Summed writes across S3 storage categories."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "storage_gb",
+                  "value": 10.5,
+                  "unit": "GB",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 0.5 GB static + 1,000 users \u00d7 0.01 GB/user = 10.5 GB."
+                },
+                {
+                  "key": "storage_class",
+                  "value": "Standard",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "write_operations",
+                  "value": 1000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 1.0 writes/user/month = 1,000 write operations/month."
+                },
+                {
+                  "key": "read_operations",
+                  "value": 21000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 21.0 reads/user/month = 21,000 read operations/month."
+                },
+                {
+                  "key": "data_egress_gb",
+                  "value": 1.54,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 21.0 reads/user \u00d7 76.67 KB/read \u2192 1.54 GB/month egress."
+                },
+                {
+                  "key": "data_retrieval_gb",
+                  "value": 0.0,
+                  "unit": "",
+                  "confidence": "high",
+                  "reasoning": "Scaled deterministically from per-user behavioral assumptions for 1,000 users."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Static assets and shared content \u2014 does not scale with user count."
+                }
+              ]
+            },
+            {
+              "component_id": "queue",
+              "aws_service": "SQS",
+              "subtotal_usd": 0.0,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_message_size_kb",
+                  "value": 2.0,
+                  "unit": "KB/message",
+                  "confidence": "medium",
+                  "reasoning": "Messages are typically small, containing order IDs and status updates."
+                },
+                {
+                  "key": "messages_per_user_per_month",
+                  "value": 5.0,
+                  "unit": "messages/user/month",
+                  "confidence": "high",
+                  "reasoning": "Each user will trigger messages related to order placements and inventory updates, averaging around 5 messages per month."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "queue_type",
+                  "value": "Standard",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "queue_operations",
+                  "value": 5000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 5.0 messages/user/month = 5,000 queue operations/month."
+                },
+                {
+                  "key": "data_egress_gb",
+                  "value": 0.01,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled blob egress to 0.01 GB/month for 1,000 users."
+                }
+              ]
+            },
+            {
+              "component_id": "webhooks",
+              "aws_service": "Lambda",
+              "subtotal_usd": 0.02,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_response_size_kb",
+                  "value": 30.0,
+                  "unit": "KB/invocation",
+                  "confidence": "medium",
+                  "reasoning": "Responses from webhooks are generally small, containing confirmation messages and status updates."
+                },
+                {
+                  "key": "invocations_per_session",
+                  "value": 3.0,
+                  "unit": "invocations/session",
+                  "confidence": "medium",
+                  "reasoning": "Each session will involve multiple invocations for processing webhooks and syncing data."
+                },
+                {
+                  "key": "sessions_per_user_per_month",
+                  "value": 2.0,
+                  "unit": "sessions/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Webhooks are triggered during order placements and inventory syncs, leading to about 2 sessions per user."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "executions_per_month",
+                  "value": 6000,
+                  "unit": "executions/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 2.0 sessions/user/month \u00d7 3.0 invocations/session = 6,000 executions/month."
+                },
+                {
+                  "key": "avg_execution_duration_ms",
+                  "value": 200.0,
+                  "unit": "milliseconds",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "memory_mb",
+                  "value": 512,
+                  "unit": "MB",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "network_egress_gb",
+                  "value": 0.17,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled from per-request egress (30.0 KB/request) across 1,000 users \u2192 0.17 GB/month."
+                }
+              ]
+            }
+          ],
+          "warnings": [
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'Lambda'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'storage_gb_month'; 6 GB-months billable on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'requests'; 2,000 operations/month billable on 'S3'.",
+            "Cannot scale 'requests' (operations/month) to catalog meter 'Requests'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'SQS'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'storage_gb_month'; 6 GB-months billable on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'requests'; 2,000 operations/month billable on 'S3'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'Lambda'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'storage_gb_month'; 6 GB-months billable on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'requests'; 2,000 operations/month billable on 'S3'."
+          ]
+        }
+      ]
+    },
+    {
+      "scenario_id": "ai_chat",
+      "name": "AI Chat Application",
+      "product_description": "A conversational AI assistant where users send prompts, receive streamed responses, and maintain conversation history. Each session involves multiple round-trips to an external LLM API with token usage tracked per user. Conversation transcripts and embeddings are persisted for context retrieval.",
+      "feature_flags": {
+        "file_upload": false,
+        "ai": true,
+        "background_processing": true
+      },
+      "architecture_components": [
+        {
+          "component_id": "api",
+          "name": "Chat API",
+          "component_type": "service",
+          "aws_service": "Lambda",
+          "azure_service": "Azure Container Apps"
+        },
+        {
+          "component_id": "database",
+          "name": "Conversation Database",
+          "component_type": "database",
+          "aws_service": "RDS PostgreSQL",
+          "azure_service": "SQL Database"
+        },
+        {
+          "component_id": "files",
+          "name": "Transcript Storage",
+          "component_type": "object_storage",
+          "aws_service": "S3",
+          "azure_service": "Blob Storage"
+        },
+        {
+          "component_id": "llm_worker",
+          "name": "LLM Orchestration",
+          "component_type": "worker",
+          "aws_service": "Lambda",
+          "azure_service": "Azure Functions"
+        }
+      ],
+      "rows": [
+        {
+          "users": 1000,
+          "total_usd": 0.78,
+          "inference_source": "llm",
+          "components": [
+            {
+              "component_id": "api",
+              "aws_service": "Lambda",
+              "subtotal_usd": 0.03,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_response_size_kb",
+                  "value": 2.0,
+                  "unit": "KB/invocation",
+                  "confidence": "high",
+                  "reasoning": "The responses from the AI are typically concise, averaging around 2 KB per invocation."
+                },
+                {
+                  "key": "invocations_per_session",
+                  "value": 5.0,
+                  "unit": "invocations/session",
+                  "confidence": "high",
+                  "reasoning": "Each session involves multiple interactions, with an average of five prompts and responses exchanged."
+                },
+                {
+                  "key": "sessions_per_user_per_month",
+                  "value": 30.0,
+                  "unit": "sessions/user/month",
+                  "confidence": "high",
+                  "reasoning": "A typical user engages with the AI chat application daily, leading to approximately one session per day."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "executions_per_month",
+                  "value": 150000,
+                  "unit": "executions/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 30.0 sessions/user/month \u00d7 5.0 invocations/session = 150,000 executions/month."
+                },
+                {
+                  "key": "avg_execution_duration_ms",
+                  "value": 200.0,
+                  "unit": "milliseconds",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "memory_mb",
+                  "value": 512,
+                  "unit": "MB",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "network_egress_gb",
+                  "value": 0.29,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled from per-request egress (2.0 KB/request) across 1,000 users \u2192 0.29 GB/month."
+                }
+              ]
+            },
+            {
+              "component_id": "database",
+              "aws_service": "RDS",
+              "subtotal_usd": 0.01,
+              "behavioral_assumptions": [
+                {
+                  "key": "backup_retention_days",
+                  "value": 7,
+                  "unit": "days",
+                  "confidence": "high",
+                  "reasoning": "Backup storage derived from DB size \u00d7 7/30 retention window (not guessed independently)."
+                },
+                {
+                  "key": "backup_storage_gb_per_user",
+                  "value": 9.218e-05,
+                  "unit": "GB/user/month",
+                  "confidence": "high",
+                  "reasoning": "Derived from 0.000395 GB/user database storage \u00d7 7-day backup retention policy."
+                },
+                {
+                  "key": "storage_entity:messages_transcripts",
+                  "value": 0.000395,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "30.0 rec/user/mo \u00d7 1.0 KB \u00d7 12.0 mo retention \u2192 0.000395 GB/user. Each user generates a transcript of their conversations, averaging one record per session, stored for a year."
+                },
+                {
+                  "key": "storage_entity:user_profile",
+                  "value": 0.0,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "0.1 rec/user/mo \u00d7 2.0 KB \u00d7 120.0 mo retention \u2192 0.000000 GB/user. User profiles are essential for storing user-specific settings and preferences, with minimal updates each month."
+                },
+                {
+                  "key": "storage_gb_per_user",
+                  "value": 0.00039504,
+                  "unit": "GB/user",
+                  "confidence": "high",
+                  "reasoning": "Sum of entity-level storage: user_profile=0.000000 GB/user, messages_transcripts=0.000395 GB/user"
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "instance_class",
+                  "value": "db.t3.micro",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "storage_gb",
+                  "value": 1.0,
+                  "unit": "GB",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 0.00039504 GB/user = 1.0 GB."
+                },
+                {
+                  "key": "backup_storage_gb",
+                  "value": 0.09,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 9.218e-05 GB/user/month = 0.09 GB/month."
+                },
+                {
+                  "key": "hours_per_month",
+                  "value": 730.0,
+                  "unit": "hours/month",
+                  "confidence": "medium",
+                  "reasoning": ""
+                }
+              ]
+            },
+            {
+              "component_id": "files",
+              "aws_service": "S3",
+              "subtotal_usd": 0.71,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_download_size_kb",
+                  "value": 166.4,
+                  "unit": "KB/read",
+                  "confidence": "medium",
+                  "reasoning": "Read-weighted average object size across S3 categories."
+                },
+                {
+                  "key": "reads_per_user_per_month",
+                  "value": 25.0,
+                  "unit": "operations/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Summed reads across S3 storage categories."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Static assets and shared content \u2014 does not scale with user count."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Sum of static (non-user-scaling) S3 categories."
+                },
+                {
+                  "key": "storage_category:generated_files",
+                  "value": 0.02,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "Generated files include conversation transcripts and embeddings, with each user generating a small amount of data monthly."
+                },
+                {
+                  "key": "storage_category:static_assets",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "medium",
+                  "reasoning": "Static assets like logos and scripts are shared across all users and do not scale with user count."
+                },
+                {
+                  "key": "storage_gb_per_user",
+                  "value": 0.02,
+                  "unit": "GB/user",
+                  "confidence": "high",
+                  "reasoning": "Sum of per-user S3 categories: generated_files=0.020000 GB/user"
+                },
+                {
+                  "key": "writes_per_user_per_month",
+                  "value": 1.0,
+                  "unit": "operations/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Summed writes across S3 storage categories."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "storage_gb",
+                  "value": 20.5,
+                  "unit": "GB",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 0.5 GB static + 1,000 users \u00d7 0.02 GB/user = 20.5 GB."
+                },
+                {
+                  "key": "storage_class",
+                  "value": "Standard",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "write_operations",
+                  "value": 1000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 1.0 writes/user/month = 1,000 write operations/month."
+                },
+                {
+                  "key": "read_operations",
+                  "value": 25000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 25.0 reads/user/month = 25,000 read operations/month."
+                },
+                {
+                  "key": "data_egress_gb",
+                  "value": 3.97,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 25.0 reads/user \u00d7 166.4 KB/read \u2192 3.97 GB/month egress."
+                },
+                {
+                  "key": "data_retrieval_gb",
+                  "value": 0.0,
+                  "unit": "",
+                  "confidence": "high",
+                  "reasoning": "Scaled deterministically from per-user behavioral assumptions for 1,000 users."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Static assets and shared content \u2014 does not scale with user count."
+                }
+              ]
+            },
+            {
+              "component_id": "llm_worker",
+              "aws_service": "Lambda",
+              "subtotal_usd": 0.03,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_response_size_kb",
+                  "value": 2.0,
+                  "unit": "KB/invocation",
+                  "confidence": "high",
+                  "reasoning": "Responses from the LLM are also concise, averaging around 2 KB per invocation."
+                },
+                {
+                  "key": "invocations_per_session",
+                  "value": 5.0,
+                  "unit": "invocations/session",
+                  "confidence": "high",
+                  "reasoning": "Each session involves multiple calls to the LLM for generating responses."
+                },
+                {
+                  "key": "sessions_per_user_per_month",
+                  "value": 30.0,
+                  "unit": "sessions/user/month",
+                  "confidence": "high",
+                  "reasoning": "The same user engagement pattern applies, with each session triggering LLM interactions."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "executions_per_month",
+                  "value": 150000,
+                  "unit": "executions/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 30.0 sessions/user/month \u00d7 5.0 invocations/session = 150,000 executions/month."
+                },
+                {
+                  "key": "avg_execution_duration_ms",
+                  "value": 200.0,
+                  "unit": "milliseconds",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "memory_mb",
+                  "value": 512,
+                  "unit": "MB",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "network_egress_gb",
+                  "value": 0.29,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled from per-request egress (2.0 KB/request) across 1,000 users \u2192 0.29 GB/month."
+                }
+              ]
+            }
+          ],
+          "warnings": [
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'Lambda'.",
+            "No free-tier allowance mapping for sku_key 'backup_storage_gb_month' on 'RDS'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'storage_gb_month'; 16 GB-months billable on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'requests'; 6,000 operations/month billable on 'S3'.",
+            "Cannot scale 'requests' (operations/month) to catalog meter 'Requests'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'Lambda'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'storage_gb_month'; 16 GB-months billable on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'requests'; 6,000 operations/month billable on 'S3'."
+          ]
+        }
+      ]
+    },
+    {
+      "scenario_id": "ai_document_ocr",
+      "name": "AI Document Processing / OCR",
+      "product_description": "A document intelligence platform where users upload PDFs and images for OCR, text extraction, and structured data extraction. Documents are processed asynchronously with progress tracking. Processed outputs include searchable text, extracted fields, and confidence scores.",
+      "feature_flags": {
+        "file_upload": true,
+        "ai": true,
+        "background_processing": true
+      },
+      "architecture_components": [
+        {
+          "component_id": "api",
+          "name": "Document API",
+          "component_type": "service",
+          "aws_service": "Lambda",
+          "azure_service": "Azure Container Apps"
+        },
+        {
+          "component_id": "files",
+          "name": "Document Storage",
+          "component_type": "object_storage",
+          "aws_service": "S3",
+          "azure_service": "Blob Storage"
+        },
+        {
+          "component_id": "queue",
+          "name": "Processing Queue",
+          "component_type": "queue",
+          "aws_service": "SQS",
+          "azure_service": "Queue Storage"
+        },
+        {
+          "component_id": "processor",
+          "name": "OCR Worker",
+          "component_type": "worker",
+          "aws_service": "Lambda",
+          "azure_service": "Azure Functions"
+        }
+      ],
+      "rows": [
+        {
+          "users": 1000,
+          "total_usd": 5.32,
+          "inference_source": "llm",
+          "components": [
+            {
+              "component_id": "api",
+              "aws_service": "Lambda",
+              "subtotal_usd": 0.64,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_response_size_kb",
+                  "value": 150.0,
+                  "unit": "KB/invocation",
+                  "confidence": "medium",
+                  "reasoning": "The average response size includes metadata and processed text, which is estimated to be around 150 KB per invocation."
+                },
+                {
+                  "key": "invocations_per_session",
+                  "value": 5.0,
+                  "unit": "invocations/session",
+                  "confidence": "high",
+                  "reasoning": "Each session involves multiple interactions, such as uploading a document, checking status, and retrieving results, leading to approximately 5 invocations."
+                },
+                {
+                  "key": "sessions_per_user_per_month",
+                  "value": 10.0,
+                  "unit": "sessions/user/month",
+                  "confidence": "high",
+                  "reasoning": "A typical user will likely engage with the application around 10 times a month to upload documents and check the status of their processing."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "executions_per_month",
+                  "value": 50000,
+                  "unit": "executions/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 10.0 sessions/user/month \u00d7 5.0 invocations/session = 50,000 executions/month."
+                },
+                {
+                  "key": "avg_execution_duration_ms",
+                  "value": 200.0,
+                  "unit": "milliseconds",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "memory_mb",
+                  "value": 512,
+                  "unit": "MB",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "network_egress_gb",
+                  "value": 7.15,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled from per-request egress (150.0 KB/request) across 1,000 users \u2192 7.15 GB/month."
+                }
+              ]
+            },
+            {
+              "component_id": "files",
+              "aws_service": "S3",
+              "subtotal_usd": 3.81,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_download_size_kb",
+                  "value": 181.33,
+                  "unit": "KB/read",
+                  "confidence": "medium",
+                  "reasoning": "Read-weighted average object size across S3 categories."
+                },
+                {
+                  "key": "reads_per_user_per_month",
+                  "value": 30.0,
+                  "unit": "operations/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Summed reads across S3 storage categories."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Static assets and shared content \u2014 does not scale with user count."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Sum of static (non-user-scaling) S3 categories."
+                },
+                {
+                  "key": "storage_category:generated_files",
+                  "value": 0.1,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "Processed outputs such as extracted text and confidence scores are generated for each document, leading to additional storage needs."
+                },
+                {
+                  "key": "storage_category:static_assets",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "medium",
+                  "reasoning": "Static assets like logos and JS bundles are shared across all users, hence the static scaling."
+                },
+                {
+                  "key": "storage_category:user_uploads",
+                  "value": 0.05,
+                  "unit": "GB/user",
+                  "confidence": "medium",
+                  "reasoning": "Each user uploads a couple of documents per month, with an average size of 512 KB, leading to a small per-user storage requirement."
+                },
+                {
+                  "key": "storage_gb_per_user",
+                  "value": 0.15,
+                  "unit": "GB/user",
+                  "confidence": "high",
+                  "reasoning": "Sum of per-user S3 categories: user_uploads=0.050000 GB/user, generated_files=0.100000 GB/user"
+                },
+                {
+                  "key": "writes_per_user_per_month",
+                  "value": 4.0,
+                  "unit": "operations/user/month",
+                  "confidence": "medium",
+                  "reasoning": "Summed writes across S3 storage categories."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "storage_gb",
+                  "value": 150.5,
+                  "unit": "GB",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 0.5 GB static + 1,000 users \u00d7 0.15 GB/user = 150.5 GB."
+                },
+                {
+                  "key": "storage_class",
+                  "value": "Standard",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "write_operations",
+                  "value": 4000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 4.0 writes/user/month = 4,000 write operations/month."
+                },
+                {
+                  "key": "read_operations",
+                  "value": 30000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 30.0 reads/user/month = 30,000 read operations/month."
+                },
+                {
+                  "key": "data_egress_gb",
+                  "value": 5.19,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 30.0 reads/user \u00d7 181.33 KB/read \u2192 5.19 GB/month egress."
+                },
+                {
+                  "key": "data_retrieval_gb",
+                  "value": 0.0,
+                  "unit": "",
+                  "confidence": "high",
+                  "reasoning": "Scaled deterministically from per-user behavioral assumptions for 1,000 users."
+                },
+                {
+                  "key": "static_storage_gb",
+                  "value": 0.5,
+                  "unit": "GB total",
+                  "confidence": "high",
+                  "reasoning": "Static assets and shared content \u2014 does not scale with user count."
+                }
+              ]
+            },
+            {
+              "component_id": "queue",
+              "aws_service": "SQS",
+              "subtotal_usd": 0.0,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_message_size_kb",
+                  "value": 0.5,
+                  "unit": "KB/message",
+                  "confidence": "medium",
+                  "reasoning": "Messages are lightweight, primarily containing document IDs and processing status, leading to a small average size."
+                },
+                {
+                  "key": "messages_per_user_per_month",
+                  "value": 10.0,
+                  "unit": "messages/user/month",
+                  "confidence": "high",
+                  "reasoning": "Each user will likely trigger a few messages for document processing and status updates, averaging around 10 messages per month."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "queue_type",
+                  "value": "Standard",
+                  "unit": "enum",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "queue_operations",
+                  "value": 10000,
+                  "unit": "operations/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 10.0 messages/user/month = 10,000 queue operations/month."
+                },
+                {
+                  "key": "data_egress_gb",
+                  "value": 0.0,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled blob egress to 0.0 GB/month for 1,000 users."
+                }
+              ]
+            },
+            {
+              "component_id": "processor",
+              "aws_service": "Lambda",
+              "subtotal_usd": 0.86,
+              "behavioral_assumptions": [
+                {
+                  "key": "avg_response_size_kb",
+                  "value": 200.0,
+                  "unit": "KB/invocation",
+                  "confidence": "medium",
+                  "reasoning": "Responses from the OCR processing will include extracted text and metadata, estimated at around 200 KB per invocation."
+                },
+                {
+                  "key": "invocations_per_session",
+                  "value": 5.0,
+                  "unit": "invocations/session",
+                  "confidence": "high",
+                  "reasoning": "Each session will involve multiple invocations for processing different documents, averaging around 5 invocations."
+                },
+                {
+                  "key": "sessions_per_user_per_month",
+                  "value": 10.0,
+                  "unit": "sessions/user/month",
+                  "confidence": "high",
+                  "reasoning": "Similar to the API, users will engage with the processing functionality around 10 times a month."
+                }
+              ],
+              "resolved_assumptions": [
+                {
+                  "key": "executions_per_month",
+                  "value": 50000,
+                  "unit": "executions/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled: 1,000 users \u00d7 10.0 sessions/user/month \u00d7 5.0 invocations/session = 50,000 executions/month."
+                },
+                {
+                  "key": "avg_execution_duration_ms",
+                  "value": 200.0,
+                  "unit": "milliseconds",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "memory_mb",
+                  "value": 512,
+                  "unit": "MB",
+                  "confidence": "medium",
+                  "reasoning": ""
+                },
+                {
+                  "key": "network_egress_gb",
+                  "value": 9.54,
+                  "unit": "GB/month",
+                  "confidence": "high",
+                  "reasoning": "Scaled from per-request egress (200.0 KB/request) across 1,000 users \u2192 9.54 GB/month."
+                }
+              ]
+            }
+          ],
+          "warnings": [
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'Lambda'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'storage_gb_month'; 146 GB-months billable on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'requests'; 14,000 operations/month billable on 'S3'.",
+            "Cannot scale 'requests' (operations/month) to catalog meter 'Requests'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'SQS'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'storage_gb_month'; 146 GB-months billable on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'requests'; 14,000 operations/month billable on 'S3'.",
+            "No free-tier allowance mapping for sku_key 'egress_gb' on 'Lambda'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'storage_gb_month'; 146 GB-months billable on 'S3'.",
+            "Free-tier pool 'aws_s3_free' exhausted for 'requests'; 14,000 operations/month billable on 'S3'."
+          ]
+        }
+      ]
+    }
+  ]
+}
