@@ -1,125 +1,51 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { api } from "../api/index.js";
-import { deriveArchitecture } from "../features/architecture/utils/deriveArchitecture.js";
-import { buildIntakeOutput, EMPTY_INTAKE_FORM } from "../utils/intakeFormState.js";
-import { toLegacyPayload } from "../utils/intakeFormMapper.js";
-import { buildInputKey, validateBasicProduct } from "../utils/validation.js";
+import {
+  SAMPLE_COMPONENTS,
+  SAMPLE_COSTS,
+  SAMPLE_PROJECT,
+} from "../constants/sampleArchitecture.js";
+import { EMPTY_INTAKE_FORM } from "../utils/intakeFormState.js";
 
+/**
+ * Static wizard state. All backend/AI functionality has been removed — the
+ * wizard only navigates between screens locally and renders the hardcoded
+ * sample architecture. No generation, validation, persistence, or cost
+ * computation happens here.
+ */
 export function useWizard() {
   const [step, setStep] = useState(1);
-  const [maxStep, setMaxStep] = useState(1);
   const [intakeForm, setIntakeForm] = useState(EMPTY_INTAKE_FORM);
-  const [errors, setErrors] = useState({});
-  const [project, setProject] = useState(null);
-  const [components, setComponents] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [generatedKey, setGeneratedKey] = useState(null);
+  const [components, setComponents] = useState(() =>
+    SAMPLE_COMPONENTS.map((component) => ({ ...component }))
+  );
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  const inputKey = useMemo(() => buildInputKey(intakeForm), [intakeForm]);
-  const needsGeneration = project === null || generatedKey !== inputKey;
-  const inWorkspace = step === 3 && project;
-
-  const derived = useMemo(
-    () => (project ? deriveArchitecture(project, components) : null),
-    [project, components]
-  );
+  const maxStep = 3;
+  const project = SAMPLE_PROJECT;
+  const derived = { costs: SAMPLE_COSTS };
+  const inWorkspace = step === 3;
 
   useEffect(() => {
-    setSidebarCollapsed(Boolean(inWorkspace));
+    setSidebarCollapsed(inWorkspace);
   }, [inWorkspace]);
 
-  const validateStep1 = useCallback(() => {
-    const nextErrors = validateBasicProduct(intakeForm);
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  }, [intakeForm]);
-
-  const getIntakeOutput = useCallback(() => buildIntakeOutput(intakeForm), [intakeForm]);
-
-  const unlockAndGo = useCallback((target) => {
-    setMaxStep((current) => Math.max(current, target));
+  const goToStep = useCallback((target) => {
+    if (target < 1 || target > maxStep) return;
     setStep(target);
   }, []);
 
-  const generate = useCallback(
-    async (target = 3) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const payload = toLegacyPayload(intakeForm);
-        const created = await api.createProject(payload);
-        const generated = await api.generate(created.id);
-        setProject(generated);
-        setComponents(generated.components.map((component) => ({ ...component })));
-        setGeneratedKey(inputKey);
-        setMaxStep((current) => Math.max(current, target));
-        setStep(target);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [intakeForm, inputKey]
-  );
-
-  const goToStep = useCallback(
-    async (target) => {
-      setError(null);
-      if (target === step || loading) return;
-      if (target < 1 || target > maxStep) return;
-
-      if (target >= 3) {
-        if (!validateStep1()) {
-          setStep(1);
-          return;
-        }
-        if (needsGeneration) {
-          await generate(target);
-          return;
-        }
-      }
-
-      setStep(target);
-    },
-    [step, loading, maxStep, validateStep1, needsGeneration, generate]
-  );
-
-  const goNext = useCallback(async () => {
-    setError(null);
-    if (loading) return;
-
-    if (step === 1) {
-      if (!validateStep1()) return;
-      unlockAndGo(2);
-      return;
-    }
-
-    if (step === 2) {
-      if (!validateStep1()) {
-        setStep(1);
-        return;
-      }
-      if (needsGeneration) await generate(3);
-      else unlockAndGo(3);
-    }
-  }, [step, loading, validateStep1, unlockAndGo, needsGeneration, generate]);
+  const goNext = useCallback(() => {
+    setStep((current) => Math.min(current + 1, maxStep));
+  }, []);
 
   const goBack = useCallback(() => {
-    if (step > 1) goToStep(step - 1);
-  }, [step, goToStep]);
+    setStep((current) => Math.max(current - 1, 1));
+  }, []);
 
   const reset = useCallback(() => {
     setIntakeForm(EMPTY_INTAKE_FORM);
-    setProject(null);
-    setComponents([]);
-    setGeneratedKey(null);
-    setErrors({});
-    setError(null);
-    setMaxStep(1);
+    setComponents(SAMPLE_COMPONENTS.map((component) => ({ ...component })));
     setStep(1);
   }, []);
 
@@ -131,27 +57,20 @@ export function useWizard() {
     );
   }, []);
 
-  const primaryLabel =
-    loading && step === 2
-      ? "Generating with AI… (20–90 sec)"
-      : step === 2 && needsGeneration
-        ? "Generate Architecture"
-        : "Continue";
-  const showStaleNotice = step < 3 && project !== null && needsGeneration;
+  const primaryLabel = step === 2 ? "View Architecture" : "Continue";
 
   return {
     step,
     maxStep,
     intakeForm,
     setIntakeForm,
-    errors,
+    errors: {},
     project,
     components,
-    loading,
-    error,
-    setError,
+    loading: false,
+    error: null,
     derived,
-    needsGeneration,
+    needsGeneration: false,
     inWorkspace,
     sidebarCollapsed,
     setSidebarCollapsed,
@@ -161,7 +80,6 @@ export function useWizard() {
     reset,
     moveComponent,
     primaryLabel,
-    showStaleNotice,
-    getIntakeOutput,
+    showStaleNotice: false,
   };
 }

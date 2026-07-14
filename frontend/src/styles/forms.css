@@ -103,6 +103,11 @@
   flex-wrap: wrap;
 }
 
+/* Compact numeric input */
+.input-compact {
+  max-width: 220px;
+}
+
 .chip {
   border: 1px solid var(--border-strong);
   background: var(--surface);

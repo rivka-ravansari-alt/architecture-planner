@@ -1,0 +1,152 @@
+AWS SKU PRICING COVERAGE AUDIT
+Scenarios: 20 | Users: 1,000 | Mode: heuristic
+
+SERVICE SUMMARY
+Service                       Priced  Free$0  ScaleFail  MissCat  MissRole  NotCalc
+-------------------------------------------------------------------------------------
+Lambda                            23      46          0        0         0        0
+API Gateway                        7       7          0        0         0        0
+S3                                29      10          0        0         0        0
+RDS                               22      11          0        0         0        0
+DynamoDB                           4       8          0        0         0        0
+CloudFront                         6       0          0        0         0        0
+Application Load Balancer          6       0          0        0         0        0
+ECS Fargate                        9       0          0        0         0        0
+Bedrock                            2       0          0        0         0        0
+CloudWatch                         0       6          0        0         0        0
+Secrets Manager                    8       0          0        0         0        0
+SNS                                3       3          0        0         0        0
+SQS                               10       8          0        0         0        0
+
+UNDERPRICED / INCOMPLETE SKU LINES (billable qty not priced)
+
+  None — all billable SKU quantities produced cost lines.
+
+PARTIAL COMPONENTS
+
+  - Cloud-Native Microservices / config (AppConfig): 2 SKU gap(s)
+  - Marketplace Search & Email / alerts (CloudWatch Alarms): 1 SKU gap(s)
+
+DETAIL — priority services with gaps only
+
+  [free_tier_zero] Simple CRUD SaaS / Backend API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] Simple CRUD SaaS / Backend API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] Simple CRUD SaaS / Primary Database (RDS) sku=instance_hours raw=730 billable=0 roles=['cpu'] cost=$0.00
+      -> 730 instance-hours/month calculated; $730 deducted by free tier.
+  [free_tier_zero] Simple CRUD SaaS / Object Storage (S3) sku=storage_gb_month raw=5 billable=0 roles=['storage'] cost=$0.00
+      -> 5 GB-months calculated; $5 deducted by free tier.
+  [free_tier_zero] Simple CRUD SaaS / Object Storage (S3) sku=requests raw=6,000 billable=0 roles=['requests'] cost=$0.00
+      -> 6,000 operations/month calculated; $6,000 deducted by free tier.
+  [free_tier_zero] Self-Esteem / Habit Tracking / Backend/API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] Self-Esteem / Habit Tracking / Backend/API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] Self-Esteem / Habit Tracking / Database (RDS) sku=instance_hours raw=730 billable=0 roles=['cpu'] cost=$0.00
+      -> 730 instance-hours/month calculated; $730 deducted by free tier.
+  [free_tier_zero] Self-Esteem / Habit Tracking / Object Storage (S3) sku=storage_gb_month raw=5 billable=0 roles=['storage'] cost=$0.00
+      -> 5 GB-months calculated; $5 deducted by free tier.
+  [free_tier_zero] Self-Esteem / Habit Tracking / Object Storage (S3) sku=requests raw=6,000 billable=0 roles=['requests'] cost=$0.00
+      -> 6,000 operations/month calculated; $6,000 deducted by free tier.
+  [free_tier_zero] Self-Esteem / Habit Tracking / Daily Recommendations Queue (SQS) sku=requests raw=504,000 billable=0 roles=['requests'] cost=$0.00
+      -> 504,000 operations/month calculated; $504,000 deducted by free tier.
+  [free_tier_zero] E-Commerce Application / Storefront API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] E-Commerce Application / Storefront API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] E-Commerce Application / Order Database (RDS) sku=instance_hours raw=730 billable=0 roles=['cpu'] cost=$0.00
+      -> 730 instance-hours/month calculated; $730 deducted by free tier.
+  [free_tier_zero] E-Commerce Application / Order Events (SQS) sku=requests raw=504,000 billable=0 roles=['requests'] cost=$0.00
+      -> 504,000 operations/month calculated; $504,000 deducted by free tier.
+  [free_tier_zero] E-Commerce Application / Payment Webhooks (Lambda) sku=requests raw=84,000 billable=0 roles=['requests'] cost=$0.00
+      -> 84,000 executions/month calculated; $84,000 deducted by free tier.
+  [free_tier_zero] E-Commerce Application / Payment Webhooks (Lambda) sku=gb_seconds raw=16,800 billable=0 roles=['duration'] cost=$0.00
+      -> 16,800 GB-seconds/month calculated; $16,800 deducted by free tier.
+  [free_tier_zero] AI Chat Application / Chat API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] AI Chat Application / Chat API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] AI Chat Application / Conversation Database (RDS) sku=instance_hours raw=730 billable=0 roles=['cpu'] cost=$0.00
+      -> 730 instance-hours/month calculated; $730 deducted by free tier.
+  [free_tier_zero] AI Chat Application / Transcript Storage (S3) sku=storage_gb_month raw=5 billable=0 roles=['storage'] cost=$0.00
+      -> 5 GB-months calculated; $5 deducted by free tier.
+  [free_tier_zero] AI Chat Application / Transcript Storage (S3) sku=requests raw=6,000 billable=0 roles=['requests'] cost=$0.00
+      -> 6,000 operations/month calculated; $6,000 deducted by free tier.
+  [free_tier_zero] AI Chat Application / LLM Orchestration (Lambda) sku=requests raw=84,000 billable=0 roles=['requests'] cost=$0.00
+      -> 84,000 executions/month calculated; $84,000 deducted by free tier.
+  [free_tier_zero] AI Chat Application / LLM Orchestration (Lambda) sku=gb_seconds raw=16,800 billable=0 roles=['duration'] cost=$0.00
+      -> 16,800 GB-seconds/month calculated; $16,800 deducted by free tier.
+  [free_tier_zero] AI Document Processing / OCR / Document API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] AI Document Processing / OCR / Document API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] AI Document Processing / OCR / Processing Queue (SQS) sku=requests raw=504,000 billable=0 roles=['requests'] cost=$0.00
+      -> 504,000 operations/month calculated; $504,000 deducted by free tier.
+  [free_tier_zero] AI Document Processing / OCR / OCR Worker (Lambda) sku=requests raw=84,000 billable=0 roles=['requests'] cost=$0.00
+      -> 84,000 executions/month calculated; $84,000 deducted by free tier.
+  [free_tier_zero] AI Document Processing / OCR / OCR Worker (Lambda) sku=gb_seconds raw=16,800 billable=0 roles=['duration'] cost=$0.00
+      -> 16,800 GB-seconds/month calculated; $16,800 deducted by free tier.
+  [free_tier_zero] File Storage / Drive Application / Drive API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] File Storage / Drive Application / Drive API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] File Storage / Drive Application / Metadata Database (RDS) sku=instance_hours raw=730 billable=0 roles=['cpu'] cost=$0.00
+      -> 730 instance-hours/month calculated; $730 deducted by free tier.
+  [free_tier_zero] Social Network / Social API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] Social Network / Social API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] Social Network / Social Graph Database (RDS) sku=instance_hours raw=730 billable=0 roles=['cpu'] cost=$0.00
+      -> 730 instance-hours/month calculated; $730 deducted by free tier.
+  [free_tier_zero] Social Network / Activity Events (SQS) sku=requests raw=504,000 billable=0 roles=['requests'] cost=$0.00
+      -> 504,000 operations/month calculated; $504,000 deducted by free tier.
+  [free_tier_zero] Video Processing Application / Video API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] Video Processing Application / Video API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] Video Processing Application / Transcode Queue (SQS) sku=requests raw=504,000 billable=0 roles=['requests'] cost=$0.00
+      -> 504,000 operations/month calculated; $504,000 deducted by free tier.
+  [free_tier_zero] Video Processing Application / Transcode Worker (Lambda) sku=requests raw=84,000 billable=0 roles=['requests'] cost=$0.00
+      -> 84,000 executions/month calculated; $84,000 deducted by free tier.
+  [free_tier_zero] Video Processing Application / Transcode Worker (Lambda) sku=gb_seconds raw=16,800 billable=0 roles=['duration'] cost=$0.00
+      -> 16,800 GB-seconds/month calculated; $16,800 deducted by free tier.
+  [free_tier_zero] Background Job Processing Platform / Job API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] Background Job Processing Platform / Job API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] Background Job Processing Platform / Priority Messaging (SQS) sku=requests raw=504,000 billable=0 roles=['requests'] cost=$0.00
+      -> 504,000 operations/month calculated; $504,000 deducted by free tier.
+  [free_tier_zero] Background Job Processing Platform / Job Workers (Lambda) sku=requests raw=84,000 billable=0 roles=['requests'] cost=$0.00
+      -> 84,000 executions/month calculated; $84,000 deducted by free tier.
+  [free_tier_zero] Background Job Processing Platform / Job Workers (Lambda) sku=gb_seconds raw=16,800 billable=0 roles=['duration'] cost=$0.00
+      -> 16,800 GB-seconds/month calculated; $16,800 deducted by free tier.
+  [free_tier_zero] Analytics / Reporting Dashboard / Dashboard API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] Analytics / Reporting Dashboard / Dashboard API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] Analytics / Reporting Dashboard / Analytics Database (RDS) sku=instance_hours raw=730 billable=0 roles=['cpu'] cost=$0.00
+      -> 730 instance-hours/month calculated; $730 deducted by free tier.
+  [free_tier_zero] Analytics / Reporting Dashboard / Report Exports (S3) sku=storage_gb_month raw=5 billable=0 roles=['storage'] cost=$0.00
+      -> 5 GB-months calculated; $5 deducted by free tier.
+  [free_tier_zero] Analytics / Reporting Dashboard / Report Exports (S3) sku=requests raw=6,000 billable=0 roles=['requests'] cost=$0.00
+      -> 6,000 operations/month calculated; $6,000 deducted by free tier.
+  [free_tier_zero] Static Website / Marketing Landing Page / Static Site Assets (S3) sku=storage_gb_month raw=5 billable=0 roles=['storage'] cost=$0.00
+      -> 5 GB-months calculated; $5 deducted by free tier.
+  [free_tier_zero] Static Website / Marketing Landing Page / Static Site Assets (S3) sku=requests raw=6,000 billable=0 roles=['requests'] cost=$0.00
+      -> 6,000 operations/month calculated; $6,000 deducted by free tier.
+  [free_tier_zero] Static Website / Marketing Landing Page / Contact Form Handler (Lambda) sku=requests raw=84,000 billable=0 roles=['requests'] cost=$0.00
+      -> 84,000 executions/month calculated; $84,000 deducted by free tier.
+  [free_tier_zero] Static Website / Marketing Landing Page / Contact Form Handler (Lambda) sku=gb_seconds raw=16,800 billable=0 roles=['duration'] cost=$0.00
+      -> 16,800 GB-seconds/month calculated; $16,800 deducted by free tier.
+  [free_tier_zero] Mobile Wellness App / API Gateway (API Gateway) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 requests/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] Mobile Wellness App / Wellness API (Lambda) sku=requests raw=240,000 billable=0 roles=['requests'] cost=$0.00
+      -> 240,000 executions/month calculated; $240,000 deducted by free tier.
+  [free_tier_zero] Mobile Wellness App / Wellness API (Lambda) sku=gb_seconds raw=24,000 billable=0 roles=['duration'] cost=$0.00
+      -> 24,000 GB-seconds/month calculated; $24,000 deducted by free tier.
+  [free_tier_zero] Mobile Wellness App / User State Store (DynamoDB) sku=read_requests raw=480,000 billable=0 roles=['requests'] cost=$0.00
+      -> 480,000 requests/month calculated; $480,000 deducted by free tier.
+  [free_tier_zero] Mobile Wellness App / User State Store (DynamoDB) sku=write_requests raw=120,000 billable=0 roles=['requests'] cost=$0.00
+      -> 120,000 requests/month calculated; $120,000 deducted by free tier.
+  ... and 39 more gap lines

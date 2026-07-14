@@ -1,54 +1,65 @@
-"""Project HTTP controller."""
+"""Project HTTP controller (Step 1 intake + Step 2 component selection)."""
 
 from __future__ import annotations
 
-import logging
-
-from app.core.exceptions import ArchitectureGenerationError
-from app.models import User
-from app.schemas.project import ProjectCreate, ProjectDetail, ProjectTypeInfo
-from app.services.catalog_service import CatalogService
-from app.services.generation_service import GenerationService
+from app.schemas.auth import UserOut
+from app.schemas.component_selection import (
+    AddComponentRequest,
+    ArchitectureCategoryOut,
+    ComponentSelectionResponse,
+)
+from app.schemas.project import CreateProjectRequest, CreateProjectResponse
+from app.services.architecture_component_service import ArchitectureComponentService
 from app.services.project_service import ProjectService
-
-logger = logging.getLogger(__name__)
 
 
 class ProjectController:
     def __init__(
         self,
         project_service: ProjectService,
-        generation_service: GenerationService,
-        catalog_service: CatalogService,
+        architecture_component_service: ArchitectureComponentService,
     ) -> None:
-        self._projects = project_service
-        self._generation = generation_service
-        self._catalog = catalog_service
+        self._service = project_service
+        self._architecture_components = architecture_component_service
 
-    def list_project_types(self) -> list[ProjectTypeInfo]:
-        return self._catalog.list_project_types()
+    def create_project(
+        self, payload: CreateProjectRequest, user: UserOut
+    ) -> CreateProjectResponse:
+        return self._service.create(payload, user)
 
-    def create_project(self, payload: ProjectCreate, user: User) -> ProjectDetail:
-        project = self._projects.create(payload, user)
-        return ProjectDetail.model_validate(project)
+    def generate_architecture_components(
+        self, project_id: str, user: UserOut
+    ) -> ComponentSelectionResponse:
+        return self._architecture_components.generate(project_id, user)
 
-    def generate_project(self, project_id: str, user: User) -> ProjectDetail:
-        project = self._projects.get_owned_project(project_id, user)
-        logger.info(
-            "generate endpoint step=started status=started project_id=%s user_id=%s",
+    def get_architecture_selection(
+        self, project_id: str, user: UserOut
+    ) -> ComponentSelectionResponse:
+        return self._architecture_components.get_selection(project_id, user)
+
+    def list_architecture_categories(
+        self, user: UserOut
+    ) -> list[ArchitectureCategoryOut]:
+        return self._architecture_components.list_categories()
+
+    def add_architecture_component(
+        self, project_id: str, payload: AddComponentRequest, user: UserOut
+    ) -> ComponentSelectionResponse:
+        return self._architecture_components.add_component(
             project_id,
-            user.id,
+            user,
+            payload.selection_id,
+            payload.category_id,
+            payload.explanation,
         )
-        try:
-            result = self._generation.generate(project)
-        except ArchitectureGenerationError:
-            logger.error(
-                "generate endpoint step=failed status=failed project_id=%s",
-                project_id,
-            )
-            raise
-        logger.info(
-            "generate endpoint step=complete status=completed project_id=%s",
-            project_id,
+
+    def remove_architecture_component(
+        self,
+        project_id: str,
+        selection_id: str,
+        instance_id: str,
+        user: UserOut,
+    ) -> ComponentSelectionResponse:
+        return self._architecture_components.remove_component(
+            project_id, user, selection_id, instance_id
         )
-        return ProjectDetail.model_validate(result)

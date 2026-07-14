@@ -1,7 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-import { api } from "../api/index.js";
-import { AUTH_ROUTES } from "../constants/wizard.js";
+import { authApi } from "../api/authApi.js";
 
 const AuthContext = createContext(null);
 
@@ -9,36 +15,31 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
-    try {
-      const me = await api.getMe();
-      setUser(me ?? null);
-    } catch {
-      setUser(null);
-    }
+  useEffect(() => {
+    let active = true;
+    authApi
+      .getMe()
+      .then((data) => {
+        if (active) setUser(data);
+      })
+      .catch(() => {
+        if (active) setUser(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        await refresh();
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [refresh]);
-
   const login = useCallback(() => {
-    window.location.href = AUTH_ROUTES.googleLogin;
+    authApi.startGoogleLogin();
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      await api.logout();
+      await authApi.logout();
     } finally {
       setUser(null);
     }

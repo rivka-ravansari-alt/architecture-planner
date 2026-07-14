@@ -1,8 +1,13 @@
 import { apiRequest } from "./client.js";
 
-const AUTH_TIMEOUT_MS = 8_000;
+const GOOGLE_LOGIN_URL = "/api/auth/google";
 
 export const authApi = {
-  getMe: () => apiRequest("/auth/me", { timeoutMs: AUTH_TIMEOUT_MS }),
+  /** Start Google OAuth by redirecting the browser to the backend. */
+  startGoogleLogin: () => {
+    window.location.href = GOOGLE_LOGIN_URL;
+  },
+  /** Return the current user or null when unauthenticated. */
+  getMe: () => apiRequest("/auth/me"),
   logout: () => apiRequest("/auth/logout", { method: "POST" }),
 };

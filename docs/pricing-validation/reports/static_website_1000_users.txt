@@ -1,0 +1,108 @@
+====================================================================================================
+SCENARIO: Static Website / Marketing Landing Page
+USERS: 1,000
+ARCHITECTURE: Azure Blob Storage (static assets) + Azure Functions (contact form handler)
+Feature flags: {"ai": false, "background_processing": false, "file_upload": false}
+
+USAGE ASSUMPTIONS
+----------------------------------------------------------------------------------------------------
+
+  [Static Site Assets] (Azure Blob Storage)
+  Per-user behavior: (derived by heuristic usage model)
+  Inferred assumptions:
+    storage_gb=5 GB (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    access_tier=Hot enum (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    redundancy=LRS enum (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    write_operations=1,000 operations/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    read_operations=5,000 operations/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    list_operations=250 operations/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    data_retrieval_gb=0 GB/month (confidence=medium, source=default)
+    data_egress_gb=282 GB/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+
+  [Contact Form Handler] (Azure Functions)
+  Per-user behavior: (derived by heuristic usage model)
+  Inferred assumptions:
+    plan=consumption enum (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    executions_per_month=84,000 executions/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    avg_execution_duration_ms=400 milliseconds (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    memory_mb=512 MB (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    network_egress_gb=169.2 GB/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+
+COMPONENT BREAKDOWN
+----------------------------------------------------------------------------------------------------
+
+  Static Site Assets — Azure Blob Storage
+    Raw SKU quantities:      storage_gb_month=5 GB-months; write_operations=1,000 operations/month; read_operations=5,000 operations/month; list_operations=250 operations/month; network_egress_gb=282 GB/month
+    Free tier deduction:     storage_gb_month: free_tier=5; write_operations: free_tier=1,000; read_operations: free_tier=5,000
+    Included usage deducted: storage_gb_month: tier/plan included 5 GB-months; write_operations: tier/plan included 1,000 operations/month; read_operations: tier/plan included 5,000 operations/month; storage_gb_month: tier_included=5; write_operations: tier_included=1,000; read_operations: tier_included=5,000
+    Billable quantities:     storage_gb_month=0 GB-months; write_operations=0 operations/month; read_operations=0 operations/month; list_operations=250 operations/month; network_egress_gb=282 GB/month
+    Unit prices:             list_operations: $0.05 per 10 K; network_egress_gb: $0.09 per 1 GB
+    Monthly component cost:  $25.3812
+    Warnings: No free-tier allowance mapping for sku_key 'list_operations' on 'Azure Blob Storage'. | No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Blob Storage'.
+
+  Contact Form Handler — Azure Functions
+    Raw SKU quantities:      executions=84,000 executions/month; execution_time_gb_seconds=16,800 GB-seconds/month; network_egress_gb=169.2 GB/month
+    Free tier deduction:     executions: free_tier=84,000; execution_time_gb_seconds: free_tier=16,800
+    Included usage deducted: executions: tier/plan included 84,000 executions/month; execution_time_gb_seconds: tier/plan included 16,800 GB-seconds/month; executions: tier_included=84,000; execution_time_gb_seconds: tier_included=16,800
+    Billable quantities:     executions=0 executions/month; execution_time_gb_seconds=0 GB-seconds/month; network_egress_gb=169.2 GB/month
+    Unit prices:             network_egress_gb: $0.09 per 1 GB
+    Monthly component cost:  $15.2280
+    Warnings: No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Functions'.
+
+PROJECT SUMMARY
+----------------------------------------------------------------------------------------------------
+  Total monthly Azure cost: $40.6092
+  Cost per user:            $0.040609
+  Expected cost range:      $25-$60/mo  (actual $40.61) [OK]
+  Range rationale:          Static asset egress + form submissions
+  Largest cost drivers:
+    - Static Site Assets (Azure Blob Storage): $25.38 (62.5%)
+    - Contact Form Handler (Azure Functions): $15.23 (37.5%)
+  Pricing completeness:     complete
+  Warnings:
+    - No free-tier allowance mapping for sku_key 'list_operations' on 'Azure Blob Storage'.
+    - No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Blob Storage'.
+    - No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Functions'.
+
+VALIDATION CHECKS
+----------------------------------------------------------------------------------------------------
+  [PASS] Costs increase consistently with user count: Total $40.61 >= $4.06 at 100 users.
+  [PASS] Total equals sum of component costs: Component sum $40.6092 matches total.
+  [PASS] No negative quantities: All SKU quantities are non-negative.
+  [PASS] No SKU silently ignored (silent $0): No component has billable usage priced at $0 due to missing catalog entries.
+  [PASS] Missing catalog prices are reported: No missing catalog prices.
+  [PASS] Every priced SKU exists in catalog: All billable SKUs have catalog unit prices.
+  [PASS] Free tier is applied correctly: Free tier deductions applied to 5 SKU line(s).
+      - static/storage_gb_month
+      - static/write_operations
+      - static/read_operations
+      - forms/executions
+      - forms/execution_time_gb_seconds
+  [PASS] Included usage is applied correctly: Included usage applied on 10 SKU line(s).
+      - static/storage_gb_month
+      - static/write_operations
+      - static/read_operations
+      - static/storage_gb_month:tier
+      - static/write_operations:tier
+  [PASS] No SKU is silently ignored: Every raw SKU appears in the verification trace.
+  [PASS] Cost per component is reasonable: No single component exceeds 95% of total cost.
+  [PASS] Cost per user is reasonable: Cost per user $0.0406 is within expected bounds.
+  [PASS] Expected cost range: Actual $40.61 is within expected $25-$60/mo.
+  [WARN] Per-user behavior consistent across scales: 9 per-user rate drift(s) detected.
+      - static/storage_gb: 0.05 vs 0.005 at 1,000 users (90.0% drift)
+      - static/write_operations: 10 vs 1 at 1,000 users (90.0% drift)
+      - static/read_operations: 50 vs 5 at 1,000 users (90.0% drift)
+      - static/storage_gb: 0.05 vs 0.0005 at 10,000 users (99.0% drift)
+      - static/write_operations: 10 vs 0.1 at 10,000 users (99.0% drift)

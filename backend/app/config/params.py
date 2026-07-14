@@ -35,6 +35,17 @@ PROJECT_TYPES: list[dict[str, str]] = [
 
 STAGE_LABELS: dict[str, str] = {"mvp": "MVP", "production": "Production"}
 
+# ---------------------------------------------------------------------------
+# Firestore collections (the only application database)
+# ---------------------------------------------------------------------------
+
+FIRESTORE_PROJECTS_COLLECTION = "projects"
+FIRESTORE_USERS_COLLECTION = "users"
+FIRESTORE_ARCHITECTURE_CATEGORIES_COLLECTION = "architecture_categories"
+FIRESTORE_CLOUD_SERVICE_MAPPINGS_COLLECTION = "cloud_service_mappings"
+# Sub-collection under a project document holding architecture component selections.
+FIRESTORE_ARCHITECTURE_SELECTIONS_SUBCOLLECTION = "architecture_selections"
+
 PROJECT_TYPE_LABELS: dict[str, str] = {
     item["type"]: item["label"] for item in PROJECT_TYPES
 }
@@ -549,6 +560,84 @@ Generate only the architecture for the requested stage ({stage_label}).
 
 
 # ---------------------------------------------------------------------------
+# Architecture component selection (Step 2)
+# ---------------------------------------------------------------------------
+
+COMPONENT_SELECTION_PROMPT_VERSION = "architecture-component-selector-v2"
+
+COMPONENT_SELECTION_SYSTEM_PROMPT = (
+    "You are a senior software architect. Given an application and a fixed list of "
+    "architecture component categories, decide which categories the application needs. "
+    "Return only valid JSON."
+)
+
+# Placeholders use the ``{{token}}`` form and are injected by the prompt builder via
+# string replacement (not str.format) so the literal JSON braces below are safe.
+PROMPT_COMPONENT_SELECTION_TEMPLATE = """You are a senior software architect.
+
+Decide which architecture component categories the described application needs.
+
+## Application
+
+- Description: {{application_description}}
+- Stage: {{stage}}
+- Expected users: {{expected_users}}
+
+## Requirements
+
+{{requirements}}
+
+## Available architecture categories
+
+There are exactly {{category_count}} categories below. Only these categories exist. Do not invent new ids.
+
+{{architecture_categories}}
+
+## Task
+
+Classify EVERY category above as either "selected" or "excluded". Do not skip any.
+
+### How to decide
+
+- Base your decision on the FULL application described above, not only on the requirement flags. The "Requirements" section only captures OPTIONAL capabilities. A requirement that is disabled, absent, or set to false means that specific optional capability is not needed — it does NOT mean the application has no backend, no data layer, or no API.
+- Select every category the described application needs to actually run and serve its core functionality end to end.
+- Foundational runtime capabilities are almost always required for any real web, SaaS, or backend application. Interpret each category by its full description, not by one keyword:
+  - "compute" runs the application code and APIs (web servers, containers, or serverless functions) — it is far more than background jobs. Any application that runs server-side logic needs compute. Do NOT exclude compute just because background processing is turned off.
+  - an API entry point / gateway is needed whenever clients call a backend.
+  - a primary data store is needed whenever the application persists user or business data.
+- Do not exclude a foundational capability solely because a single optional requirement (such as background processing, file uploads, or real-time) is turned off.
+- If a selected component depends on another capability to function, select that supporting capability too.
+
+Rules:
+- The combined number of items in "selected" and "excluded" must be exactly {{category_count}}.
+- Every category id listed above must appear exactly once, in either "selected" or "excluded".
+- Never place the same id in both arrays.
+- Never repeat an id.
+- Use only the ids from the list above.
+- "reason" must be a short, non-empty sentence.
+
+Think in terms of the complete runtime architecture needed to run the described application.
+Before answering, verify that every id from the list appears exactly once in your response, and that no capability required to run the described application has been left out.
+
+Return JSON only, in exactly this structure:
+{
+  "selected": [
+    {
+      "id": "component_id",
+      "reason": "Short reason explaining why this component is needed."
+    }
+  ],
+  "excluded": [
+    {
+      "id": "component_id",
+      "reason": "Short reason explaining why this component is not needed."
+    }
+  ]
+}
+"""
+
+
+# ---------------------------------------------------------------------------
 # Generation lifecycle
 # ---------------------------------------------------------------------------
 
@@ -600,3 +689,23 @@ ERR_OPENAI_KEY_MISSING = "OpenAI API key is not configured. Set OPENAI_API_KEY i
 ERR_AI_EMPTY_RESPONSE = "AI returned an empty response."
 ERR_AI_RESPONSE_EMPTY = "AI response was empty."
 ERR_AI_NO_JSON_OBJECT = "AI response did not contain a JSON object."
+ERR_NO_ARCHITECTURE_CATEGORIES = (
+    "No architecture categories are configured. Seed the "
+    "'architecture_categories' collection before generating components."
+)
+ERR_COMPONENT_SELECTION_INVALID = "The component selection response was invalid."
+ERR_COMPONENT_SELECTION_NOT_JSON = "The component selection response was not valid JSON."
+ERR_NO_COMPONENT_SELECTION = (
+    "No component selection exists yet. Generate the architecture components first."
+)
+ERR_SELECTION_NOT_FOUND = "The component selection was not found."
+ERR_ARCHITECTURE_CATEGORY_NOT_FOUND = "The selected architecture category was not found."
+ERR_COMPONENT_ALREADY_SELECTED = "This component is already in the selected list."
+ERR_COMPONENT_NOT_SELECTED = "This component is not in the selected list."
+
+# ---------------------------------------------------------------------------
+# Manual component management (Step 2) reasons
+# ---------------------------------------------------------------------------
+
+REASON_COMPONENT_ADDED_BY_USER = "Added by user during review."
+REASON_COMPONENT_REMOVED_BY_USER = "Removed by user during review."

@@ -1,0 +1,84 @@
+.step-one-page {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.step-one-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.step-one-brand {
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  color: var(--primary);
+}
+
+.step-one-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+
+.step-one-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 36px 20px;
+}
+
+/* Requirement cards */
+.req-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.req-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.req-card-active {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-xs);
+}
+
+.req-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 18px;
+}
+
+.req-card-heading {
+  min-width: 0;
+}
+
+.req-card-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.req-card-question {
+  margin: 3px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-soft);
+}
+
+.req-card .toggle-section-inner .field:last-child {
+  margin-bottom: 0;
+}

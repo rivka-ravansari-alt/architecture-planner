@@ -1,11 +1,27 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.config.params import DESCRIPTION_MAX_CHARS
 from app.schemas.enums import ExpectedUsers, ProjectType, Stage
+
+
+class CreateProjectRequest(BaseModel):
+    """Step 1 intake payload: application description, stage, requirements."""
+
+    description: str = Field(min_length=1, max_length=DESCRIPTION_MAX_CHARS)
+    stage: Literal["mvp", "production"]
+    expected_users: int = Field(gt=0)
+    requirements: dict[str, Any] = Field(default_factory=dict)
+
+
+class CreateProjectResponse(BaseModel):
+    """Returns the generated Firestore document id."""
+
+    id: str
 
 
 class RequirementAnswersIn(BaseModel):

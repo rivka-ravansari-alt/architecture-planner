@@ -12,9 +12,9 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.api.routes import auth_router, health_router, project_router
 from app.config.params import OAUTH_SESSION_COOKIE, OAUTH_SESSION_MAX_AGE_SECONDS
 from app.config.settings import settings
-from app.core.database import init_db
 from app.core.exceptions import (
     AIClientError,
+    AIValidationError,
     ArchitectureGenerationError,
     BadRequestError,
     ForbiddenError,
@@ -28,16 +28,9 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    init_db()
-    from app.config.settings import Settings
-
-    runtime_settings = Settings()
-    if runtime_settings.use_static_ai_response:
-        logger.warning("AI generation uses static JSON (USE_STATIC_AI_RESPONSE=true).")
-    elif runtime_settings.openai_api_key:
-        logger.info("AI generation uses OpenAI model %s.", runtime_settings.openai_model)
-    else:
-        logger.warning("OpenAI API key is not configured; /generate will fail.")
+    # Firestore uses lazy-initialized clients (ADC), so there is nothing to
+    # initialize at startup for Step 1 (auth + project intake).
+    logger.info("%s started (Step 1: auth + project intake on Firestore).", settings.app_name)
     yield
 
 
@@ -93,6 +86,11 @@ def _register_exception_handlers(application: FastAPI) -> None:
     @application.exception_handler(AIClientError)
     async def ai_client_handler(_request: Request, exc: AIClientError):
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=exc.message)
+
+    @application.exception_handler(AIValidationError)
+    async def ai_validation_handler(_request: Request, exc: AIValidationError):
+        logger.error("AI validation failed: %s", exc.message)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=exc.message)
 
 
 def _register_routes(application: FastAPI) -> None:

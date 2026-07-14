@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     object_storage_bucket: str = "archsari-generations-prod"
     gcs_project_id: str = ""
 
+    # Firestore (the only application database). Uses Application Default
+    # Credentials; leave the project id empty to infer it from ADC.
+    firestore_project_id: str = ""
+
     google_client_id: str = ""
     google_client_secret: str = ""
     google_redirect_uri: str = "http://localhost:5173/api/auth/google/callback"

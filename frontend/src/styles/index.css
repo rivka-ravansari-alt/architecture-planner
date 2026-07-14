@@ -4,6 +4,8 @@
 @import "./document.css";
 @import "./wizard.css";
 @import "./forms.css";
+@import "./step-one.css";
+@import "./step-two.css";
 @import "./diagrams.css";
 @import "./tables.css";
 @import "./misc.css";

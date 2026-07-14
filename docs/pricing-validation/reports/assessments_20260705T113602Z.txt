@@ -1,0 +1,520 @@
+====================================================================================================
+SCENARIO ASSESSMENT: Simple CRUD SaaS
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $37.69/mo (100 users) to $8,454.16/mo (100,000 users).
+  Validation: 48 pass, 4 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          5/10
+    Azure Service Selection:    9/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    9/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $30-$60              $    37.69  OK
+    1,000      $80-$150             $   106.86  OK
+    10,000     $600-$1,200          $   843.55  OK
+    100,000    $6,000-$10,000       $ 8,454.16  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? The ~$38/mo floor at 100 users matches Azure SQL Standard S1 (~$30) plus minimal Container Apps consumption. Growth to ~$8.4k at 100k users reflects linear API request scaling — reasonable for a CRUD API without caching assumptions.
+
+  Largest cost drivers:
+    - Azure SQL Database instance tier (flat S1 minimum)
+    - Azure Container Apps vCPU/memory seconds at scale
+    - Azure Blob Storage capacity + operations
+
+  Assumptions with greatest impact:
+    - requests_per_month (sessions × requests per session)
+    - SQL tier selection (currently fixed Standard S1)
+    - storage_gb per user for exports and assets
+
+  Assumptions that should probably be refined:
+    - SQL tier should escalate at 10k+ users rather than staying on S1
+    - Heuristic sessions/month may overstate B2B admin-panel usage vs consumer apps
+
+  Review summary: Classic three-tier SaaS on Azure. Service choices are appropriate. The main gap is fixed SQL tier — real deployments would move to elastic pools or higher DTU/vCore tiers before 100k users.
+
+  Recommended next improvements:
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Self-Esteem / Habit Tracking
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $37.75/mo (100 users) to $8,525.29/mo (100,000 users).
+  Validation: 48 pass, 4 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          5/10
+    Azure Service Selection:    9/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    9/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $30-$65              $    37.75  OK
+    1,000      $85-$160             $   107.56  OK
+    10,000     $650-$1,250          $   850.66  OK
+    100,000    $6,000-$10,000       $ 8,525.29  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? Costs track CRUD SaaS closely with a small Queue Storage increment for daily recommendation jobs. The reference benchmark scenario — totals are internally consistent and monotonic.
+
+  Largest cost drivers:
+    - Azure SQL Database S1 instance
+    - Azure Container Apps compute at scale
+    - Azure Queue Storage operations (background notifications)
+
+  Assumptions with greatest impact:
+    - messages_per_user_per_month for queue operations
+    - Daily session frequency (drives API requests)
+    - Per-user SQL storage for progress history
+
+  Assumptions that should probably be refined:
+    - Queue message rate for daily notifications vs batch digests
+    - Whether recommendation jobs run per-user daily or batched overnight
+
+  Review summary: Queue Storage is the right lightweight choice for daily batch jobs vs Service Bus for this scale. Architecture matches a mobile habit-tracking MVP.
+
+  Recommended next improvements:
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: E-Commerce Application
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $52.23/mo (100 users) to $24,630.35/mo (100,000 users).
+  Validation: 52 pass, 0 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          9/10
+    Azure Service Selection:    9/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    9/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $40-$90              $    52.23  OK
+    1,000      $180-$350            $   256.66  OK
+    10,000     $1,800-$3,200        $ 2,469.45  OK
+    100,000    $18,000-$30,000      $24,630.35  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? Highest benchmark totals are expected: product images, order events, and webhook Functions add meaningful cost over CRUD. ~$25k/mo at 100k users is plausible for a mid-size storefront without CDN caching or reserved capacity discounts.
+
+  Largest cost drivers:
+    - Azure Blob Storage (product media at scale)
+    - Azure Service Bus operations (order/fulfillment events)
+    - Azure SQL Database + Container Apps
+
+  Assumptions with greatest impact:
+    - storage_gb_per_user for product images
+    - messages_per_user_per_month on Service Bus
+    - Payment webhook invocation rate via Functions
+
+  Assumptions that should probably be refined:
+    - Image optimization/CDN would reduce Blob egress in production
+    - Peak promotion traffic multipliers not modeled
+    - Functions execution duration for webhook handlers
+
+  Review summary: Service Bus + Functions for order pipeline is standard Azure e-commerce patterns. Missing CDN/Front Door is acceptable for MVP costing but understates real-world optimizations.
+
+  Recommended next improvements:
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: AI Chat Application
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $39.21/mo (100 users) to $9,979.72/mo (100,000 users).
+  Validation: 48 pass, 4 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          5/10
+    Azure Service Selection:    8/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    8/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $30-$70              $    39.21  OK
+    1,000      $90-$180             $   122.09  OK
+    10,000     $700-$1,400          $   995.83  OK
+    100,000    $8,000-$15,000       $ 9,979.72  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? Azure infrastructure ~$10k/mo at 100k users is reasonable for API + Functions hosting. Critical caveat: external LLM API costs (OpenAI, etc.) are excluded and would typically dominate total spend — often 5–50× the Azure compute bill.
+
+  Largest cost drivers:
+    - Azure Container Apps (streaming chat API traffic)
+    - Azure Functions (LLM orchestration invocations)
+    - Azure Blob Storage (conversation archives)
+
+  Assumptions with greatest impact:
+    - requests_per_session (multi-turn chat inflates API calls)
+    - ai=True traffic multiplier in heuristic builder
+    - Transcript storage_gb_per_user
+
+  Assumptions that should probably be refined:
+    - Token usage and external LLM passthrough (not in Azure catalog)
+    - Streaming response duration affects Container Apps vCPU seconds
+    - Embedding storage and vector DB costs (not modeled)
+
+  Review summary: Azure-side architecture is plausible for an LLM proxy pattern. Production AI chat budgets must add third-party model costs separately — this benchmark validates Azure hosting only.
+
+  Recommended next improvements:
+    - Add LLM inference path benchmarks and external AI API cost passthrough.
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: AI Document Processing / OCR
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $11.11/mo (100 users) to $11,292.39/mo (100,000 users).
+  Validation: 52 pass, 0 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          9/10
+    Azure Service Selection:    9/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    9/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $5-$25               $    11.11  OK
+    1,000      $70-$160             $   112.16  OK
+    10,000     $800-$1,500          $ 1,125.71  OK
+    100,000    $8,000-$14,000       $11,292.39  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? Low cost at 100 users (~$11) reflects async, bursty OCR without a database. Growth to ~$11k at 100k users is storage-dominated — consistent with retaining uploaded and processed documents.
+
+  Largest cost drivers:
+    - Azure Blob Storage (original + processed documents)
+    - Azure Functions (OCR worker invocations)
+    - Azure Queue Storage (job buffering)
+
+  Assumptions with greatest impact:
+    - storage_gb_per_user for document uploads
+    - Queue/processing messages per uploaded document
+    - Functions execution time per page (not fully modeled)
+
+  Assumptions that should probably be refined:
+    - Document retention policy (delete after processing vs archive)
+    - Azure AI Document Intelligence API costs (external service)
+    - Average pages per document
+
+  Review summary: No SQL is correct for a stateless OCR pipeline with Blob as source of truth. Queue + Functions is the standard async processing pattern on Azure.
+
+  Recommended next improvements:
+    - Add LLM inference path benchmarks and external AI API cost passthrough.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: File Storage / Drive Application
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $40.66/mo (100 users) to $23,047.56/mo (100,000 users).
+  Validation: 52 pass, 0 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          9/10
+    Azure Service Selection:    9/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    9/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $30-$70              $    40.66  OK
+    1,000      $150-$320            $   230.98  OK
+    10,000     $1,800-$3,000        $ 2,302.63  OK
+    100,000    $18,000-$28,000      $23,047.56  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? ~$23k/mo at 100k users with Blob as dominant cost matches a drive product where users accumulate gigabytes. SQL metadata cost stays near the S1 floor — appropriate for folder indexing only.
+
+  Largest cost drivers:
+    - Azure Blob Storage (user file content — 60%+ of total at scale)
+    - Azure SQL Database instance
+    - Azure Container Apps (metadata/sync API)
+
+  Assumptions with greatest impact:
+    - storage_gb_per_user (primary cost lever)
+    - reads_per_user_per_month (sync and preview traffic)
+    - writes_per_user_per_month (upload frequency)
+
+  Assumptions that should probably be refined:
+    - Per-user storage cap and deduplication
+    - Cold/archive tier for inactive files
+    - Client-side sync reducing read operations
+
+  Review summary: Architecture correctly separates metadata (SQL) from content (Blob). Real drive products often add Azure Files or multi-region replication — not in current catalog.
+
+  Recommended next improvements:
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Social Network
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $50.70/mo (100 users) to $23,104.79/mo (100,000 users).
+  Validation: 52 pass, 0 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          9/10
+    Azure Service Selection:    7/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    9/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $40-$85              $    50.70  OK
+    1,000      $170-$330            $   241.44  OK
+    10,000     $1,900-$3,100        $ 2,317.17  OK
+    100,000    $18,000-$28,000      $23,104.79  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? Similar cost profile to file storage drive plus Service Bus for notifications. ~$23k/mo at 100k users is plausible for an MVP social app without feed caching, CDN, or Cosmos DB for the social graph.
+
+  Largest cost drivers:
+    - Azure Blob Storage (photos and media)
+    - Azure SQL Database (social graph — may underestimate at scale)
+    - Azure Service Bus (notification fan-out)
+
+  Assumptions with greatest impact:
+    - storage_gb_per_user for media uploads
+    - messages_per_user_per_month on Service Bus
+    - Feed read frequency (API requests)
+
+  Assumptions that should probably be refined:
+    - SQL Database is unlikely to hold 100k-user social graphs efficiently — Cosmos DB would be more realistic at scale
+    - Feed fan-out read amplification not fully modeled
+    - Media CDN caching would reduce egress
+
+  Review summary: MVP mapping uses SQL for simplicity; at 100k users a NoSQL graph store would be more realistic. Benchmark still validates messaging + media cost scaling.
+
+  Recommended next improvements:
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Video Processing Application
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $11.11/mo (100 users) to $11,292.39/mo (100,000 users).
+  Validation: 52 pass, 0 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          9/10
+    Azure Service Selection:    8/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    9/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $5-$25               $    11.11  OK
+    1,000      $70-$160             $   112.16  OK
+    10,000     $800-$1,500          $ 1,125.71  OK
+    100,000    $8,000-$14,000       $11,292.39  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? Async pipeline without SQL mirrors OCR. Storage growth dominates. Actual transcode compute (ffmpeg GPU time) is stubbed via Functions invocations — real video platforms would show higher compute costs.
+
+  Largest cost drivers:
+    - Azure Blob Storage (raw + transcoded video)
+    - Azure Functions (transcode workers — duration understated)
+    - Azure Queue Storage (job scheduling)
+
+  Assumptions with greatest impact:
+    - storage_gb_per_user for video files
+    - Processing jobs per upload
+    - Functions memory/duration for transcoding (needs product-specific tuning)
+
+  Assumptions that should probably be refined:
+    - Average video size and bitrate (GB per minute)
+    - GPU/accelerated compute tier for transcoding
+    - Output renditions count (720p + 1080p doubles storage)
+
+  Review summary: Queue + Functions + Blob is the correct Azure async video pattern. Compute cost for transcoding is the weakest estimate — Functions defaults understate ffmpeg runs.
+
+  Recommended next improvements:
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Background Job Processing Platform
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $16.70/mo (100 users) to $6,778.12/mo (100,000 users).
+  Validation: 48 pass, 4 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          5/10
+    Azure Service Selection:    8/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    8/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $10-$35              $    16.70  OK
+    1,000      $50-$120             $    77.09  OK
+    10,000     $450-$900            $   683.27  OK
+    100,000    $5,000-$9,000        $ 6,778.12  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? No SQL floor keeps 100-user cost low (~$17). Dual messaging (Service Bus + Queue) plus Functions reflects a job orchestration platform. ~$6.7k at 100k users is reasonable for message-heavy workloads.
+
+  Largest cost drivers:
+    - Azure Functions (job handler invocations)
+    - Azure Service Bus + Queue Storage operations
+    - Azure Container Apps (job submission API)
+
+  Assumptions with greatest impact:
+    - messages_per_user_per_month across both queues
+    - Functions invocations per job
+    - Job payload size (affects messaging storage/egress)
+
+  Assumptions that should probably be refined:
+    - Long-running jobs may need Container Apps workers instead of Functions
+    - Duplicate messaging paths (Service Bus + Queue) may overcount
+    - Retry policy multiplying message operations
+
+  Review summary: Dual-queue architecture validates messaging cost paths. Production job platforms often consolidate on Service Bus or Event Hubs — benchmark intentionally exercises both.
+
+  Recommended next improvements:
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Analytics / Reporting Dashboard
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $37.69/mo (100 users) to $8,454.16/mo (100,000 users).
+  Validation: 48 pass, 4 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          5/10
+    Azure Service Selection:    8/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    8/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $30-$60              $    37.69  OK
+    1,000      $80-$150             $   106.86  OK
+    10,000     $600-$1,200          $   843.55  OK
+    100,000    $6,000-$10,000       $ 8,454.16  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? Nearly identical to Simple CRUD SaaS — expected for read-heavy SQL + API + periodic report exports. Scheduled PDF generation adds only modest Blob cost.
+
+  Largest cost drivers:
+    - Azure SQL Database S1 instance
+    - Azure Container Apps API traffic
+    - Azure Blob Storage (report exports)
+
+  Assumptions with greatest impact:
+    - Read-heavy API request rate
+    - SQL storage for aggregated metrics
+    - Report export frequency and file size
+
+  Assumptions that should probably be refined:
+    - SQL analytics at scale often uses Synapse or dedicated warehouse tiers
+    - Pre-aggregated rollups reduce query load vs modeled per-request reads
+
+  Review summary: SQL + Blob exports is valid for SMB analytics. Enterprise BI would add Synapse, Fabric, or Power BI licensing outside this catalog.
+
+  Recommended next improvements:
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Static Website / Marketing Landing Page
+====================================================================================================
+  Automated realism check: Yes
+  Notes: Costs grow from $4.06/mo (100 users) to $4,063.56/mo (100,000 users).
+  Validation: 48 pass, 4 warn, 0 fail
+
+  Pipeline category scores (1-10):
+    Usage Assumptions:          5/10
+    Azure Service Selection:    7/10
+    SKU Quantity Calculation:   10/10
+    Free Tier / Included Usage: 9/10
+    Catalog Price Mapping:      10/10
+    Overall:                    8/10
+
+  Expected cost range vs actual:
+    Users      Expected Range       Actual       Status
+    100        $2-$15               $     4.06  OK
+    1,000      $25-$60              $    40.61  OK
+    10,000     $250-$550            $   406.08  OK
+    100,000    $2,500-$5,500        $ 4,063.56  OK
+
+  HUMAN VALIDATION (engineering review)
+----------------------------------------------------------------------------------------------------
+  Does this estimate look realistic? Yes
+  Why? No SQL removes the ~$30/mo floor — ~$4/mo at 100 users vs ~$38 for CRUD SaaS. This confirms the engine can price non-database architectures. At 100k users, Blob read/egress scaling dominates (~$4k) — a static site with high traffic would normally use Azure CDN/Front Door (not yet in catalog).
+
+  Largest cost drivers:
+    - Azure Blob Storage (static assets + egress at scale)
+    - Azure Functions (contact form submissions only)
+
+  Assumptions with greatest impact:
+    - Page views modeled as Blob read operations
+    - Static asset size per page load
+    - Contact form submissions per user (Functions invocations)
+
+  Assumptions that should probably be refined:
+    - Azure Static Web Apps or CDN would replace direct Blob egress
+    - Marketing sites have spiky campaign traffic not captured in MAU bands
+    - Cache hit ratio dramatically reduces origin reads
+
+  Review summary: Blob + Functions is a reasonable MVP stand-in for static hosting. Missing Static Web Apps / Front Door means high-traffic estimates overstate origin Blob costs — but the low-user baseline correctly differs from CRUD SaaS.
+
+  Recommended next improvements:
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.

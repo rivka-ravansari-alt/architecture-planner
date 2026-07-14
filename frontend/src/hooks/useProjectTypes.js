@@ -1,25 +1,6 @@
-import { useEffect, useState } from "react";
+import { SAMPLE_PROJECT_TYPES } from "../constants/sampleArchitecture.js";
 
-import { api } from "../api/index.js";
-
+/** Static project types — the backend fetch has been removed. */
 export function useProjectTypes() {
-  const [projectTypes, setProjectTypes] = useState([]);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .getProjectTypes()
-      .then((types) => {
-        if (!cancelled) setProjectTypes(types);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err.message);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { projectTypes, error };
+  return { projectTypes: SAMPLE_PROJECT_TYPES, error: null };
 }

@@ -2,17 +2,14 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from app.api.controllers.health_controller import HealthController
 
 router = APIRouter(tags=["health"])
-
-
-def _controller() -> HealthController:
-    return HealthController()
+_controller = HealthController()
 
 
 @router.get("/health")
-async def health(controller: HealthController = Depends(_controller)):
-    return controller.check()
+def health():
+    return _controller.check()

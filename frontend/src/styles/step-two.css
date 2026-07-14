@@ -1,0 +1,336 @@
+/* Step 2: architecture component review */
+
+.component-review-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 20px;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.component-review {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.component-review-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.component-review-header .subtitle {
+  margin: 6px 0 0;
+  color: var(--text-soft);
+}
+
+.component-review-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.component-review-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.component-review-section h2 .count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.component-review-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.component-review-card {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-xs);
+}
+
+.component-review-card.excluded {
+  border-left-color: var(--border-strong);
+  background: var(--surface-soft);
+  opacity: 0.92;
+}
+
+.component-review-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.component-review-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.component-review-type {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+}
+
+.component-review-description {
+  margin: 8px 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.component-review-reason {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.excluded-section {
+  gap: 12px;
+}
+
+.excluded-toggle {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 4px 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.excluded-toggle:hover {
+  color: var(--text);
+}
+
+/* Section head with add action */
+.component-review-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btn-add-component {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
+
+/* Card head meta (type tag + remove action) */
+.component-review-head-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.component-review-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-soft);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.component-review-remove:hover:not(:disabled) {
+  background: var(--danger-soft, #fdecec);
+  border-color: var(--danger, #d14343);
+  color: var(--danger, #d14343);
+}
+
+.component-review-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ */
+/* Modal (Jira-style dialog)                                          */
+/* ------------------------------------------------------------------ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8vh 16px 16px;
+  background: rgba(15, 23, 42, 0.45);
+  overflow-y: auto;
+}
+
+.modal {
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg, 0 20px 40px rgba(0, 0, 0, 0.18));
+  display: flex;
+  flex-direction: column;
+  max-height: 84vh;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.modal-close {
+  border: none;
+  background: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--text-soft);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.modal-body {
+  padding: 22px;
+  overflow-y: auto;
+}
+
+.modal-body .field:last-child {
+  margin-bottom: 0;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--border);
+}
+
+.modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  color: var(--text-soft);
+}
+
+.required {
+  color: var(--danger, #d14343);
+}
+
+/* Combobox / autocomplete */
+.combobox {
+  position: relative;
+}
+
+.combobox-list {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.combobox-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 11px;
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.combobox-option:hover,
+.combobox-option[aria-selected="true"] {
+  background: var(--accent-soft);
+}
+
+.combobox-option-name {
+  font-weight: 500;
+}
+
+.combobox-option-type {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+}
+
+.combobox-empty {
+  padding: 10px 11px;
+  color: var(--text-soft);
+  font-size: 0.88rem;
+}

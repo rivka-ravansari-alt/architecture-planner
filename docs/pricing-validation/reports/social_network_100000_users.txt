@@ -1,0 +1,164 @@
+====================================================================================================
+SCENARIO: Social Network
+USERS: 100,000
+ARCHITECTURE: Azure Container Apps + Azure SQL Database + Azure Blob Storage + Azure Service Bus
+Feature flags: {"ai": false, "background_processing": true, "file_upload": true}
+
+USAGE ASSUMPTIONS
+----------------------------------------------------------------------------------------------------
+
+  [Social API] (Azure Container Apps)
+  Per-user behavior: (derived by heuristic usage model)
+  Inferred assumptions:
+    requests_per_month=24,000,000 requests/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    avg_request_duration_seconds=0.25 seconds (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    cpu=0.5 vCPU (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    memory_gb=1 GiB (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    network_egress_gb=56,400 GB/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    min_replicas=0 replicas (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    max_replicas=10 replicas (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+
+  [Social Graph Database] (Azure SQL Database)
+  Per-user behavior: (derived by heuristic usage model)
+  Inferred assumptions:
+    tier=Standard S4 enum (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    compute_model=provisioned enum (confidence=medium, source=default)
+    vcores=2 vCore (confidence=medium, source=default)
+    storage_gb=106,250 GB (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    backup_storage_gb=10,625 GB/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    hours_per_month=730 hours/month (confidence=medium, source=default)
+
+  [Media Storage] (Azure Blob Storage)
+  Per-user behavior: (derived by heuristic usage model)
+  Inferred assumptions:
+    storage_gb=106,250 GB (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    access_tier=Hot enum (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    redundancy=LRS enum (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    write_operations=1,200,000 operations/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    read_operations=4,800,000 operations/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    list_operations=240,000 operations/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    data_retrieval_gb=0 GB/month (confidence=medium, source=default)
+    data_egress_gb=28,200 GB/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+
+  [Activity Events] (Azure Service Bus)
+  Per-user behavior: (derived by heuristic usage model)
+  Inferred assumptions:
+    messaging_tier=Standard enum (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    hours_per_month=730 hours/month (confidence=medium, source=default)
+    messaging_units=1 MU (confidence=medium, source=default)
+    queue_operations=50,400,000 operations/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    brokered_connections=1,000 connections (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    data_egress_gb=504 GB/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+
+COMPONENT BREAKDOWN
+----------------------------------------------------------------------------------------------------
+
+  Social API — Azure Container Apps
+    Raw SKU quantities:      requests=24,000,000 requests/month; vcpu_seconds=3,000,000 vCPU-seconds/month; memory_gb_seconds=6,000,000 GiB-seconds/month; network_egress_gb=56,400 GB/month
+    Free tier deduction:     requests: free_tier=2,000,000; vcpu_seconds: free_tier=180,000; memory_gb_seconds: free_tier=360,000
+    Included usage deducted: requests: tier/plan included 2,000,000 requests/month; vcpu_seconds: tier/plan included 180,000 vCPU-seconds/month; memory_gb_seconds: tier/plan included 360,000 GiB-seconds/month; requests: tier_included=2,000,000; vcpu_seconds: tier_included=180,000; memory_gb_seconds: tier_included=360,000
+    Billable quantities:     requests=22,000,000 requests/month; vcpu_seconds=2,820,000 vCPU-seconds/month; memory_gb_seconds=5,640,000 GiB-seconds/month; network_egress_gb=56,400 GB/month
+    Unit prices:             requests: $4e-07 per 1 Request; vcpu_seconds: $1.2e-05 per 1 vCPU Second; memory_gb_seconds: $1e-06 per 1 GiB Second; network_egress_gb: $0.09 per 1 GB
+    Monthly component cost:  $5,124.2800
+    Warnings: No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'requests'; 22,000,000 requests/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'vcpu_seconds'; 2,820,000 vCPU-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'memory_gb_seconds'; 5,640,000 GiB-seconds/month billable on 'Azure Container Apps'.
+
+  Social Graph Database — Azure SQL Database
+    Raw SKU quantities:      database_instance_months=1 instance-months; storage_gb_month=106,250 GB-months; backup_storage_gb_month=10,625 GB-months
+    Free tier deduction:     -
+    Included usage deducted: storage_gb_month: tier/plan included 250 GB-months; storage_gb_month: tier_included=500
+    Billable quantities:     database_instance_months=1 instance-months; storage_gb_month=106,000 GB-months; backup_storage_gb_month=10,625 GB-months
+    Unit prices:             database_instance_months: $30.0 per 1/month; storage_gb_month: $0.115 per 1 GB/Month; backup_storage_gb_month: $0.115 per 1 GB/Month
+    Monthly component cost:  $13,441.8750
+    Warnings: Azure SQL Database has no subscription free-tier allowances. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'requests'; 22,000,000 requests/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'vcpu_seconds'; 2,820,000 vCPU-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'memory_gb_seconds'; 5,640,000 GiB-seconds/month billable on 'Azure Container Apps'.
+
+  Media Storage — Azure Blob Storage
+    Raw SKU quantities:      storage_gb_month=106,250 GB-months; write_operations=1,200,000 operations/month; read_operations=4,800,000 operations/month; list_operations=240,000 operations/month; network_egress_gb=28,200 GB/month
+    Free tier deduction:     storage_gb_month: free_tier=5; write_operations: free_tier=20,000; read_operations: free_tier=20,000
+    Included usage deducted: storage_gb_month: tier/plan included 5 GB-months; write_operations: tier/plan included 20,000 operations/month; read_operations: tier/plan included 20,000 operations/month; storage_gb_month: tier_included=5; write_operations: tier_included=20,000; read_operations: tier_included=20,000
+    Billable quantities:     storage_gb_month=106,245 GB-months; write_operations=1,180,000 operations/month; read_operations=4,780,000 operations/month; list_operations=240,000 operations/month; network_egress_gb=28,200 GB/month
+    Unit prices:             storage_gb_month: $0.018 per 1 GB/Month; write_operations: $0.05 per 10 K; read_operations: $0.05 per 10 K; list_operations: $0.05 per 10 K; network_egress_gb: $0.09 per 1 GB
+    Monthly component cost:  $4,481.4100
+    Warnings: No free-tier allowance mapping for sku_key 'list_operations' on 'Azure Blob Storage'. | No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Blob Storage'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'requests'; 22,000,000 requests/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'vcpu_seconds'; 2,820,000 vCPU-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'memory_gb_seconds'; 5,640,000 GiB-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_storage_account_free' exhausted for 'storage_gb_months'; 106,245 GB-months billable on 'Azure Blob Storage'. | Free-tier pool 'azure_storage_account_free' exhausted for 'write_operations'; 1,180,000 operations/month billable on 'Azure Blob Storage'. | Free-tier pool 'azure_storage_account_free' exhausted for 'read_operations'; 4,780,000 operations/month billable on 'Azure Blob Storage'.
+
+  Activity Events — Azure Service Bus
+    Raw SKU quantities:      base_units_month=1 namespace-months; operations=50,400,000 operations/month; brokered_connections=1,000 connections/month; network_egress_gb=504 GB/month
+    Free tier deduction:     operations: free_tier=13,000,000
+    Included usage deducted: brokered_connections: tier/plan included 1,000 connections/month; operations: tier/plan included 13,000,000 operations/month; operations: tier_included=13,000,000; brokered_connections: tier_included=2,000
+    Billable quantities:     base_units_month=1 namespace-months; operations=37,400,000 operations/month; brokered_connections=0 connections/month; network_egress_gb=504 GB/month
+    Unit prices:             base_units_month: $10.0 per 1/month; operations: $0.05 per 1M; network_egress_gb: $0.09 per 1 GB
+    Monthly component cost:  $57.2300
+    Warnings: No free-tier allowance mapping for sku_key 'base_units_month' on 'Azure Service Bus'. | No free-tier allowance mapping for sku_key 'brokered_connections' on 'Azure Service Bus'. | No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Service Bus'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'requests'; 22,000,000 requests/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'vcpu_seconds'; 2,820,000 vCPU-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'memory_gb_seconds'; 5,640,000 GiB-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_storage_account_free' exhausted for 'storage_gb_months'; 106,245 GB-months billable on 'Azure Blob Storage'. | Free-tier pool 'azure_storage_account_free' exhausted for 'write_operations'; 1,180,000 operations/month billable on 'Azure Blob Storage'. | Free-tier pool 'azure_storage_account_free' exhausted for 'read_operations'; 4,780,000 operations/month billable on 'Azure Blob Storage'. | Free-tier pool 'azure_service_bus_standard' exhausted for 'queue_operations'; 37,400,000 operations/month billable on 'Azure Service Bus'.
+
+PROJECT SUMMARY
+----------------------------------------------------------------------------------------------------
+  Total monthly Azure cost: $23,104.7950
+  Cost per user:            $0.231048
+  Expected cost range:      $18,000-$28,000/mo  (actual $23,104.79) [OK]
+  Range rationale:          Similar to drive + event fan-out
+  Largest cost drivers:
+    - Social Graph Database (Azure SQL Database): $13,441.88 (58.2%)
+    - Social API (Azure Container Apps): $5,124.28 (22.2%)
+    - Media Storage (Azure Blob Storage): $4,481.41 (19.4%)
+  Pricing completeness:     complete
+  Warnings:
+    - No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Container Apps'.
+    - Free-tier pool 'azure_container_apps_consumption' exhausted for 'requests'; 22,000,000 requests/month billable on 'Azure Container Apps'.
+    - Free-tier pool 'azure_container_apps_consumption' exhausted for 'vcpu_seconds'; 2,820,000 vCPU-seconds/month billable on 'Azure Container Apps'.
+    - Free-tier pool 'azure_container_apps_consumption' exhausted for 'memory_gb_seconds'; 5,640,000 GiB-seconds/month billable on 'Azure Container Apps'.
+    - Azure SQL Database has no subscription free-tier allowances.
+    - No free-tier allowance mapping for sku_key 'list_operations' on 'Azure Blob Storage'.
+    - No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Blob Storage'.
+    - Free-tier pool 'azure_storage_account_free' exhausted for 'storage_gb_months'; 106,245 GB-months billable on 'Azure Blob Storage'.
+    - Free-tier pool 'azure_storage_account_free' exhausted for 'write_operations'; 1,180,000 operations/month billable on 'Azure Blob Storage'.
+    - Free-tier pool 'azure_storage_account_free' exhausted for 'read_operations'; 4,780,000 operations/month billable on 'Azure Blob Storage'.
+    - No free-tier allowance mapping for sku_key 'base_units_month' on 'Azure Service Bus'.
+    - No free-tier allowance mapping for sku_key 'brokered_connections' on 'Azure Service Bus'.
+    - No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Service Bus'.
+    - Free-tier pool 'azure_service_bus_standard' exhausted for 'queue_operations'; 37,400,000 operations/month billable on 'Azure Service Bus'.
+
+VALIDATION CHECKS
+----------------------------------------------------------------------------------------------------
+  [PASS] Costs increase consistently with user count: Total $23,104.79 >= $2,317.17 at 10,000 users.
+  [PASS] Total equals sum of component costs: Component sum $23,104.7950 matches total.
+  [PASS] No negative quantities: All SKU quantities are non-negative.
+  [PASS] No SKU silently ignored (silent $0): No component has billable usage priced at $0 due to missing catalog entries.
+  [PASS] Missing catalog prices are reported: No missing catalog prices.
+  [PASS] Every priced SKU exists in catalog: All billable SKUs have catalog unit prices.
+  [PASS] Free tier is applied correctly: Free tier deductions applied to 7 SKU line(s).
+      - api/requests
+      - api/vcpu_seconds
+      - api/memory_gb_seconds
+      - files/storage_gb_month
+      - files/write_operations
+  [PASS] Included usage is applied correctly: Included usage applied on 18 SKU line(s).
+      - api/requests
+      - api/vcpu_seconds
+      - api/memory_gb_seconds
+      - api/requests:tier
+      - api/vcpu_seconds:tier
+  [PASS] No SKU is silently ignored: Every raw SKU appears in the verification trace.
+  [PASS] Cost per component is reasonable: No single component exceeds 95% of total cost.
+  [PASS] Cost per user is reasonable: Cost per user $0.2310 is within expected bounds.
+  [PASS] Expected cost range: Actual $23,104.79 is within expected $18,000-$28,000/mo.
+  [PASS] Per-user behavior consistent across scales: Derived per-user rates stable across all user counts.

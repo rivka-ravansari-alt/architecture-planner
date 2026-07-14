@@ -1,6 +1,5 @@
 const BASE = "/api";
 const DEFAULT_TIMEOUT_MS = 30_000;
-const GENERATE_TIMEOUT_MS = 330_000;
 
 export async function apiRequest(path, options = {}) {
   const { timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
@@ -20,10 +19,13 @@ export async function apiRequest(path, options = {}) {
       try {
         const body = await response.json();
         if (body.detail) {
-          detail = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
+          detail =
+            typeof body.detail === "string"
+              ? body.detail
+              : JSON.stringify(body.detail);
         }
       } catch {
-        // ignore parse errors
+        /* ignore non-JSON error bodies */
       }
       throw new Error(detail);
     }
@@ -32,12 +34,10 @@ export async function apiRequest(path, options = {}) {
     return response.json();
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Request timed out. The AI generation may still be running — try again in a moment.");
+      throw new Error("Request timed out. Please try again.");
     }
     throw error;
   } finally {
     clearTimeout(timer);
   }
 }
-
-export { GENERATE_TIMEOUT_MS };

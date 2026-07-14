@@ -1,52 +1,79 @@
-"""Project route definitions."""
+"""Project route definitions (Step 1 intake + Step 2 component selection).
+
+The router never touches Firestore or OpenAI directly: it delegates to the
+controller -> service(s) -> repository / clients.
+"""
 
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, status
 
 from app.api.controllers.project_controller import ProjectController
-from app.core.dependencies import (
-    get_catalog_service,
-    get_current_user,
-    get_generation_service,
-    get_project_service,
+from app.core.dependencies import get_current_user, get_project_controller
+from app.schemas.auth import UserOut
+from app.schemas.component_selection import (
+    AddComponentRequest,
+    ArchitectureCategoryOut,
+    ComponentSelectionResponse,
 )
-from app.models import User
-from app.schemas.project import ProjectCreate, ProjectDetail, ProjectTypeInfo
-from app.services.catalog_service import CatalogService
-from app.services.generation_service import GenerationService
-from app.services.project_service import ProjectService
-
-
-def _controller(
-    project_service: ProjectService = Depends(get_project_service),
-    generation_service: GenerationService = Depends(get_generation_service),
-    catalog_service: CatalogService = Depends(get_catalog_service),
-) -> ProjectController:
-    return ProjectController(project_service, generation_service, catalog_service)
-
+from app.schemas.project import CreateProjectRequest, CreateProjectResponse
 
 router = APIRouter(tags=["projects"])
 
 
-@router.get("/project-types", response_model=list[ProjectTypeInfo])
-def list_project_types(controller: ProjectController = Depends(_controller)):
-    return controller.list_project_types()
-
-
-@router.post("/projects", response_model=ProjectDetail, status_code=status.HTTP_201_CREATED)
+@router.post("/projects", status_code=status.HTTP_201_CREATED)
 def create_project(
-    payload: ProjectCreate,
-    user: User = Depends(get_current_user),
-    controller: ProjectController = Depends(_controller),
-):
+    payload: CreateProjectRequest,
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> CreateProjectResponse:
     return controller.create_project(payload, user)
 
 
-@router.post("/projects/{project_id}/generate", response_model=ProjectDetail)
-def generate_project(
+@router.post("/projects/{project_id}/architecture-components/generate")
+def generate_architecture_components(
     project_id: str,
-    user: User = Depends(get_current_user),
-    controller: ProjectController = Depends(_controller),
-):
-    return controller.generate_project(project_id, user)
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> ComponentSelectionResponse:
+    return controller.generate_architecture_components(project_id, user)
+
+
+@router.get("/projects/{project_id}/architecture-components/selection")
+def get_architecture_selection(
+    project_id: str,
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> ComponentSelectionResponse:
+    return controller.get_architecture_selection(project_id, user)
+
+
+@router.get("/architecture-categories")
+def list_architecture_categories(
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> list[ArchitectureCategoryOut]:
+    return controller.list_architecture_categories(user)
+
+
+@router.post("/projects/{project_id}/architecture-components")
+def add_architecture_component(
+    project_id: str,
+    payload: AddComponentRequest,
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> ComponentSelectionResponse:
+    return controller.add_architecture_component(project_id, payload, user)
+
+
+@router.delete("/projects/{project_id}/architecture-components/{instance_id}")
+def remove_architecture_component(
+    project_id: str,
+    instance_id: str,
+    selection_id: str,
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> ComponentSelectionResponse:
+    return controller.remove_architecture_component(
+        project_id, selection_id, instance_id, user
+    )

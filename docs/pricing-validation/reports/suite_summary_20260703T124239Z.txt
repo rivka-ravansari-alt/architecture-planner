@@ -1,0 +1,24 @@
+====================================================================================================
+AZURE PRICING VALIDATION SUITE — SUMMARY
+====================================================================================================
+Inference mode: heuristic
+Scenarios: 10
+Total runs: 40
+
+Cost summary by scenario:
+----------------------------------------------------------------------------------------------------
+Scenario                                     100        1,000       10,000      100,000
+---------------------------------------------------------------------------------------
+Simple CRUD SaaS                          $37.69      $106.86      $843.55    $8,454.16
+Self-Esteem / Habit Tracking              $37.71      $107.11      $846.12    $8,479.93
+E-Commerce Application                    $52.18      $256.20    $2,464.79   $24,581.92
+AI Chat Application                       $39.21      $122.09      $995.83    $9,979.72
+AI Document Processing / OCR              $11.07      $111.69    $1,121.05   $11,245.83
+File Storage / Drive Application          $40.66      $230.97    $2,302.51   $23,046.37
+Social Network                            $50.66      $240.97    $2,312.51   $23,056.37
+Video Processing Application              $11.07      $111.69    $1,121.05   $11,245.83
+Background Job Processing Platform        $16.61       $76.18      $674.20    $6,685.53
+Analytics / Reporting Dashboard           $37.69      $106.86      $843.55    $8,454.16
+
+[PASS] Validation suite completed: Executed 40 scenario runs across 10 scenarios.
+[FAIL] Overall validation quality: 3 failure(s), 23 warning(s) across all checks.

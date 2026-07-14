@@ -1,17 +1,16 @@
+import { useState } from "react";
+
 import { useAuth } from "./context/AuthContext.jsx";
-import AppShell from "./components/layout/AppShell.jsx";
-import { useProjectTypes } from "./hooks/useProjectTypes.js";
-import { useWizard } from "./hooks/useWizard.js";
+import StepOneForm from "./components/step-one/StepOneForm.jsx";
+import ComponentSelectionScreen from "./components/step-two/ComponentSelectionScreen.jsx";
 import AuthLoadingPage from "./pages/AuthLoadingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
-import ErrorBanner from "./components/ui/ErrorBanner.jsx";
 
 export default function App() {
-  const { user, loading: authLoading, logout } = useAuth();
-  const wizard = useWizard();
-  const { projectTypes, error: projectTypesError } = useProjectTypes();
+  const { user, loading, logout } = useAuth();
+  const [projectId, setProjectId] = useState(null);
 
-  if (authLoading) {
+  if (loading) {
     return <AuthLoadingPage />;
   }
 
@@ -20,9 +19,26 @@ export default function App() {
   }
 
   return (
-    <>
-      <ErrorBanner message={projectTypesError} />
-      <AppShell user={user} wizard={wizard} projectTypes={projectTypes} onLogout={logout} />
-    </>
+    <div className="step-one-page">
+      <header className="step-one-topbar">
+        <span className="step-one-brand">Archsari</span>
+        <div className="step-one-user">
+          {user.name && <span>{user.name}</span>}
+          <button type="button" className="btn btn-ghost" onClick={logout}>
+            Sign out
+          </button>
+        </div>
+      </header>
+      <main className="step-one-main">
+        {projectId ? (
+          <ComponentSelectionScreen
+            projectId={projectId}
+            onBack={() => setProjectId(null)}
+          />
+        ) : (
+          <StepOneForm onCreated={setProjectId} />
+        )}
+      </main>
+    </div>
   );
 }

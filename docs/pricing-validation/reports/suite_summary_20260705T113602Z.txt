@@ -1,0 +1,74 @@
+====================================================================================================
+AZURE PRICING VALIDATION SUITE — SUMMARY
+====================================================================================================
+Inference mode: heuristic
+Scenarios: 11
+Total runs: 44
+
+Cost summary by scenario:
+----------------------------------------------------------------------------------------------------
+Scenario                                     100        1,000       10,000      100,000
+---------------------------------------------------------------------------------------
+Simple CRUD SaaS                          $37.69      $106.86      $843.55    $8,454.16
+Self-Esteem / Habit Tracking              $37.75      $107.56      $850.66    $8,525.29
+E-Commerce Application                    $52.23      $256.66    $2,469.45   $24,630.35
+AI Chat Application                       $39.21      $122.09      $995.83    $9,979.72
+AI Document Processing / OCR              $11.11      $112.16    $1,125.71   $11,292.39
+File Storage / Drive Application          $40.66      $230.98    $2,302.63   $23,047.56
+Social Network                            $50.70      $241.44    $2,317.17   $23,104.79
+Video Processing Application              $11.11      $112.16    $1,125.71   $11,292.39
+Background Job Processing Platform        $16.70       $77.09      $683.27    $6,778.12
+Analytics / Reporting Dashboard           $37.69      $106.86      $843.55    $8,454.16
+Static Website / Marketing Landing Page        $4.06       $40.61      $406.08    $4,063.56
+
+Expected cost range validation:
+----------------------------------------------------------------------------------------------------
+Scenario                        Users Expected Range           Actual Status
+----------------------------------------------------------------------------
+Simple CRUD SaaS                  100 $30-$60            $     37.69     OK
+Simple CRUD SaaS                   1K $80-$150           $    106.86     OK
+Simple CRUD SaaS                  10K $600-$1,200        $    843.55     OK
+Simple CRUD SaaS                 100K $6,000-$10,000     $  8,454.16     OK
+Self-Esteem / Habit Tracking      100 $30-$65            $     37.75     OK
+Self-Esteem / Habit Tracking       1K $85-$160           $    107.56     OK
+Self-Esteem / Habit Tracking      10K $650-$1,250        $    850.66     OK
+Self-Esteem / Habit Tracking     100K $6,000-$10,000     $  8,525.29     OK
+E-Commerce Application            100 $40-$90            $     52.23     OK
+E-Commerce Application             1K $180-$350          $    256.66     OK
+E-Commerce Application            10K $1,800-$3,200      $  2,469.45     OK
+E-Commerce Application           100K $18,000-$30,000    $ 24,630.35     OK
+AI Chat Application               100 $30-$70            $     39.21     OK
+AI Chat Application                1K $90-$180           $    122.09     OK
+AI Chat Application               10K $700-$1,400        $    995.83     OK
+AI Chat Application              100K $8,000-$15,000     $  9,979.72     OK
+AI Document Processing / OCR      100 $5-$25             $     11.11     OK
+AI Document Processing / OCR       1K $70-$160           $    112.16     OK
+AI Document Processing / OCR      10K $800-$1,500        $  1,125.71     OK
+AI Document Processing / OCR     100K $8,000-$14,000     $ 11,292.39     OK
+File Storage / Drive Applica      100 $30-$70            $     40.66     OK
+File Storage / Drive Applica       1K $150-$320          $    230.98     OK
+File Storage / Drive Applica      10K $1,800-$3,000      $  2,302.63     OK
+File Storage / Drive Applica     100K $18,000-$28,000    $ 23,047.56     OK
+Social Network                    100 $40-$85            $     50.70     OK
+Social Network                     1K $170-$330          $    241.44     OK
+Social Network                    10K $1,900-$3,100      $  2,317.17     OK
+Social Network                   100K $18,000-$28,000    $ 23,104.79     OK
+Video Processing Application      100 $5-$25             $     11.11     OK
+Video Processing Application       1K $70-$160           $    112.16     OK
+Video Processing Application      10K $800-$1,500        $  1,125.71     OK
+Video Processing Application     100K $8,000-$14,000     $ 11,292.39     OK
+Background Job Processing Pl      100 $10-$35            $     16.70     OK
+Background Job Processing Pl       1K $50-$120           $     77.09     OK
+Background Job Processing Pl      10K $450-$900          $    683.27     OK
+Background Job Processing Pl     100K $5,000-$9,000      $  6,778.12     OK
+Analytics / Reporting Dashbo      100 $30-$60            $     37.69     OK
+Analytics / Reporting Dashbo       1K $80-$150           $    106.86     OK
+Analytics / Reporting Dashbo      10K $600-$1,200        $    843.55     OK
+Analytics / Reporting Dashbo     100K $6,000-$10,000     $  8,454.16     OK
+Static Website / Marketing L      100 $2-$15             $      4.06     OK
+Static Website / Marketing L       1K $25-$60            $     40.61     OK
+Static Website / Marketing L      10K $250-$550          $    406.08     OK
+Static Website / Marketing L     100K $2,500-$5,500      $  4,063.56     OK
+
+[PASS] Validation suite completed: Executed 44 scenario runs across 11 scenarios.
+[WARN] Overall validation quality: 0 failure(s), 24 warning(s) across all checks.

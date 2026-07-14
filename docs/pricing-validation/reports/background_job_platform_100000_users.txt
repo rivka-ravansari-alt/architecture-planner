@@ -1,0 +1,159 @@
+====================================================================================================
+SCENARIO: Background Job Processing Platform
+USERS: 100,000
+ARCHITECTURE: Azure Container Apps + Azure Service Bus + Azure Queue Storage + Azure Functions
+Feature flags: {"ai": false, "background_processing": true, "file_upload": false}
+
+USAGE ASSUMPTIONS
+----------------------------------------------------------------------------------------------------
+
+  [Job API] (Azure Container Apps)
+  Per-user behavior: (derived by heuristic usage model)
+  Inferred assumptions:
+    requests_per_month=24,000,000 requests/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    avg_request_duration_seconds=0.25 seconds (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    cpu=0.5 vCPU (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    memory_gb=1 GiB (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    network_egress_gb=56,400 GB/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    min_replicas=0 replicas (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    max_replicas=10 replicas (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+
+  [Priority Messaging] (Azure Service Bus)
+  Per-user behavior: (derived by heuristic usage model)
+  Inferred assumptions:
+    messaging_tier=Standard enum (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    hours_per_month=730 hours/month (confidence=medium, source=default)
+    messaging_units=1 MU (confidence=medium, source=default)
+    queue_operations=50,400,000 operations/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    brokered_connections=1,000 connections (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    data_egress_gb=504 GB/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+
+  [Bulk Job Queue] (Azure Queue Storage)
+  Per-user behavior: (derived by heuristic usage model)
+  Inferred assumptions:
+    storage_gb=312.5 GB (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    queue_operations=50,400,000 operations/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    data_egress_gb=504 GB/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+
+  [Job Workers] (Azure Functions)
+  Per-user behavior: (derived by heuristic usage model)
+  Inferred assumptions:
+    plan=consumption enum (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    executions_per_month=8,400,000 executions/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    avg_execution_duration_ms=400 milliseconds (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    memory_mb=512 MB (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+    network_egress_gb=16,920 GB/month (confidence=low, source=inferred)
+      reasoning: Heuristic fallback: estimated from user scale bands and architecture topology because LLM inference was unavailable.
+
+COMPONENT BREAKDOWN
+----------------------------------------------------------------------------------------------------
+
+  Job API — Azure Container Apps
+    Raw SKU quantities:      requests=24,000,000 requests/month; vcpu_seconds=3,000,000 vCPU-seconds/month; memory_gb_seconds=6,000,000 GiB-seconds/month; network_egress_gb=56,400 GB/month
+    Free tier deduction:     requests: free_tier=2,000,000; vcpu_seconds: free_tier=180,000; memory_gb_seconds: free_tier=360,000
+    Included usage deducted: requests: tier/plan included 2,000,000 requests/month; vcpu_seconds: tier/plan included 180,000 vCPU-seconds/month; memory_gb_seconds: tier/plan included 360,000 GiB-seconds/month; requests: tier_included=2,000,000; vcpu_seconds: tier_included=180,000; memory_gb_seconds: tier_included=360,000
+    Billable quantities:     requests=22,000,000 requests/month; vcpu_seconds=2,820,000 vCPU-seconds/month; memory_gb_seconds=5,640,000 GiB-seconds/month; network_egress_gb=56,400 GB/month
+    Unit prices:             requests: $4e-07 per 1 Request; vcpu_seconds: $1.2e-05 per 1 vCPU Second; memory_gb_seconds: $1e-06 per 1 GiB Second; network_egress_gb: $0.09 per 1 GB
+    Monthly component cost:  $5,124.2800
+    Warnings: No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'requests'; 22,000,000 requests/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'vcpu_seconds'; 2,820,000 vCPU-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'memory_gb_seconds'; 5,640,000 GiB-seconds/month billable on 'Azure Container Apps'.
+
+  Priority Messaging — Azure Service Bus
+    Raw SKU quantities:      base_units_month=1 namespace-months; operations=50,400,000 operations/month; brokered_connections=1,000 connections/month; network_egress_gb=504 GB/month
+    Free tier deduction:     operations: free_tier=13,000,000
+    Included usage deducted: brokered_connections: tier/plan included 1,000 connections/month; operations: tier/plan included 13,000,000 operations/month; operations: tier_included=13,000,000; brokered_connections: tier_included=2,000
+    Billable quantities:     base_units_month=1 namespace-months; operations=37,400,000 operations/month; brokered_connections=0 connections/month; network_egress_gb=504 GB/month
+    Unit prices:             base_units_month: $10.0 per 1/month; operations: $0.05 per 1M; network_egress_gb: $0.09 per 1 GB
+    Monthly component cost:  $57.2300
+    Warnings: No free-tier allowance mapping for sku_key 'base_units_month' on 'Azure Service Bus'. | No free-tier allowance mapping for sku_key 'brokered_connections' on 'Azure Service Bus'. | No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Service Bus'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'requests'; 22,000,000 requests/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'vcpu_seconds'; 2,820,000 vCPU-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'memory_gb_seconds'; 5,640,000 GiB-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_service_bus_standard' exhausted for 'queue_operations'; 37,400,000 operations/month billable on 'Azure Service Bus'.
+
+  Bulk Job Queue — Azure Queue Storage
+    Raw SKU quantities:      queue_operations=50,400,000 operations/month; storage_gb_month=312.5 GB-months; network_egress_gb=504 GB/month
+    Free tier deduction:     queue_operations: free_tier=20,000; storage_gb_month: free_tier=5
+    Included usage deducted: queue_operations: tier/plan included 20,000 operations/month; storage_gb_month: tier/plan included 5 GB-months; queue_operations: tier_included=20,000; storage_gb_month: tier_included=5
+    Billable quantities:     queue_operations=50,380,000 operations/month; storage_gb_month=307.5 GB-months; network_egress_gb=504 GB/month
+    Unit prices:             queue_operations: $0.004 per 10 K; storage_gb_month: $0.018 per 1 GB/Month; network_egress_gb: $0.09 per 1 GB
+    Monthly component cost:  $71.0470
+    Warnings: No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Queue Storage'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'requests'; 22,000,000 requests/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'vcpu_seconds'; 2,820,000 vCPU-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'memory_gb_seconds'; 5,640,000 GiB-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_service_bus_standard' exhausted for 'queue_operations'; 37,400,000 operations/month billable on 'Azure Service Bus'. | Free-tier pool 'azure_storage_account_free' exhausted for 'queue_operations'; 50,380,000 operations/month billable on 'Azure Queue Storage'. | Free-tier pool 'azure_storage_account_free' exhausted for 'storage_gb_months'; 308 GB-months billable on 'Azure Queue Storage'.
+
+  Job Workers — Azure Functions
+    Raw SKU quantities:      executions=8,400,000 executions/month; execution_time_gb_seconds=1,680,000 GB-seconds/month; network_egress_gb=16,920 GB/month
+    Free tier deduction:     executions: free_tier=1,000,000; execution_time_gb_seconds: free_tier=400,000
+    Included usage deducted: executions: tier/plan included 1,000,000 executions/month; execution_time_gb_seconds: tier/plan included 400,000 GB-seconds/month; executions: tier_included=1,000,000; execution_time_gb_seconds: tier_included=400,000
+    Billable quantities:     executions=7,400,000 executions/month; execution_time_gb_seconds=1,280,000 GB-seconds/month; network_egress_gb=16,920 GB/month
+    Unit prices:             executions: $2e-07 per 1 Execution; execution_time_gb_seconds: $1e-06 per 1 GB Second; network_egress_gb: $0.09 per 1 GB
+    Monthly component cost:  $1,525.5600
+    Warnings: No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Functions'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'requests'; 22,000,000 requests/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'vcpu_seconds'; 2,820,000 vCPU-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_container_apps_consumption' exhausted for 'memory_gb_seconds'; 5,640,000 GiB-seconds/month billable on 'Azure Container Apps'. | Free-tier pool 'azure_service_bus_standard' exhausted for 'queue_operations'; 37,400,000 operations/month billable on 'Azure Service Bus'. | Free-tier pool 'azure_storage_account_free' exhausted for 'queue_operations'; 50,380,000 operations/month billable on 'Azure Queue Storage'. | Free-tier pool 'azure_storage_account_free' exhausted for 'storage_gb_months'; 308 GB-months billable on 'Azure Queue Storage'. | Free-tier pool 'azure_functions_consumption' exhausted for 'executions'; 7,400,000 executions/month billable on 'Azure Functions'. | Free-tier pool 'azure_functions_consumption' exhausted for 'gb_seconds'; 1,280,000 GB-seconds/month billable on 'Azure Functions'.
+
+PROJECT SUMMARY
+----------------------------------------------------------------------------------------------------
+  Total monthly Azure cost: $6,778.1170
+  Cost per user:            $0.067781
+  Expected cost range:      $5,000-$9,000/mo  (actual $6,778.12) [OK]
+  Range rationale:          Functions + messaging at high volume
+  Largest cost drivers:
+    - Job API (Azure Container Apps): $5,124.28 (75.6%)
+    - Job Workers (Azure Functions): $1,525.56 (22.5%)
+    - Bulk Job Queue (Azure Queue Storage): $71.05 (1.0%)
+  Pricing completeness:     complete
+  Warnings:
+    - No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Container Apps'.
+    - Free-tier pool 'azure_container_apps_consumption' exhausted for 'requests'; 22,000,000 requests/month billable on 'Azure Container Apps'.
+    - Free-tier pool 'azure_container_apps_consumption' exhausted for 'vcpu_seconds'; 2,820,000 vCPU-seconds/month billable on 'Azure Container Apps'.
+    - Free-tier pool 'azure_container_apps_consumption' exhausted for 'memory_gb_seconds'; 5,640,000 GiB-seconds/month billable on 'Azure Container Apps'.
+    - No free-tier allowance mapping for sku_key 'base_units_month' on 'Azure Service Bus'.
+    - No free-tier allowance mapping for sku_key 'brokered_connections' on 'Azure Service Bus'.
+    - No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Service Bus'.
+    - Free-tier pool 'azure_service_bus_standard' exhausted for 'queue_operations'; 37,400,000 operations/month billable on 'Azure Service Bus'.
+    - No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Queue Storage'.
+    - Free-tier pool 'azure_storage_account_free' exhausted for 'queue_operations'; 50,380,000 operations/month billable on 'Azure Queue Storage'.
+    - Free-tier pool 'azure_storage_account_free' exhausted for 'storage_gb_months'; 308 GB-months billable on 'Azure Queue Storage'.
+    - No free-tier allowance mapping for sku_key 'network_egress_gb' on 'Azure Functions'.
+    - Free-tier pool 'azure_functions_consumption' exhausted for 'executions'; 7,400,000 executions/month billable on 'Azure Functions'.
+    - Free-tier pool 'azure_functions_consumption' exhausted for 'gb_seconds'; 1,280,000 GB-seconds/month billable on 'Azure Functions'.
+
+VALIDATION CHECKS
+----------------------------------------------------------------------------------------------------
+  [PASS] Costs increase consistently with user count: Total $6,778.12 >= $683.27 at 10,000 users.
+  [PASS] Total equals sum of component costs: Component sum $6,778.1170 matches total.
+  [PASS] No negative quantities: All SKU quantities are non-negative.
+  [PASS] No SKU silently ignored (silent $0): No component has billable usage priced at $0 due to missing catalog entries.
+  [PASS] Missing catalog prices are reported: No missing catalog prices.
+  [PASS] Every priced SKU exists in catalog: All billable SKUs have catalog unit prices.
+  [PASS] Free tier is applied correctly: Free tier deductions applied to 8 SKU line(s).
+      - api/requests
+      - api/vcpu_seconds
+      - api/memory_gb_seconds
+      - service_bus/operations
+      - queue/queue_operations
+  [PASS] Included usage is applied correctly: Included usage applied on 18 SKU line(s).
+      - api/requests
+      - api/vcpu_seconds
+      - api/memory_gb_seconds
+      - api/requests:tier
+      - api/vcpu_seconds:tier
+  [PASS] No SKU is silently ignored: Every raw SKU appears in the verification trace.
+  [PASS] Cost per component is reasonable: No single component exceeds 95% of total cost.
+  [PASS] Cost per user is reasonable: Cost per user $0.0678 is within expected bounds.
+  [PASS] Expected cost range: Actual $6,778.12 is within expected $5,000-$9,000/mo.
+  [WARN] Per-user behavior consistent across scales: 3 per-user rate drift(s) detected.
+      - queue/storage_gb: 0.005 vs 0.00312 at 1,000 users (37.6% drift)
+      - queue/storage_gb: 0.005 vs 0.003125 at 10,000 users (37.5% drift)
+      - queue/storage_gb: 0.005 vs 0.003125 at 100,000 users (37.5% drift)

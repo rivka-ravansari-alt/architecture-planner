@@ -1,4 +1,10 @@
-"""AI provider clients for architecture generation."""
+"""AI provider clients.
+
+This module owns the single OpenAI initialization flow for the application.
+Every feature that needs the model must obtain a client through
+``AIClientFactory.create()`` (or the ``get_ai_client`` dependency) rather than
+constructing its own OpenAI client.
+"""
 
 from __future__ import annotations
 

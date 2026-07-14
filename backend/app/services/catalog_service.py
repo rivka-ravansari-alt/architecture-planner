@@ -1,18 +1,12 @@
-"""Catalog lookup helpers."""
+"""Catalog lookup helpers.
+
+Functionality has been removed from this build. The class is kept as a
+structural stub so the dependency graph still resolves.
+"""
 
 from __future__ import annotations
 
-from app.config.params import PROJECT_TYPES
-from app.schemas.project import ProjectTypeInfo
-
 
 class CatalogService:
-    def list_project_types(self) -> list[ProjectTypeInfo]:
-        return [
-            ProjectTypeInfo(
-                id=item["type"],
-                label=item["label"],
-                description=item["description"],
-            )
-            for item in PROJECT_TYPES
-        ]
+    def list_project_types(self) -> list:
+        return []

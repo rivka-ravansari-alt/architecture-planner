@@ -1,0 +1,229 @@
+====================================================================================================
+SCENARIO ASSESSMENT: Simple CRUD SaaS
+====================================================================================================
+  Realistic estimate: Yes
+  Notes: Costs grow from $37.69/mo (100 users) to $8,454.16/mo (100,000 users).
+  Confidence score: 8/10
+  Validation: 44 pass, 4 warn, 0 fail
+
+  Highest-impact assumptions:
+    - Azure Container Apps.requests_per_month
+    - Azure Container Apps.avg_request_duration_seconds
+    - Azure Container Apps.cpu
+    - Azure Container Apps.memory_gb
+    - Azure Container Apps.network_egress_gb
+
+  Assumptions to refine:
+    - Per-user behavioral inputs drift across user scales.
+
+  Recommended next improvements:
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Self-Esteem / Habit Tracking
+====================================================================================================
+  Realistic estimate: Yes
+  Notes: Costs grow from $37.71/mo (100 users) to $8,479.93/mo (100,000 users).
+  Confidence score: 8/10
+  Validation: 44 pass, 4 warn, 0 fail
+
+  Highest-impact assumptions:
+    - Azure Container Apps.requests_per_month
+    - Azure Container Apps.avg_request_duration_seconds
+    - Azure Container Apps.cpu
+    - Azure Container Apps.memory_gb
+    - Azure Container Apps.network_egress_gb
+
+  Assumptions to refine:
+    - Per-user behavioral inputs drift across user scales.
+
+  Recommended next improvements:
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: E-Commerce Application
+====================================================================================================
+  Realistic estimate: No (review needed)
+  Notes: Costs grow from $52.18/mo (100 users) to $24,581.92/mo (100,000 users). Pricing completeness is incomplete due to missing catalog entries.
+  Confidence score: 5/10
+  Validation: 46 pass, 1 warn, 1 fail
+
+  Highest-impact assumptions:
+    - Azure SQL Database.tier
+    - Azure SQL Database.compute_model
+    - Azure SQL Database.vcores
+    - Azure SQL Database.storage_gb
+    - Azure SQL Database.backup_storage_gb
+
+  Assumptions to refine:
+    - Per-user storage and upload rates need product-specific tuning.
+    - Complete azure_catalog coverage for all SKUs in this architecture.
+
+  Recommended next improvements:
+    - Fix validation failures before using estimates in production UI.
+    - Sync azure_catalog meters for all SKUs referenced by this architecture.
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: AI Chat Application
+====================================================================================================
+  Realistic estimate: Yes
+  Notes: Costs grow from $39.21/mo (100 users) to $9,979.72/mo (100,000 users).
+  Confidence score: 8/10
+  Validation: 44 pass, 4 warn, 0 fail
+
+  Highest-impact assumptions:
+    - Azure Container Apps.requests_per_month
+    - Azure Container Apps.avg_request_duration_seconds
+    - Azure Container Apps.cpu
+    - Azure Container Apps.memory_gb
+    - Azure Container Apps.network_egress_gb
+
+  Assumptions to refine:
+    - AI workload multipliers (token usage, GPU time) are heuristic-only.
+    - Per-user behavioral inputs drift across user scales.
+
+  Recommended next improvements:
+    - Add LLM inference path benchmarks and external AI API cost passthrough.
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: AI Document Processing / OCR
+====================================================================================================
+  Realistic estimate: Yes
+  Notes: Costs grow from $11.07/mo (100 users) to $11,245.83/mo (100,000 users).
+  Confidence score: 8/10
+  Validation: 48 pass, 0 warn, 0 fail
+
+  Highest-impact assumptions:
+    - Azure Container Apps.requests_per_month
+    - Azure Container Apps.avg_request_duration_seconds
+    - Azure Container Apps.cpu
+    - Azure Container Apps.memory_gb
+    - Azure Container Apps.network_egress_gb
+
+  Assumptions to refine:
+    - AI workload multipliers (token usage, GPU time) are heuristic-only.
+    - Per-user storage and upload rates need product-specific tuning.
+
+  Recommended next improvements:
+    - Add LLM inference path benchmarks and external AI API cost passthrough.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: File Storage / Drive Application
+====================================================================================================
+  Realistic estimate: Yes
+  Notes: Costs grow from $40.66/mo (100 users) to $23,046.37/mo (100,000 users).
+  Confidence score: 8/10
+  Validation: 48 pass, 0 warn, 0 fail
+
+  Highest-impact assumptions:
+    - Azure SQL Database.tier
+    - Azure SQL Database.compute_model
+    - Azure SQL Database.vcores
+    - Azure SQL Database.storage_gb
+    - Azure SQL Database.backup_storage_gb
+
+  Assumptions to refine:
+    - Per-user storage and upload rates need product-specific tuning.
+
+  Recommended next improvements:
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Social Network
+====================================================================================================
+  Realistic estimate: No (review needed)
+  Notes: Costs grow from $50.66/mo (100 users) to $23,056.37/mo (100,000 users). Pricing completeness is incomplete due to missing catalog entries.
+  Confidence score: 5/10
+  Validation: 46 pass, 1 warn, 1 fail
+
+  Highest-impact assumptions:
+    - Azure SQL Database.tier
+    - Azure SQL Database.compute_model
+    - Azure SQL Database.vcores
+    - Azure SQL Database.storage_gb
+    - Azure SQL Database.backup_storage_gb
+
+  Assumptions to refine:
+    - Per-user storage and upload rates need product-specific tuning.
+    - Complete azure_catalog coverage for all SKUs in this architecture.
+
+  Recommended next improvements:
+    - Fix validation failures before using estimates in production UI.
+    - Sync azure_catalog meters for all SKUs referenced by this architecture.
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Video Processing Application
+====================================================================================================
+  Realistic estimate: Yes
+  Notes: Costs grow from $11.07/mo (100 users) to $11,245.83/mo (100,000 users).
+  Confidence score: 8/10
+  Validation: 48 pass, 0 warn, 0 fail
+
+  Highest-impact assumptions:
+    - Azure Container Apps.requests_per_month
+    - Azure Container Apps.avg_request_duration_seconds
+    - Azure Container Apps.cpu
+    - Azure Container Apps.memory_gb
+    - Azure Container Apps.network_egress_gb
+
+  Assumptions to refine:
+    - Per-user storage and upload rates need product-specific tuning.
+
+  Recommended next improvements:
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Background Job Processing Platform
+====================================================================================================
+  Realistic estimate: No (review needed)
+  Notes: Costs grow from $16.61/mo (100 users) to $6,685.53/mo (100,000 users). Pricing completeness is incomplete due to missing catalog entries.
+  Confidence score: 4/10
+  Validation: 42 pass, 5 warn, 1 fail
+
+  Highest-impact assumptions:
+    - Azure Container Apps.requests_per_month
+    - Azure Container Apps.avg_request_duration_seconds
+    - Azure Container Apps.cpu
+    - Azure Container Apps.memory_gb
+    - Azure Container Apps.network_egress_gb
+
+  Assumptions to refine:
+    - Per-user behavioral inputs drift across user scales.
+    - Complete azure_catalog coverage for all SKUs in this architecture.
+
+  Recommended next improvements:
+    - Fix validation failures before using estimates in production UI.
+    - Sync azure_catalog meters for all SKUs referenced by this architecture.
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.
+
+====================================================================================================
+SCENARIO ASSESSMENT: Analytics / Reporting Dashboard
+====================================================================================================
+  Realistic estimate: Yes
+  Notes: Costs grow from $37.69/mo (100 users) to $8,454.16/mo (100,000 users).
+  Confidence score: 8/10
+  Validation: 44 pass, 4 warn, 0 fail
+
+  Highest-impact assumptions:
+    - Azure Container Apps.requests_per_month
+    - Azure Container Apps.avg_request_duration_seconds
+    - Azure Container Apps.cpu
+    - Azure Container Apps.memory_gb
+    - Azure Container Apps.network_egress_gb
+
+  Assumptions to refine:
+    - Per-user behavioral inputs drift across user scales.
+
+  Recommended next improvements:
+    - Review heuristic usage_model_builder defaults for this product type.
+    - Re-run validation suite after pricing engine changes to detect regressions.

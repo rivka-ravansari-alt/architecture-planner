@@ -1,12 +1,93 @@
-import { apiRequest, GENERATE_TIMEOUT_MS } from "./client.js";
+import { apiRequest } from "./client.js";
+
+/**
+ * @typedef {Object} SelectedComponent
+ * @property {string} instance_id unique per-instance id (same category may repeat)
+ * @property {string} category_id Firestore architecture category id (mapping/pricing)
+ * @property {string} name
+ * @property {string} description
+ * @property {string|null} [type]
+ * @property {string} reason
+ * @property {"ai_selected"|"user_added"} [source]
+ * @property {string|null} [explanation]
+ */
+
+/**
+ * @typedef {Object} ComponentSelection
+ * @property {string} selection_id Firestore document id for this selection
+ * @property {SelectedComponent[]} selected
+ * @property {SelectedComponent[]} excluded
+ */
+
+/**
+ * @typedef {Object} ArchitectureCategory
+ * @property {string} id
+ * @property {string} name
+ * @property {string} description
+ * @property {string|null} [type]
+ */
+
+const GENERATE_TIMEOUT_MS = 300_000;
 
 export const projectApi = {
-  getProjectTypes: () => apiRequest("/project-types"),
+  /**
+   * Create a project (Step 1 intake).
+   * @param {{ description: string, stage: "mvp"|"production", expected_users: number, requirements: object }} payload
+   * @returns {Promise<{ id: string }>}
+   */
   createProject: (payload) =>
-    apiRequest("/projects", { method: "POST", body: JSON.stringify(payload) }),
-  generate: (projectId) =>
-    apiRequest(`/projects/${projectId}/generate`, {
+    apiRequest("/projects", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  /**
+   * Generate the architecture component selection (Step 2).
+   * @param {string} projectId
+   * @returns {Promise<ComponentSelection>}
+   */
+  generateArchitectureComponents: (projectId) =>
+    apiRequest(`/projects/${projectId}/architecture-components/generate`, {
       method: "POST",
       timeoutMs: GENERATE_TIMEOUT_MS,
     }),
+
+  /**
+   * Load the latest saved component selection (without re-generating).
+   * @param {string} projectId
+   * @returns {Promise<ComponentSelection>}
+   */
+  getArchitectureSelection: (projectId) =>
+    apiRequest(`/projects/${projectId}/architecture-components/selection`),
+
+  /**
+   * List all architecture categories from Firestore (for the add modal).
+   * @returns {Promise<ArchitectureCategory[]>}
+   */
+  listArchitectureCategories: () => apiRequest("/architecture-categories"),
+
+  /**
+   * Manually add a component from an architecture category.
+   * @param {string} projectId
+   * @param {{ selection_id: string, category_id: string, explanation?: string|null }} payload
+   * @returns {Promise<ComponentSelection>}
+   */
+  addArchitectureComponent: (projectId, payload) =>
+    apiRequest(`/projects/${projectId}/architecture-components`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  /**
+   * Remove a selected component instance (moves it to the excluded list).
+   * @param {string} projectId
+   * @param {string} selectionId Firestore selection document id
+   * @param {string} instanceId unique per-instance id
+   * @returns {Promise<ComponentSelection>}
+   */
+  removeArchitectureComponent: (projectId, selectionId, instanceId) =>
+    apiRequest(
+      `/projects/${projectId}/architecture-components/${encodeURIComponent(instanceId)}?selection_id=${encodeURIComponent(selectionId)}`,
+      { method: "DELETE" }
+    ),
 };
