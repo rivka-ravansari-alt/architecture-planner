@@ -35,6 +35,8 @@ PROJECT_TYPES: list[dict[str, str]] = [
 
 STAGE_LABELS: dict[str, str] = {"mvp": "MVP", "production": "Production"}
 
+PLATFORM_LABELS: dict[str, str] = {"web": "Web", "mobile": "Mobile"}
+
 # ---------------------------------------------------------------------------
 # Firestore collections (the only application database)
 # ---------------------------------------------------------------------------
@@ -43,8 +45,15 @@ FIRESTORE_PROJECTS_COLLECTION = "projects"
 FIRESTORE_USERS_COLLECTION = "users"
 FIRESTORE_ARCHITECTURE_CATEGORIES_COLLECTION = "architecture_categories"
 FIRESTORE_CLOUD_SERVICE_MAPPINGS_COLLECTION = "cloud_service_mappings"
+FIRESTORE_PRICING_SERVICES_COLLECTION = "pricing_services"
 # Sub-collection under a project document holding architecture component selections.
 FIRESTORE_ARCHITECTURE_SELECTIONS_SUBCOLLECTION = "architecture_selections"
+# Sub-collection under a project document holding global usage model runs.
+FIRESTORE_GLOBAL_USAGE_MODELS_SUBCOLLECTION = "global_usage_models"
+# Sub-collection under a project document holding pricing runs (Step 4).
+FIRESTORE_PRICING_RUNS_SUBCOLLECTION = "pricing_runs"
+# Sub-collection under a pricing run holding per-provider results.
+FIRESTORE_PROVIDER_PRICING_SUBCOLLECTION = "provider_results"
 
 PROJECT_TYPE_LABELS: dict[str, str] = {
     item["type"]: item["label"] for item in PROJECT_TYPES
@@ -68,6 +77,21 @@ REQUIREMENT_LABELS: dict[str, str] = {
 }
 
 REQUIREMENT_KEYS: tuple[str, ...] = tuple(REQUIREMENT_LABELS.keys())
+
+# Step 1 intake cards (frontend ``requirementsConfig.js``). Used only for human-readable
+# prompt text — these keys are NOT architecture category ids.
+INTAKE_REQUIREMENT_LABELS: dict[str, str] = {
+    "authentication": "Authentication",
+    "file_uploads": "File uploads",
+    "background_processing": "Background processing",
+    "dashboards_reports": "Dashboards and reports",
+    "ai_usage": "AI usage",
+    "payments": "Payments",
+    "external_integrations": "External integrations",
+    "realtime": "Real-time features",
+    "reliability": "Reliability",
+    "notifications": "Notifications",
+}
 
 # ---------------------------------------------------------------------------
 # Component types
@@ -251,10 +275,45 @@ IMPLEMENTATION_MODEL_LABELS: dict[str, str] = {
 
 CLOUD_PROVIDERS: tuple[str, ...] = ("aws", "gcp", "azure")
 
+# Sequential order for Step 4 progressive pricing (AWS → Azure → GCP).
+PRICING_GENERATION_ORDER: tuple[str, ...] = ("aws", "azure", "gcp")
+
 CLOUD_PROVIDER_LABELS: dict[str, str] = {
     "aws": "AWS",
     "gcp": "Google Cloud",
     "azure": "Azure",
+}
+
+# Status labels shown in the UI while each provider is calculating.
+PRICING_STATUS_LABELS: dict[str, str] = {
+    "aws": "Calculating AWS pricing...",
+    "azure": "Calculating Azure pricing...",
+    "gcp": "Calculating Google Cloud pricing...",
+}
+
+PRICING_SERVICE_DISPLAY_NAMES: dict[str, str] = {
+    "aws_lambda": "AWS Lambda",
+    "aws_s3": "Amazon S3",
+    "aws_ec2": "Amazon EC2",
+    "aws_rds": "Amazon RDS",
+    "aws_api_gateway": "Amazon API Gateway",
+    "aws_sqs": "Amazon SQS",
+    "aws_dynamodb": "Amazon DynamoDB",
+    "aws_elasticache_redis": "Amazon ElastiCache for Redis",
+    "aws_elasticache_memcached": "Amazon ElastiCache for Memcached",
+    "gcp_cloud_run": "Google Cloud Run",
+    "gcp_cloud_functions": "Google Cloud Functions",
+    "gcp_cloud_storage": "Google Cloud Storage",
+    "gcp_cloud_sql": "Google Cloud SQL",
+    "gcp_firestore": "Google Cloud Firestore",
+    "gcp_api_gateway": "Google Cloud API Gateway",
+    "azure_functions": "Azure Functions",
+    "azure_blob_storage": "Azure Blob Storage",
+    "azure_sql_database": "Azure SQL Database",
+    "azure_cosmos_db": "Azure Cosmos DB",
+    "azure_api_management": "Azure API Management",
+    "azure_queue_storage": "Azure Queue Storage",
+    "azure_cache_for_redis": "Azure Cache for Redis",
 }
 
 CLOUD_PROVIDER_ALIASES: dict[str, tuple[str, ...]] = {
@@ -496,6 +555,7 @@ Using the product name, description, requirements, and stage (MVP or Production)
 
 - Product name: {product_name}
 - Product description: {description}
+- Platform: {platform_label}
 - Stage: {stage_label}
 
 ## Requirements
@@ -563,11 +623,13 @@ Generate only the architecture for the requested stage ({stage_label}).
 # Architecture component selection (Step 2)
 # ---------------------------------------------------------------------------
 
-COMPONENT_SELECTION_PROMPT_VERSION = "architecture-component-selector-v2"
+COMPONENT_SELECTION_PROMPT_VERSION = "architecture-component-selector-v4"
 
 COMPONENT_SELECTION_SYSTEM_PROMPT = (
-    "You are a senior software architect. Given an application and a fixed list of "
-    "architecture component categories, decide which categories the application needs. "
+    "You are a senior software architect. Given an application, its platform "
+    "(web or mobile), and a fixed list of architecture component categories, "
+    "decide which categories the application needs. "
+    "Business requirement labels in the prompt are not category ids. "
     "Return only valid JSON."
 )
 
@@ -580,16 +642,22 @@ Decide which architecture component categories the described application needs.
 ## Application
 
 - Description: {{application_description}}
+- Platform: {{platform}}
 - Stage: {{stage}}
 - Expected users: {{expected_users}}
 
-## Requirements
+## Business requirements (context only)
+
+These describe optional product capabilities. They are NOT architecture category ids.
+Do not copy requirement names into your response.
 
 {{requirements}}
 
 ## Available architecture categories
 
-There are exactly {{category_count}} categories below. Only these categories exist. Do not invent new ids.
+There are exactly {{category_count}} categories below. Only these categories exist.
+Do not invent new ids. The only valid category ids are:
+{{valid_category_ids}}
 
 {{architecture_categories}}
 
@@ -599,7 +667,10 @@ Classify EVERY category above as either "selected" or "excluded". Do not skip an
 
 ### How to decide
 
-- Base your decision on the FULL application described above, not only on the requirement flags. The "Requirements" section only captures OPTIONAL capabilities. A requirement that is disabled, absent, or set to false means that specific optional capability is not needed — it does NOT mean the application has no backend, no data layer, or no API.
+- Base your decision on the FULL application described above, including its platform (web or mobile), not only on the requirement flags. The "Requirements" section only captures OPTIONAL capabilities. A requirement that is disabled, absent, or set to false means that specific optional capability is not needed — it does NOT mean the application has no backend, no data layer, or no API.
+- Treat platform as a first-class constraint on the client experience and delivery path:
+  - web: browser-based clients; include web-facing experience and delivery components when relevant (for example CDN or web client hosting).
+  - mobile: native or cross-platform mobile clients installed on devices; favor mobile client, push notification, and device-oriented experience components over browser-only delivery.
 - Select every category the described application needs to actually run and serve its core functionality end to end.
 - Foundational runtime capabilities are almost always required for any real web, SaaS, or backend application. Interpret each category by its full description, not by one keyword:
   - "compute" runs the application code and APIs (web servers, containers, or serverless functions) — it is far more than background jobs. Any application that runs server-side logic needs compute. Do NOT exclude compute just because background processing is turned off.
@@ -613,7 +684,11 @@ Rules:
 - Every category id listed above must appear exactly once, in either "selected" or "excluded".
 - Never place the same id in both arrays.
 - Never repeat an id.
-- Use only the ids from the list above.
+- Use only the ids from the Available architecture categories list above.
+- Never use business requirement names (such as background_processing, payments, realtime,
+  dashboards_reports, external_integrations, notifications, or reliability) as category ids.
+- When the Notifications requirement is enabled (with channels such as email, push, SMS,
+  or in-app), select the notification category.
 - "reason" must be a short, non-empty sentence.
 
 Think in terms of the complete runtime architecture needed to run the described application.
@@ -634,6 +709,181 @@ Return JSON only, in exactly this structure:
     }
   ]
 }
+"""
+
+
+# ---------------------------------------------------------------------------
+# Global usage model (Step 3)
+# ---------------------------------------------------------------------------
+
+GLOBAL_USAGE_MODEL_PROMPT_VERSION = "global-usage-model-v3"
+
+# Behavioral parameters the global usage model may ask the LLM to estimate.
+# Static project inputs (e.g. ``users``) and derived monthly totals are excluded.
+GLOBAL_LLM_USAGE_PARAMETERS: tuple[str, ...] = ()
+
+# Short definitions injected next to parameter names in the Step 3 prompt.
+USAGE_PARAMETER_GUIDANCE: dict[str, str] = {
+    "database_storage_gb": (
+        "SQL/NoSQL database storage only (tables, indexes, metadata, history). "
+        "Do not include object/file storage or user uploads."
+    ),
+    "compute_disk_gb": (
+        "Local disk attached to compute instances (VMs or persistent volumes). "
+        "Do not include database or object storage."
+    ),
+    "search_storage_gb": (
+        "Search index storage only. Do not include database tables or object storage."
+    ),
+    "cache_storage_gb": (
+        "Persistent cache storage (snapshots, AOF, backup volumes). "
+        "Do not include in-memory cache sizing, database, or object storage."
+    ),
+    "capacity_mode": (
+        "Azure Cosmos DB pricing mode. Return exactly one of these JSON strings: "
+        "Serverless, Provisioned Throughput, Autoscale. Do not return a number."
+    ),
+    "workload_type": (
+        "EC2 instance family for the compute workload. Return exactly one of these "
+        "JSON strings: Burstable, General Purpose, Compute Optimized, "
+        "Memory Optimized, GPU. Do not return a number."
+    ),
+    "api_type": (
+        "API Gateway API style. Return exactly one of these JSON strings: "
+        "HTTP API, REST API, WebSocket API. Do not return a number."
+    ),
+    "queue_type": (
+        "SQS queue type. Return exactly one of these JSON strings: "
+        "Standard, FIFO. Do not return a number."
+    ),
+    "request_units_per_user_per_month": (
+        "Average Cosmos DB request units consumed per active user per month. "
+        "Required when capacity_mode is Serverless. "
+        "If capacity_mode is Provisioned Throughput or Autoscale, omit this "
+        "parameter or return 0."
+    ),
+    "required_ru_per_second": (
+        "Provisioned throughput in request units per second. "
+        "Required when capacity_mode is Provisioned Throughput or Autoscale. "
+        "If capacity_mode is Serverless, omit this parameter or return 0."
+    ),
+    "notifications_per_user_per_month": (
+        "Average outbound notifications sent to each active user per month across all "
+        "enabled channels (email, push, SMS, in-app). Use requirements.notifications "
+        "when present: if disabled, return 0; if enabled, scale volume by the selected "
+        "channels and application type (transactional alerts vs marketing, etc.)."
+    ),
+}
+
+COSMOS_DB_CAPACITY_MODES: frozenset[str] = frozenset(
+    {"Serverless", "Provisioned Throughput", "Autoscale"}
+)
+COSMOS_DB_SERVERLESS_MODE = "Serverless"
+COSMOS_DB_PROVISIONED_MODES: frozenset[str] = frozenset(
+    {"Provisioned Throughput", "Autoscale"}
+)
+
+EC2_WORKLOAD_TYPES: frozenset[str] = frozenset(
+    {
+        "Burstable",
+        "General Purpose",
+        "Compute Optimized",
+        "Memory Optimized",
+        "GPU",
+    }
+)
+API_GATEWAY_API_TYPES: frozenset[str] = frozenset(
+    {"HTTP API", "REST API", "WebSocket API"}
+)
+SQS_QUEUE_TYPES: frozenset[str] = frozenset({"Standard", "FIFO"})
+
+# LLM parameters whose value must be a string from a fixed set (not numeric).
+STRING_ENUM_USAGE_PARAMETERS: dict[str, frozenset[str]] = {
+    "capacity_mode": COSMOS_DB_CAPACITY_MODES,
+    "workload_type": EC2_WORKLOAD_TYPES,
+    "api_type": API_GATEWAY_API_TYPES,
+    "queue_type": SQS_QUEUE_TYPES,
+}
+
+# Static parameters resolved from project intake / requirements (never sent to OpenAI).
+GLOBAL_STATIC_USAGE_PARAMETERS: tuple[str, ...] = ("users", "stage")
+
+# Monthly totals the system derives later (e.g. users × per-user rate). Never LLM-estimated.
+DERIVED_TOTAL_USAGE_PARAMETERS: frozenset[str] = frozenset(
+    {
+        "requests_per_month",
+        "messages_per_month",
+        "connection_minutes_per_month",
+        "request_units_per_month",
+    }
+)
+
+GLOBAL_USAGE_MODEL_PROMPT = """
+You are a cloud usage analyst.
+
+Estimate the application's monthly usage based on the provided product information.
+
+## Application
+
+Description:
+{{application_description}}
+
+Platform:
+{{platform}}
+
+Stage:
+{{stage}}
+
+Expected users:
+{{expected_users}}
+
+Requirements:
+{{requirements}}
+
+Selected architecture components:
+{{selected_components}}
+
+Usage parameters to estimate:
+{{usage_parameters}}
+
+## Task
+
+Estimate only the usage parameters listed above.
+
+Base the estimates on:
+- how users are expected to use the product on the stated platform (web or mobile);
+- the described application functionality;
+- the product stage;
+- the expected number of users;
+- the selected architecture components.
+
+Return realistic baseline estimates for the current stage, not maximum capacity.
+
+Each value must be numeric and non-negative, except string enum parameters
+whose guidance lists allowed values — return those as JSON strings exactly.
+
+Return valid JSON only:
+
+{
+  "usage": {
+    "parameter_name": {
+      "value": 0,
+      "reason": "Short explanation for the estimate."
+    }
+  }
+}
+
+Rules:
+- Return every provided usage parameter exactly once.
+- Do not add parameters that were not provided.
+- String enum parameters must use one of the allowed string values exactly.
+- Numeric parameters must be numbers, not strings.
+- Do not calculate cloud prices.
+- Do not select cloud services.
+- Keep every reason short.
+- Storage parameters are scoped by responsibility. Never fold object/file
+  storage into database_storage_gb. Object storage is priced separately from
+  documents_per_month and average_document_size_mb.
 """
 
 
@@ -702,6 +952,17 @@ ERR_SELECTION_NOT_FOUND = "The component selection was not found."
 ERR_ARCHITECTURE_CATEGORY_NOT_FOUND = "The selected architecture category was not found."
 ERR_COMPONENT_ALREADY_SELECTED = "This component is already in the selected list."
 ERR_COMPONENT_NOT_SELECTED = "This component is not in the selected list."
+ERR_GLOBAL_USAGE_MODEL_NOT_JSON = "The global usage model response was not valid JSON."
+ERR_NO_USAGE_PARAMETERS = (
+    "No usage parameters could be resolved for the selected components. "
+    "Seed cloud service mappings and pricing services first."
+)
+ERR_NO_GLOBAL_USAGE_MODEL = (
+    "No global usage model exists yet. Generate the global usage model first."
+)
+ERR_INVALID_CLOUD_PROVIDER = "The cloud provider is not supported."
+ERR_PRICING_RUN_NOT_FOUND = "The pricing run was not found."
+ERR_NO_PRICING_RUN = "No pricing run exists yet. Generate pricing first."
 
 # ---------------------------------------------------------------------------
 # Manual component management (Step 2) reasons

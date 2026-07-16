@@ -9,9 +9,9 @@ import ComponentReviewCard from "./ComponentReviewCard.jsx";
 /**
  * Step 2: generate and review the selected architecture components.
  *
- * @param {{ projectId: string, onBack?: () => void }} props
+ * @param {{ projectId: string, onBack?: () => void, onContinue?: () => void }} props
  */
-export default function ComponentSelectionScreen({ projectId, onBack }) {
+export default function ComponentSelectionScreen({ projectId, onBack, onContinue }) {
   const [selection, setSelection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -177,7 +177,11 @@ export default function ComponentSelectionScreen({ projectId, onBack }) {
           <button type="button" className="btn btn-ghost" onClick={onBack}>
             Back
           </button>
-          <span />
+          {onContinue && (
+            <button type="button" className="btn btn-primary" onClick={onContinue}>
+              Continue to pricing
+            </button>
+          )}
         </div>
       )}
 

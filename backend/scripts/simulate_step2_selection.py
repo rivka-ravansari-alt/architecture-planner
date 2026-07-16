@@ -63,6 +63,7 @@ ALL_IDS = {c["id"] for c in CATEGORIES}
 class Scenario:
     key: str
     application_description: str
+    platform: str
     stage: str
     expected_users: int
     requirements: dict[str, Any]
@@ -80,6 +81,7 @@ SCENARIOS: list[Scenario] = [
             "CRUD over relational data with user accounts. No file uploads, no AI, no "
             "payments."
         ),
+        platform="web",
         stage="mvp",
         expected_users=1000,
         requirements={
@@ -101,6 +103,7 @@ SCENARIOS: list[Scenario] = [
             "responses in real time, keeps conversation history, and does retrieval "
             "over uploaded documents using embeddings. High traffic, needs low latency."
         ),
+        platform="web",
         stage="production",
         expected_users=100000,
         requirements={
@@ -123,6 +126,7 @@ SCENARIOS: list[Scenario] = [
             "order status, and an admin analytics dashboard for sales. Product images "
             "are uploaded and served."
         ),
+        platform="web",
         stage="production",
         expected_users=50000,
         requirements={
@@ -146,6 +150,7 @@ SCENARIOS: list[Scenario] = [
             "generates thumbnails, and notifies the creator when processing completes. "
             "Videos are stored and streamed to viewers. Scheduled cleanup of temp files."
         ),
+        platform="web",
         stage="production",
         expected_users=20000,
         requirements={
@@ -252,6 +257,7 @@ def main() -> int:
         try:
             result = service.select(
                 application_description=scenario.application_description,
+                platform=scenario.platform,
                 stage=scenario.stage,
                 expected_users=scenario.expected_users,
                 requirements=scenario.requirements,

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from app.config.params import (
+    PLATFORM_LABELS,
     PROMPT_ARCHITECTURE_TEMPLATE,
     PROMPT_COMPONENT_TYPE_LIST,
     PROMPT_STAGE_GUIDANCE_MVP,
@@ -39,12 +40,24 @@ class PromptBuilderService:
         prompt = PROMPT_ARCHITECTURE_TEMPLATE.format(
             product_name=project.name,
             description=project.description or "(not provided)",
+            platform_label=self._platform_label(project),
             stage_label=stage_label,
             requirement_lines="\n".join(requirement_lines),
             stage_guidance=self._stage_guidance(project.stage),
             component_type_list=PROMPT_COMPONENT_TYPE_LIST,
         )
         return prompt
+
+    @staticmethod
+    def _platform_label(project: Project) -> str:
+        project_types = set(project.project_types or [])
+        if "mobile_app" in project_types and "web_app" not in project_types:
+            return PLATFORM_LABELS["mobile"]
+        if "web_app" in project_types and "mobile_app" not in project_types:
+            return PLATFORM_LABELS["web"]
+        if "mobile_app" in project_types and "web_app" in project_types:
+            return f"{PLATFORM_LABELS['web']} and {PLATFORM_LABELS['mobile']}"
+        return PLATFORM_LABELS["web"]
 
     @staticmethod
     def _stage_guidance(stage: str) -> str:

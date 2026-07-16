@@ -33,3 +33,13 @@ class CloudServiceMappingRepository:
             }
         )
         return not existed
+
+    def find_by_id(self, category_id: str) -> dict[str, Any] | None:
+        """Return a single mapping document (with its id) or ``None``."""
+
+        snapshot = self._collection.document(category_id).get()
+        if not snapshot.exists:
+            return None
+        data = snapshot.to_dict() or {}
+        data["category_id"] = snapshot.id
+        return data

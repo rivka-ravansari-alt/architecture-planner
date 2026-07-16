@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 
 from openai import OpenAI
 
-from app.clients.static_payload import STATIC_AI_PAYLOAD
+from app.clients.static_payload import STATIC_AI_PAYLOAD, STATIC_COMPONENT_SELECTION_PAYLOAD
 from app.config.params import (
     AI_RESPONSE_FORMAT,
     AI_SYSTEM_PROMPT,
@@ -39,17 +39,25 @@ def _completion_limit_kwargs(model: str, max_output_tokens: int) -> dict[str, in
 
 class BaseAIClient(ABC):
     @abstractmethod
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, *, system_prompt: str | None = None) -> str:
         """Return raw JSON text from the AI provider."""
+
+
+_COMPONENT_SELECTION_PROMPT_MARKER = "Available architecture categories"
 
 
 class StaticAIClient(BaseAIClient):
     def __init__(self, logger: AIClientLogger | None = None) -> None:
         self._logger = logger or AIClientLogger()
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, *, system_prompt: str | None = None) -> str:
         self._logger.log_started("load_static")
-        content = json.dumps(STATIC_AI_PAYLOAD)
+        payload = (
+            STATIC_COMPONENT_SELECTION_PAYLOAD
+            if _COMPONENT_SELECTION_PROMPT_MARKER in prompt
+            else STATIC_AI_PAYLOAD
+        )
+        content = json.dumps(payload)
         self._logger.log_completed("load_static", response_chars=len(content))
         return content
 
@@ -69,13 +77,13 @@ class OpenAIClient(BaseAIClient):
         self._max_output_tokens = max_output_tokens
         self._logger = logger or AIClientLogger()
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, *, system_prompt: str | None = None) -> str:
         self._logger.log_started("openai_request", model=self._model, prompt_chars=len(prompt))
         try:
             response = self._client.chat.completions.create(
                 model=self._model,
                 messages=[
-                    {"role": "system", "content": AI_SYSTEM_PROMPT},
+                    {"role": "system", "content": system_prompt or AI_SYSTEM_PROMPT},
                     {"role": "user", "content": prompt},
                 ],
                 response_format=AI_RESPONSE_FORMAT,

@@ -4,6 +4,7 @@ import { projectApi } from "../../api/projectApi.js";
 import { Spinner } from "../ui/Spinner.jsx";
 import AppDescriptionField from "./AppDescriptionField.jsx";
 import ExpectedUsersField from "./ExpectedUsersField.jsx";
+import PlatformSelector from "./PlatformSelector.jsx";
 import RequirementsForm from "./RequirementsForm.jsx";
 import StageSelector from "./StageSelector.jsx";
 import {
@@ -14,6 +15,7 @@ import {
 
 export default function StepOneForm({ onCreated }) {
   const [description, setDescription] = useState("");
+  const [platform, setPlatform] = useState("web");
   const [stage, setStage] = useState("mvp");
   const [expectedUsers, setExpectedUsers] = useState("");
   const [requirements, setRequirements] = useState(buildInitialRequirements);
@@ -54,6 +56,7 @@ export default function StepOneForm({ onCreated }) {
     try {
       const result = await projectApi.createProject({
         description: description.trim(),
+        platform,
         stage,
         expected_users: usersValue,
         requirements: serializeRequirements(requirements),
@@ -79,6 +82,7 @@ export default function StepOneForm({ onCreated }) {
           onChange={setDescription}
           error={fieldError}
         />
+        <PlatformSelector value={platform} onChange={setPlatform} />
         <StageSelector value={stage} onChange={setStage} />
         <ExpectedUsersField
           value={expectedUsers}

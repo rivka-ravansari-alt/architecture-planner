@@ -8,7 +8,11 @@ from google.cloud import firestore
 
 from app.config.params import (
     FIRESTORE_ARCHITECTURE_SELECTIONS_SUBCOLLECTION,
+    FIRESTORE_GLOBAL_USAGE_MODELS_SUBCOLLECTION,
+    FIRESTORE_PRICING_RUNS_SUBCOLLECTION,
+    FIRESTORE_PROVIDER_PRICING_SUBCOLLECTION,
     FIRESTORE_PROJECTS_COLLECTION,
+    PRICING_GENERATION_ORDER,
 )
 from app.schemas.project import CreateProjectRequest
 
@@ -22,6 +26,7 @@ class ProjectRepository:
 
         document = {
             "description": payload.description,
+            "platform": payload.platform,
             "stage": payload.stage,
             "expected_users": payload.expected_users,
             "requirements": payload.requirements,
@@ -132,3 +137,181 @@ class ProjectRepository:
             {"updated_at": firestore.SERVER_TIMESTAMP},
             merge=True,
         )
+        self.invalidate_downstream_artifacts(project_id)
+
+    def mark_global_usage_model_stale(self, project_id: str, model_id: str) -> None:
+        """Mark a global usage model as stale after the component selection changes."""
+
+        (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_GLOBAL_USAGE_MODELS_SUBCOLLECTION)
+            .document(model_id)
+            .set({"stale": True, "updated_at": firestore.SERVER_TIMESTAMP}, merge=True)
+        )
+
+    def mark_pricing_run_stale(self, project_id: str, run_id: str) -> None:
+        """Mark a pricing run as stale after the component selection changes."""
+
+        (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_PRICING_RUNS_SUBCOLLECTION)
+            .document(run_id)
+            .set({"stale": True, "updated_at": firestore.SERVER_TIMESTAMP}, merge=True)
+        )
+
+    def invalidate_downstream_artifacts(self, project_id: str) -> None:
+        """Mark the latest usage model and pricing run stale for this project."""
+
+        usage_model = self.get_latest_global_usage_model(project_id)
+        if usage_model is not None and not usage_model.get("stale"):
+            self.mark_global_usage_model_stale(project_id, usage_model["id"])
+
+        pricing_run = self.get_latest_pricing_run(project_id)
+        if pricing_run is not None and not pricing_run.get("stale"):
+            self.mark_pricing_run_stale(project_id, pricing_run["id"])
+
+    def save_global_usage_model(
+        self, project_id: str, usage_model: dict[str, Any]
+    ) -> str:
+        """Persist a global usage model under the project and return its id.
+
+        Written to ``projects/{project_id}/global_usage_models/{model_id}``.
+
+        Each document stores the exact LLM prompt, raw OpenAI response (unchanged
+        after validation), validated ``model_output``, combined ``usage_model``,
+        model name, ``selection_id``, and ``created_at``.
+        """
+
+        reference = (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_GLOBAL_USAGE_MODELS_SUBCOLLECTION)
+            .document()
+        )
+        reference.set(usage_model)
+        self._collection.document(project_id).set(
+            {"current_step": 3, "updated_at": firestore.SERVER_TIMESTAMP},
+            merge=True,
+        )
+        return reference.id
+
+    def get_latest_global_usage_model(
+        self, project_id: str
+    ) -> dict[str, Any] | None:
+        """Return the most recent global usage model (with its id) or ``None``."""
+
+        query = (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_GLOBAL_USAGE_MODELS_SUBCOLLECTION)
+            .order_by("created_at", direction=firestore.Query.DESCENDING)
+            .limit(1)
+        )
+        for snapshot in query.stream():
+            data = snapshot.to_dict() or {}
+            data["id"] = snapshot.id
+            return data
+        return None
+
+    def set_current_step(self, project_id: str, step: int) -> None:
+        """Update the project's current wizard step."""
+
+        self._collection.document(project_id).set(
+            {"current_step": step, "updated_at": firestore.SERVER_TIMESTAMP},
+            merge=True,
+        )
+
+    def create_pricing_run(self, project_id: str, run: dict[str, Any]) -> str:
+        """Persist a new pricing run and return its id."""
+
+        reference = (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_PRICING_RUNS_SUBCOLLECTION)
+            .document()
+        )
+        reference.set(run)
+        return reference.id
+
+    def get_pricing_run(self, project_id: str, run_id: str) -> dict[str, Any] | None:
+        """Return a specific pricing run document (with its id) or ``None``."""
+
+        snapshot = (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_PRICING_RUNS_SUBCOLLECTION)
+            .document(run_id)
+            .get()
+        )
+        if not snapshot.exists:
+            return None
+        data = snapshot.to_dict() or {}
+        data["id"] = snapshot.id
+        return data
+
+    def get_latest_pricing_run(self, project_id: str) -> dict[str, Any] | None:
+        """Return the most recent pricing run (with its id) or ``None``."""
+
+        query = (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_PRICING_RUNS_SUBCOLLECTION)
+            .order_by("created_at", direction=firestore.Query.DESCENDING)
+            .limit(1)
+        )
+        for snapshot in query.stream():
+            data = snapshot.to_dict() or {}
+            data["id"] = snapshot.id
+            return data
+        return None
+
+    def update_pricing_run(
+        self, project_id: str, run_id: str, fields: dict[str, Any]
+    ) -> None:
+        """Merge-update fields on an existing pricing run."""
+
+        (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_PRICING_RUNS_SUBCOLLECTION)
+            .document(run_id)
+            .set(fields, merge=True)
+        )
+
+    def save_provider_pricing_result(
+        self,
+        project_id: str,
+        run_id: str,
+        provider: str,
+        result: dict[str, Any],
+    ) -> None:
+        """Persist one provider's pricing result under a pricing run."""
+
+        (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_PRICING_RUNS_SUBCOLLECTION)
+            .document(run_id)
+            .collection(FIRESTORE_PROVIDER_PRICING_SUBCOLLECTION)
+            .document(provider)
+            .set(result)
+        )
+        self._collection.document(project_id).set(
+            {"updated_at": firestore.SERVER_TIMESTAMP},
+            merge=True,
+        )
+
+    def list_provider_pricing_results(
+        self, project_id: str, run_id: str
+    ) -> list[dict[str, Any]]:
+        """Return all provider pricing results for a run, ordered by generation."""
+
+        snapshots = (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_PRICING_RUNS_SUBCOLLECTION)
+            .document(run_id)
+            .collection(FIRESTORE_PROVIDER_PRICING_SUBCOLLECTION)
+            .stream()
+        )
+        results_by_provider = {
+            snapshot.id: {**(snapshot.to_dict() or {}), "provider": snapshot.id}
+            for snapshot in snapshots
+        }
+        return [
+            results_by_provider[provider]
+            for provider in PRICING_GENERATION_ORDER
+            if provider in results_by_provider
+        ]

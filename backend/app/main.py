@@ -5,8 +5,9 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api.routes import auth_router, health_router, project_router
@@ -59,38 +60,41 @@ def _register_middleware(application: FastAPI) -> None:
 
 
 def _register_exception_handlers(application: FastAPI) -> None:
+    def _error_response(status_code: int, message: str) -> JSONResponse:
+        return JSONResponse(status_code=status_code, content={"detail": message})
+
     @application.exception_handler(UnauthorizedError)
     async def unauthorized_handler(_request: Request, exc: UnauthorizedError):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=exc.message)
+        return _error_response(status.HTTP_401_UNAUTHORIZED, exc.message)
 
     @application.exception_handler(ForbiddenError)
     async def forbidden_handler(_request: Request, exc: ForbiddenError):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=exc.message)
+        return _error_response(status.HTTP_403_FORBIDDEN, exc.message)
 
     @application.exception_handler(NotFoundError)
     async def not_found_handler(_request: Request, exc: NotFoundError):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message)
+        return _error_response(status.HTTP_404_NOT_FOUND, exc.message)
 
     @application.exception_handler(BadRequestError)
     async def bad_request_handler(_request: Request, exc: BadRequestError):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=exc.message)
+        return _error_response(status.HTTP_400_BAD_REQUEST, exc.message)
 
     @application.exception_handler(ServiceUnavailableError)
     async def service_unavailable_handler(_request: Request, exc: ServiceUnavailableError):
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=exc.message)
+        return _error_response(status.HTTP_503_SERVICE_UNAVAILABLE, exc.message)
 
     @application.exception_handler(ArchitectureGenerationError)
     async def generation_failed_handler(_request: Request, exc: ArchitectureGenerationError):
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=exc.message)
+        return _error_response(status.HTTP_502_BAD_GATEWAY, exc.message)
 
     @application.exception_handler(AIClientError)
     async def ai_client_handler(_request: Request, exc: AIClientError):
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=exc.message)
+        return _error_response(status.HTTP_503_SERVICE_UNAVAILABLE, exc.message)
 
     @application.exception_handler(AIValidationError)
     async def ai_validation_handler(_request: Request, exc: AIValidationError):
         logger.error("AI validation failed: %s", exc.message)
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=exc.message)
+        return _error_response(status.HTTP_502_BAD_GATEWAY, exc.message)
 
 
 def _register_routes(application: FastAPI) -> None:

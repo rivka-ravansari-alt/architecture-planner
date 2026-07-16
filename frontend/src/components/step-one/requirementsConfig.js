@@ -109,6 +109,24 @@ export const REQUIREMENT_CARDS = [
     fields: [],
   },
   {
+    id: "notifications",
+    title: "Notifications",
+    question: "Does your application send notifications?",
+    fields: [
+      {
+        key: "channels",
+        type: "checkbox_group",
+        label: "Notification channels",
+        options: [
+          { value: "email", label: "Email" },
+          { value: "push", label: "Push" },
+          { value: "sms", label: "SMS" },
+          { value: "in_app", label: "In-app" },
+        ],
+      },
+    ],
+  },
+  {
     id: "external_integrations",
     title: "External Integrations",
     question: "Does your application integrate with external systems?",

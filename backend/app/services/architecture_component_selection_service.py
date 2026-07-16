@@ -11,12 +11,14 @@ import logging
 from typing import Any
 
 from app.clients.ai_client import BaseAIClient
+from app.config.params import COMPONENT_SELECTION_SYSTEM_PROMPT
 from app.core.exceptions import AIValidationError
 from app.schemas.component_selection import ComponentSelectionResult
 from app.services.component_selection_prompt_builder import (
     ComponentSelectionPromptBuilder,
 )
 from app.validators.component_selection_validator import parse_and_validate
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +32,8 @@ _CORRECTION_TEMPLATE = (
     "Your previous response was rejected for this reason: {error}\n"
     "Re-output the complete JSON. Classify every category id exactly once, "
     "across 'selected' and 'excluded' combined. Do not omit, duplicate, or "
-    "invent any id."
+    "invent any id. Use only ids from the Available architecture categories "
+    "section — never business requirement names."
 )
 
 
@@ -50,6 +53,7 @@ class ArchitectureComponentSelectionService:
         self,
         *,
         application_description: str,
+        platform: str,
         stage: str,
         expected_users: int,
         requirements: dict[str, Any],
@@ -63,6 +67,7 @@ class ArchitectureComponentSelectionService:
 
         base_prompt = self._prompt_builder.build(
             application_description=application_description,
+            platform=platform,
             stage=stage,
             expected_users=expected_users,
             requirements=requirements,
@@ -73,7 +78,10 @@ class ArchitectureComponentSelectionService:
         last_error: AIValidationError | None = None
         prompt = base_prompt
         for attempt in range(1, self._max_attempts + 1):
-            raw_response = self._ai_client.generate(prompt)
+            raw_response = self._ai_client.generate(
+                prompt,
+                system_prompt=COMPONENT_SELECTION_SYSTEM_PROMPT,
+            )
             try:
                 result = parse_and_validate(raw_response, category_ids)
             except AIValidationError as error:

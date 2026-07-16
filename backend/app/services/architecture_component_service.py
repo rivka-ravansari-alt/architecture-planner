@@ -257,6 +257,7 @@ class ArchitectureComponentService:
     def _normalize_input(project: dict[str, Any]) -> dict[str, Any]:
         return {
             "application_description": project.get("description", ""),
+            "platform": project.get("platform", "web"),
             "stage": project.get("stage", ""),
             "expected_users": int(project.get("expected_users", 0) or 0),
             "requirements": project.get("requirements", {}) or {},
@@ -287,12 +288,14 @@ class ArchitectureComponentService:
             "model": model_name,
             "input": {
                 "application_description": normalized_input["application_description"],
+                "platform": normalized_input["platform"],
                 "stage": normalized_input["stage"],
                 "expected_users": normalized_input["expected_users"],
                 "requirements": normalized_input["requirements"],
             },
         }
         selection_id = self._projects.save_architecture_selection(project_id, document)
+        self._projects.invalidate_downstream_artifacts(project_id)
         logger.info(
             "saved architecture selection project_id=%s selection_id=%s "
             "selected=%d excluded=%d",

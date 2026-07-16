@@ -31,6 +31,14 @@ def test_returns_static_response_when_enabled():
     assert '"diagrams"' in result
 
 
+def test_returns_component_selection_static_payload_for_step2_prompt():
+    client = StaticAIClient()
+    result = client.generate("Available architecture categories\n- id: compute")
+    assert '"selected"' in result
+    assert '"excluded"' in result
+    assert '"components"' not in result
+
+
 def test_completion_limit_kwargs_for_gpt5():
     assert _completion_limit_kwargs("gpt-5", 8000) == {"max_completion_tokens": 8000}
 

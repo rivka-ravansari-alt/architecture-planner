@@ -13,6 +13,7 @@ class CreateProjectRequest(BaseModel):
     """Step 1 intake payload: application description, stage, requirements."""
 
     description: str = Field(min_length=1, max_length=DESCRIPTION_MAX_CHARS)
+    platform: Literal["web", "mobile"]
     stage: Literal["mvp", "production"]
     expected_users: int = Field(gt=0)
     requirements: dict[str, Any] = Field(default_factory=dict)

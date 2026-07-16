@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.config.params import DESCRIPTION_MAX_CHARS
-from app.schemas.project import ProjectCreate
+from app.schemas.project import CreateProjectRequest, ProjectCreate
 from app.utils.token_estimate import estimate_token_count
 
 
@@ -31,3 +31,23 @@ def test_dedupes_project_types():
         project_types=["web_app", "web_app", "mobile_app"],
     )
     assert project.project_types == ["web_app", "mobile_app"]
+
+
+def test_create_project_request_requires_platform():
+    project = CreateProjectRequest(
+        description="Valid description.",
+        platform="web",
+        stage="mvp",
+        expected_users=100,
+    )
+    assert project.platform == "web"
+
+
+def test_create_project_request_rejects_invalid_platform():
+    with pytest.raises(ValidationError):
+        CreateProjectRequest(
+            description="Valid description.",
+            platform="desktop",
+            stage="mvp",
+            expected_users=100,
+        )

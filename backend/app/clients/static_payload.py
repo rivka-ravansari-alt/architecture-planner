@@ -269,3 +269,49 @@ STATIC_AI_PAYLOAD: dict = {
         },
     },
 }
+
+_CATEGORY_IDS = (
+    "compute",
+    "workflow",
+    "api",
+    "authentication",
+    "sql_database",
+    "nosql_database",
+    "storage",
+    "cache",
+    "queue",
+    "events",
+    "notification",
+    "scheduler",
+    "ai_llm",
+    "monitoring",
+    "analytics",
+)
+
+_SELECTED_IDS = {
+    "compute",
+    "api",
+    "authentication",
+    "sql_database",
+    "storage",
+    "monitoring",
+}
+
+STATIC_COMPONENT_SELECTION_PAYLOAD: dict[str, list[dict[str, str]]] = {
+    "selected": [
+        {
+            "id": category_id,
+            "reason": "Required for the described application to run end to end.",
+        }
+        for category_id in _CATEGORY_IDS
+        if category_id in _SELECTED_IDS
+    ],
+    "excluded": [
+        {
+            "id": category_id,
+            "reason": "Not required for the baseline static architecture scenario.",
+        }
+        for category_id in _CATEGORY_IDS
+        if category_id not in _SELECTED_IDS
+    ],
+}

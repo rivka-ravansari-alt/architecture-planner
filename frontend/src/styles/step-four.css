@@ -1,0 +1,201 @@
+/* Step 4: progressive cloud pricing */
+
+.pricing-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 20px;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.pricing-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.pricing-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.pricing-header .subtitle {
+  margin: 6px 0 0;
+  color: var(--text-soft);
+}
+
+.pricing-status {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.pricing-providers {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pricing-provider-section h2 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pricing-provider-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+  color: var(--text-soft);
+}
+
+.pricing-provider-pending {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.pricing-provider-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 14px 0 0;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+.pricing-provider-total strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.pricing-comparison h2 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pricing-row-unpriced td {
+  color: var(--text-soft);
+}
+
+.pricing-skip-reason {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-soft);
+}
+
+.pricing-details-toggle {
+  padding: 4px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.pricing-details-unavailable {
+  color: var(--text-soft);
+}
+
+.pricing-details-row td {
+  padding: 0;
+  background: var(--surface-muted);
+  border-top: none;
+}
+
+.pricing-details-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 18px 18px;
+  border-top: 1px solid var(--border);
+}
+
+.pricing-details-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+}
+
+.pricing-details-meta div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pricing-details-meta dt {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.pricing-details-meta dd {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.pricing-details-reason h4,
+.pricing-details-summary h4 {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.pricing-details-reason p,
+.pricing-details-empty {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.pricing-details-empty {
+  color: var(--text-soft);
+}
+
+.pricing-details-summary ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pricing-details-summary li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.pricing-details-summary li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--text-soft);
+}

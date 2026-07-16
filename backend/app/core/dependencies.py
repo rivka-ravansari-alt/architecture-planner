@@ -16,6 +16,10 @@ from app.core.exceptions import UnauthorizedError
 from app.repositories.architecture_category_repository import (
     ArchitectureCategoryRepository,
 )
+from app.repositories.cloud_service_mapping_repository import (
+    CloudServiceMappingRepository,
+)
+from app.repositories.pricing_service_repository import PricingServiceRepository
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.auth import UserOut
@@ -24,7 +28,12 @@ from app.services.architecture_component_selection_service import (
 )
 from app.services.architecture_component_service import ArchitectureComponentService
 from app.services.auth_service import AuthService
+from app.services.global_usage_model_service import GlobalUsageModelService
+from app.services.global_usage_service import GlobalUsageService
+from app.services.pricing_service import PricingService
 from app.services.project_service import ProjectService
+from app.services.static_usage_value_resolver import StaticUsageValueResolver
+from app.services.usage_parameter_resolver import UsageParameterResolver
 from app.utils.jwt import JwtService
 
 _oauth_client = GoogleOAuthClient()
@@ -90,6 +99,65 @@ def get_auth_service(
     return AuthService(oauth_client, users, jwt_service)
 
 
+def get_cloud_service_mapping_repository(
+    client: firestore.Client = Depends(get_firestore),
+) -> CloudServiceMappingRepository:
+    return CloudServiceMappingRepository(client)
+
+
+def get_pricing_service_repository(
+    client: firestore.Client = Depends(get_firestore),
+) -> PricingServiceRepository:
+    return PricingServiceRepository(client)
+
+
+def get_usage_parameter_resolver(
+    mappings: CloudServiceMappingRepository = Depends(
+        get_cloud_service_mapping_repository
+    ),
+    pricing: PricingServiceRepository = Depends(get_pricing_service_repository),
+) -> UsageParameterResolver:
+    return UsageParameterResolver(mappings, pricing)
+
+
+def get_static_usage_value_resolver() -> StaticUsageValueResolver:
+    return StaticUsageValueResolver()
+
+
+def get_global_usage_model_service(
+    ai_client: BaseAIClient = Depends(get_ai_client),
+) -> GlobalUsageModelService:
+    return GlobalUsageModelService(ai_client)
+
+
+def get_global_usage_service(
+    projects: ProjectRepository = Depends(get_project_repository),
+    usage_parameter_resolver: UsageParameterResolver = Depends(
+        get_usage_parameter_resolver
+    ),
+    static_value_resolver: StaticUsageValueResolver = Depends(
+        get_static_usage_value_resolver
+    ),
+    usage_model_service: GlobalUsageModelService = Depends(get_global_usage_model_service),
+) -> GlobalUsageService:
+    return GlobalUsageService(
+        projects,
+        usage_parameter_resolver,
+        static_value_resolver,
+        usage_model_service,
+    )
+
+
+def get_pricing_service(
+    projects: ProjectRepository = Depends(get_project_repository),
+    mappings: CloudServiceMappingRepository = Depends(
+        get_cloud_service_mapping_repository
+    ),
+    pricing: PricingServiceRepository = Depends(get_pricing_service_repository),
+) -> PricingService:
+    return PricingService(projects, mappings, pricing)
+
+
 def get_project_service(
     projects: ProjectRepository = Depends(get_project_repository),
 ) -> ProjectService:
@@ -107,8 +175,15 @@ def get_project_controller(
     architecture_component_service: ArchitectureComponentService = Depends(
         get_architecture_component_service
     ),
+    global_usage_service: GlobalUsageService = Depends(get_global_usage_service),
+    pricing_service: PricingService = Depends(get_pricing_service),
 ) -> ProjectController:
-    return ProjectController(project_service, architecture_component_service)
+    return ProjectController(
+        project_service,
+        architecture_component_service,
+        global_usage_service,
+        pricing_service,
+    )
 
 
 def get_optional_user(

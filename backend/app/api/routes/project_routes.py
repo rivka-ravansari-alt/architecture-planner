@@ -16,6 +16,8 @@ from app.schemas.component_selection import (
     ArchitectureCategoryOut,
     ComponentSelectionResponse,
 )
+from app.schemas.global_usage_model import GlobalUsageModelResponse
+from app.schemas.pricing import PricingRunResponse, ProviderPricingResponse
 from app.schemas.project import CreateProjectRequest, CreateProjectResponse
 
 router = APIRouter(tags=["projects"])
@@ -77,3 +79,53 @@ def remove_architecture_component(
     return controller.remove_architecture_component(
         project_id, selection_id, instance_id, user
     )
+
+
+@router.post("/projects/{project_id}/usage-model/generate")
+def generate_global_usage_model(
+    project_id: str,
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> GlobalUsageModelResponse:
+    return controller.generate_global_usage_model(project_id, user)
+
+
+@router.get("/projects/{project_id}/usage-model")
+def get_global_usage_model(
+    project_id: str,
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> GlobalUsageModelResponse:
+    return controller.get_global_usage_model(project_id, user)
+
+
+@router.post("/projects/{project_id}/pricing/generate/{provider}")
+def generate_provider_pricing(
+    project_id: str,
+    provider: str,
+    run_id: str | None = None,
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> ProviderPricingResponse:
+    return controller.generate_provider_pricing(
+        project_id, provider, user, run_id=run_id
+    )
+
+
+@router.get("/projects/{project_id}/pricing")
+def get_latest_pricing(
+    project_id: str,
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> PricingRunResponse:
+    return controller.get_latest_pricing(project_id, user)
+
+
+@router.get("/projects/{project_id}/pricing/runs/{run_id}")
+def get_pricing_run(
+    project_id: str,
+    run_id: str,
+    user: UserOut = Depends(get_current_user),
+    controller: ProjectController = Depends(get_project_controller),
+) -> PricingRunResponse:
+    return controller.get_pricing_run(project_id, run_id, user)
