@@ -80,6 +80,40 @@ def test_resolve_notification_channel_count_zero_when_disabled():
     assert values["notification_channel_count"] == 0
 
 
+def test_resolve_authentication_methods_from_requirements():
+    resolver = StaticUsageValueResolver()
+    values = resolver.resolve(
+        ["authentication_methods"],
+        expected_users=1000,
+        stage="mvp",
+        requirements={
+            "authentication": {
+                "enabled": True,
+                "authentication_methods": [
+                    "email",
+                    "google",
+                    "sms",
+                    "unknown",
+                ],
+            }
+        },
+    )
+
+    assert values["authentication_methods"] == ["email", "google", "sms"]
+
+
+def test_resolve_authentication_methods_empty_when_disabled():
+    resolver = StaticUsageValueResolver()
+    values = resolver.resolve(
+        ["authentication_methods"],
+        expected_users=1000,
+        stage="mvp",
+        requirements={"authentication": {"enabled": False}},
+    )
+
+    assert values["authentication_methods"] == []
+
+
 def test_resolve_ses_free_tier_active_from_stage():
     resolver = StaticUsageValueResolver()
 

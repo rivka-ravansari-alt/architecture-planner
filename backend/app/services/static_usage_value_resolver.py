@@ -26,6 +26,18 @@ _AVERAGE_FILE_SIZE_MB_MIDPOINTS: dict[str, float] = {
 
 _DEFAULT_RETENTION_MONTHS = 12
 
+_ALLOWED_AUTHENTICATION_METHODS = frozenset(
+    {
+        "email",
+        "google",
+        "apple",
+        "facebook",
+        "github",
+        "microsoft",
+        "sms",
+    }
+)
+
 
 class StaticUsageValueResolver:
     """Map static usage parameter names to values from the project document."""
@@ -80,6 +92,8 @@ class StaticUsageValueResolver:
             return _DEFAULT_RETENTION_MONTHS
         if parameter == "notification_channel_count":
             return self._notification_channel_count(requirements)
+        if parameter == "authentication_methods":
+            return self._authentication_methods(requirements)
         if parameter == "ses_free_tier_active":
             return self._ses_free_tier_active(stage)
         return None
@@ -124,6 +138,26 @@ class StaticUsageValueResolver:
         if not isinstance(channels, list):
             return 0
         return len([channel for channel in channels if isinstance(channel, str) and channel])
+
+    @staticmethod
+    def _authentication(requirements: dict[str, Any]) -> dict[str, Any]:
+        authentication = requirements.get("authentication") or {}
+        if isinstance(authentication, dict):
+            return authentication
+        return {}
+
+    def _authentication_methods(self, requirements: dict[str, Any]) -> list[str]:
+        authentication = self._authentication(requirements)
+        if not authentication.get("enabled"):
+            return []
+        methods = authentication.get("authentication_methods")
+        if not isinstance(methods, list):
+            return []
+        return [
+            method
+            for method in methods
+            if isinstance(method, str) and method in _ALLOWED_AUTHENTICATION_METHODS
+        ]
 
     @staticmethod
     def _ses_free_tier_active(stage: str) -> int:

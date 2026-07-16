@@ -17,7 +17,11 @@ from app.config.params import (
 )
 from app.repositories.cloud_service_mapping_repository import CloudServiceMappingRepository
 from app.repositories.pricing_service_repository import PricingServiceRepository
-from app.schemas.global_usage_model import GlobalUsageModelPayload, UsageParameterEstimate
+from app.schemas.global_usage_model import (
+    GlobalUsageModelPayload,
+    UsageParameterEstimate,
+    coerce_static_usage_value,
+)
 from app.services.pricing_calculation_executor import execute_pricing_script
 from app.services.usage_inputs_builder import build_usage_inputs
 
@@ -46,10 +50,11 @@ def _usage_payload_from_document(document: dict[str, Any]) -> GlobalUsageModelPa
         parameter: UsageParameterEstimate.model_validate(estimate)
         for parameter, estimate in llm_payload.items()
     }
-    static: dict[str, str | int | float] = {}
+    static: dict[str, str | int | float | list[str]] = {}
     for parameter, value in static_payload.items():
-        if isinstance(value, (str, int, float)):
-            static[parameter] = value
+        coerced = coerce_static_usage_value(value)
+        if coerced is not None:
+            static[parameter] = coerced
 
     return GlobalUsageModelPayload(llm=llm, static=static)
 

@@ -194,6 +194,27 @@ class ProjectRepository:
         )
         return reference.id
 
+    def update_global_usage_model_debug_csv_path(
+        self, project_id: str, model_id: str, object_path: str
+    ) -> None:
+        """Store Step 3 usage-model debug CSV object path.
+
+        Written to ``projects/{project_id}/global_usage_models/{model_id}``.
+        """
+
+        (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_GLOBAL_USAGE_MODELS_SUBCOLLECTION)
+            .document(model_id)
+            .set(
+                {
+                    "usage_model_debug_csv_object_path": object_path,
+                    "updated_at": firestore.SERVER_TIMESTAMP,
+                },
+                merge=True,
+            )
+        )
+
     def get_latest_global_usage_model(
         self, project_id: str
     ) -> dict[str, Any] | None:

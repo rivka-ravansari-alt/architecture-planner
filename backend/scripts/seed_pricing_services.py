@@ -775,66 +775,102 @@ PRICING_SERVICES: list[dict] = [
     {
         "service_id": "gcp_firebase_auth",
         "to_know": {
-            "llm": [],
+            "llm": [
+                "sms_verifications_per_user_per_month",
+            ],
             "static": [
                 "users",
+                "authentication_methods",
             ],
         },
         "skus": [
             {
-                "name": "Tier 1 MAU (50,001 - 100,000)",
-                "from": 50_000,
-                "to": 100_000,
+                "name": "Tier 1 MAU 50K-100K",
+                "from_mau": 50_000,
+                "to_mau": 100_000,
                 "price_per_mau": 0.0055,
             },
             {
-                "name": "Tier 1 MAU (100,001 - 1,000,000)",
-                "from": 100_000,
-                "to": 1_000_000,
+                "name": "Tier 1 MAU 100K-1M",
+                "from_mau": 100_000,
+                "to_mau": 1_000_000,
                 "price_per_mau": 0.0046,
             },
             {
-                "name": "Tier 1 MAU (1,000,001 - 10,000,000)",
-                "from": 1_000_000,
-                "to": 10_000_000,
+                "name": "Tier 1 MAU 1M-10M",
+                "from_mau": 1_000_000,
+                "to_mau": 10_000_000,
                 "price_per_mau": 0.0032,
             },
             {
-                "name": "Tier 1 MAU (10,000,000+)",
-                "from": 10_000_000,
-                "to": None,
+                "name": "Tier 1 MAU 10M+",
+                "from_mau": 10_000_000,
+                "to_mau": None,
                 "price_per_mau": 0.0025,
+            },
+            {
+                "name": "SMS Verification",
+                "unit": "sms",
+                "price_per_sms": 0.05,
+                "note": (
+                    "Average estimated SMS price. "
+                    "Actual price depends on destination country."
+                ),
             },
         ],
         "free_tier": {
             "monthly_active_users": 50_000,
+            "sms_per_day": 10,
+            "sms_per_month_estimate": 300,
         },
         "script_calculation": (
             "def calculate_price(inputs, skus, free_tier):\n"
             "    users = max(0, inputs.get(\"users\", 0))\n"
+            "    authentication_methods = inputs.get(\"authentication_methods\", []) or []\n"
+            "    sms_per_user = max(\n"
+            "        0,\n"
+            "        inputs.get(\"sms_verifications_per_user_per_month\", 0)\n"
+            "    )\n"
             "\n"
-            "    free = free_tier.get(\"monthly_active_users\", 0)\n"
-            "    billable = max(0, users - free)\n"
+            "    free_mau = free_tier.get(\"monthly_active_users\", 0)\n"
+            "    remaining_mau = max(0, users - free_mau)\n"
+            "    mau_cost = 0\n"
             "\n"
-            "    total = 0\n"
-            "    remaining = billable\n"
+            "    mau_tiers = sorted(\n"
+            "        [sku for sku in skus if \"price_per_mau\" in sku],\n"
+            "        key=lambda sku: sku[\"from_mau\"]\n"
+            "    )\n"
             "\n"
-            "    for sku in skus:\n"
-            "        start = sku[\"from\"]\n"
-            "        end = sku[\"to\"]\n"
-            "\n"
-            "        if remaining <= 0:\n"
+            "    for tier in mau_tiers:\n"
+            "        if remaining_mau <= 0:\n"
             "            break\n"
             "\n"
-            "        if end is None:\n"
-            "            tier_size = remaining\n"
+            "        tier_start = tier[\"from_mau\"]\n"
+            "        tier_end = tier[\"to_mau\"]\n"
+            "\n"
+            "        if tier_end is None:\n"
+            "            tier_capacity = remaining_mau\n"
             "        else:\n"
-            "            tier_size = min(remaining, end - start)\n"
+            "            tier_capacity = tier_end - tier_start\n"
             "\n"
-            "        total += tier_size * sku[\"price_per_mau\"]\n"
-            "        remaining -= tier_size\n"
+            "        tier_usage = min(remaining_mau, tier_capacity)\n"
+            "        mau_cost += tier_usage * tier[\"price_per_mau\"]\n"
+            "        remaining_mau -= tier_usage\n"
             "\n"
-            "    return round(total, 2)"
+            "    sms_cost = 0\n"
+            "\n"
+            "    if \"sms\" in authentication_methods:\n"
+            "        sms_sku = next(\n"
+            "            sku for sku in skus\n"
+            "            if sku[\"name\"] == \"SMS Verification\"\n"
+            "        )\n"
+            "\n"
+            "        monthly_sms = users * sms_per_user\n"
+            "        free_sms = free_tier.get(\"sms_per_month_estimate\", 0)\n"
+            "        billable_sms = max(0, monthly_sms - free_sms)\n"
+            "        sms_cost = billable_sms * sms_sku[\"price_per_sms\"]\n"
+            "\n"
+            "    return round(mau_cost + sms_cost, 2)"
         ),
         "calculation_tag": "tiered",
     },
@@ -1415,9 +1451,12 @@ PRICING_SERVICES: list[dict] = [
     {
         "service_id": "aws_cognito",
         "to_know": {
-            "llm": [],
+            "llm": [
+                "sms_verifications_per_user_per_month",
+            ],
             "static": [
                 "users",
+                "authentication_methods",
             ],
         },
         "skus": [
@@ -1426,6 +1465,11 @@ PRICING_SERVICES: list[dict] = [
                 "unit": "monthly_active_user",
                 "price_per_mau": 0.015,
             },
+            {
+                "name": "SMS Verification",
+                "unit": "sms",
+                "price_per_sms": 0.05,
+            },
         ],
         "free_tier": {
             "monthly_active_users": 10_000,
@@ -1433,16 +1477,22 @@ PRICING_SERVICES: list[dict] = [
         "script_calculation": (
             "def calculate_price(inputs, skus, free_tier):\n"
             "    users = max(0, inputs.get(\"users\", 0))\n"
+            "    authentication_methods = inputs.get(\"authentication_methods\", []) or []\n"
+            "    sms_per_user = max(0, inputs.get(\"sms_verifications_per_user_per_month\", 0))\n"
             "\n"
-            "    mau_sku = next(\n"
-            "        sku for sku in skus\n"
-            "        if sku[\"name\"] == \"Monthly Active User\"\n"
-            "    )\n"
+            "    mau_sku = next(sku for sku in skus if sku[\"name\"] == \"Monthly Active User\")\n"
+            "    sms_sku = next(sku for sku in skus if sku[\"name\"] == \"SMS Verification\")\n"
             "\n"
             "    free_mau = free_tier.get(\"monthly_active_users\", 0)\n"
             "    billable_mau = max(0, users - free_mau)\n"
+            "    mau_cost = billable_mau * mau_sku[\"price_per_mau\"]\n"
             "\n"
-            "    estimated_price = billable_mau * mau_sku[\"price_per_mau\"]\n"
+            "    sms_cost = 0\n"
+            "    if \"sms\" in authentication_methods:\n"
+            "        monthly_sms = users * sms_per_user\n"
+            "        sms_cost = monthly_sms * sms_sku[\"price_per_sms\"]\n"
+            "\n"
+            "    estimated_price = mau_cost + sms_cost\n"
             "\n"
             "    return round(estimated_price, 2)"
         ),
@@ -1953,9 +2003,12 @@ PRICING_SERVICES: list[dict] = [
     {
         "service_id": "azure_entra_id",
         "to_know": {
-            "llm": [],
+            "llm": [
+                "sms_verifications_per_user_per_month",
+            ],
             "static": [
                 "users",
+                "authentication_methods",
             ],
         },
         "skus": [
@@ -1964,25 +2017,38 @@ PRICING_SERVICES: list[dict] = [
                 "unit": "monthly_active_user",
                 "price_per_mau": 0.03,
             },
+            {
+                "name": "SMS Verification",
+                "unit": "sms",
+                "price_per_sms": 0.05,
+            },
         ],
         "free_tier": {
             "monthly_active_users": 50_000,
+            "sms_per_day": 10,
+            "sms_per_month_estimate": 300,
         },
         "script_calculation": (
             "def calculate_price(inputs, skus, free_tier):\n"
             "    users = max(0, inputs.get(\"users\", 0))\n"
+            "    authentication_methods = inputs.get(\"authentication_methods\", []) or []\n"
+            "    sms_per_user = max(0, inputs.get(\"sms_verifications_per_user_per_month\", 0))\n"
             "\n"
-            "    mau_sku = next(\n"
-            "        sku for sku in skus\n"
-            "        if sku[\"name\"] == \"Monthly Active User\"\n"
-            "    )\n"
+            "    mau_sku = next(sku for sku in skus if sku[\"name\"] == \"Monthly Active User\")\n"
+            "    sms_sku = next(sku for sku in skus if sku[\"name\"] == \"SMS Verification\")\n"
             "\n"
             "    free_mau = free_tier.get(\"monthly_active_users\", 0)\n"
             "    billable_mau = max(0, users - free_mau)\n"
+            "    mau_cost = billable_mau * mau_sku[\"price_per_mau\"]\n"
             "\n"
-            "    estimated_price = billable_mau * mau_sku[\"price_per_mau\"]\n"
+            "    sms_cost = 0\n"
+            "    if \"sms\" in authentication_methods:\n"
+            "        monthly_sms = users * sms_per_user\n"
+            "        free_sms = free_tier.get(\"sms_per_month_estimate\", 0)\n"
+            "        billable_sms = max(0, monthly_sms - free_sms)\n"
+            "        sms_cost = billable_sms * sms_sku[\"price_per_sms\"]\n"
             "\n"
-            "    return round(estimated_price, 2)"
+            "    return round(mau_cost + sms_cost, 2)"
         ),
         "calculation_tag": "normal",
     },

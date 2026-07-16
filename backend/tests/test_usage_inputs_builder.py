@@ -54,3 +54,74 @@ def test_build_usage_inputs_preserves_string_capacity_mode():
 
     assert inputs["capacity_mode"] == "Serverless"
     assert inputs["request_units_per_month"] == 120_000
+
+
+def test_build_usage_inputs_preserves_authentication_methods_list():
+    payload = GlobalUsageModelPayload(
+        llm={},
+        static={
+            "users": 1000,
+            "authentication_methods": ["email", "google", "sms"],
+        },
+    )
+
+    inputs = build_usage_inputs(payload)
+
+    assert inputs["authentication_methods"] == ["email", "google", "sms"]
+
+
+def test_build_usage_inputs_defaults_sms_verifications_when_sms_selected():
+    payload = GlobalUsageModelPayload(
+        llm={
+            "sms_verifications_per_user_per_month": UsageParameterEstimate(
+                value=0,
+                reason="Ignored SMS auth.",
+            ),
+        },
+        static={
+            "users": 10_000,
+            "authentication_methods": ["email", "sms"],
+        },
+    )
+
+    inputs = build_usage_inputs(payload)
+
+    assert inputs["sms_verifications_per_user_per_month"] == 1.0
+
+
+def test_build_usage_inputs_keeps_positive_sms_verifications():
+    payload = GlobalUsageModelPayload(
+        llm={
+            "sms_verifications_per_user_per_month": UsageParameterEstimate(
+                value=2.5,
+                reason="Frequent SMS sign-in.",
+            ),
+        },
+        static={
+            "users": 10_000,
+            "authentication_methods": ["sms"],
+        },
+    )
+
+    inputs = build_usage_inputs(payload)
+
+    assert inputs["sms_verifications_per_user_per_month"] == 2.5
+
+
+def test_build_usage_inputs_keeps_zero_sms_when_sms_not_selected():
+    payload = GlobalUsageModelPayload(
+        llm={
+            "sms_verifications_per_user_per_month": UsageParameterEstimate(
+                value=0,
+                reason="No SMS auth.",
+            ),
+        },
+        static={
+            "users": 10_000,
+            "authentication_methods": ["email", "google"],
+        },
+    )
+
+    inputs = build_usage_inputs(payload)
+
+    assert inputs["sms_verifications_per_user_per_month"] == 0.0

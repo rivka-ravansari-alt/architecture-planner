@@ -6,7 +6,19 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
-StaticUsageValue = str | int | float
+StaticUsageValue = str | int | float | list[str]
+
+
+def coerce_static_usage_value(value: Any) -> StaticUsageValue | None:
+    """Return a supported static usage value, or ``None`` if unsupported."""
+
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (str, int, float)):
+        return value
+    if isinstance(value, list) and all(isinstance(item, str) for item in value):
+        return list(value)
+    return None
 
 
 class UsageParameterEstimate(BaseModel):
@@ -106,8 +118,9 @@ class GlobalUsageModelResponse(BaseModel):
         }
         static: dict[str, StaticUsageValue] = {}
         for parameter, value in static_payload.items():
-            if isinstance(value, (str, int, float)):
-                static[parameter] = value
+            coerced = coerce_static_usage_value(value)
+            if coerced is not None:
+                static[parameter] = coerced
 
         return cls(
             model_id=document["id"],

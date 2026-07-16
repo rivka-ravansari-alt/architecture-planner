@@ -25,7 +25,11 @@ from app.repositories.cloud_service_mapping_repository import (
 from app.repositories.pricing_service_repository import PricingServiceRepository
 from app.repositories.project_repository import ProjectRepository
 from app.schemas.auth import UserOut
-from app.schemas.global_usage_model import GlobalUsageModelPayload, UsageParameterEstimate
+from app.schemas.global_usage_model import (
+    GlobalUsageModelPayload,
+    UsageParameterEstimate,
+    coerce_static_usage_value,
+)
 from app.schemas.pricing import (
     PricingLineItem,
     PricingRunResponse,
@@ -38,7 +42,9 @@ from app.services.pricing_calculation_executor import (
     execute_pricing_script,
 )
 from app.services.pricing_utils import format_service_type, pricing_service_display_name
+from app.services.static_usage_value_resolver import StaticUsageValueResolver
 from app.services.usage_inputs_builder import build_usage_inputs
+from app.services.usage_parameter_resolver import UsageParameterResolver
 from app.validators.usage_inputs_validator import validate_service_inputs
 
 logger = logging.getLogger(__name__)
@@ -50,10 +56,17 @@ class PricingService:
         project_repository: ProjectRepository,
         mapping_repository: CloudServiceMappingRepository,
         pricing_repository: PricingServiceRepository,
+        usage_parameter_resolver: UsageParameterResolver | None = None,
+        static_value_resolver: StaticUsageValueResolver | None = None,
     ) -> None:
         self._projects = project_repository
         self._mappings = mapping_repository
         self._pricing = pricing_repository
+        self._parameter_resolver = usage_parameter_resolver or UsageParameterResolver(
+            mapping_repository,
+            pricing_repository,
+        )
+        self._static_values = static_value_resolver or StaticUsageValueResolver()
 
     def generate_provider(
         self,
@@ -250,6 +263,10 @@ class PricingService:
     def _load_pricing_inputs(
         self, project_id: str
     ) -> tuple[dict[str, Any], dict[str, Any], GlobalUsageModelPayload, dict[str, Any]]:
+        project = self._projects.find_by_id(project_id)
+        if project is None:
+            raise NotFoundError(ERR_PROJECT_NOT_FOUND)
+
         selection = self._projects.get_latest_architecture_selection(project_id)
         if selection is None:
             raise NotFoundError(ERR_NO_COMPONENT_SELECTION)
@@ -261,8 +278,42 @@ class PricingService:
             raise NotFoundError(ERR_NO_GLOBAL_USAGE_MODEL)
 
         usage_payload = self._usage_payload_from_document(usage_model)
+        usage_payload = self._refresh_static_usage_values(
+            usage_payload,
+            project=project,
+            selected=selection.get("selected", []),
+        )
         usage_inputs = build_usage_inputs(usage_payload)
         return selection, usage_model, usage_payload, usage_inputs
+
+    def _refresh_static_usage_values(
+        self,
+        payload: GlobalUsageModelPayload,
+        *,
+        project: dict[str, Any],
+        selected: list[dict[str, Any]],
+    ) -> GlobalUsageModelPayload:
+        """Re-resolve project-backed static inputs at pricing time.
+
+        Saved Step 3 models can lag behind pricing-service ``to_know.static``
+        changes (e.g. ``authentication_methods``). Static values always come
+        from the current project intake, so refresh them before pricing.
+        """
+
+        resolved = self._parameter_resolver.resolve_for_selected_components(selected)
+        if not resolved.static:
+            return payload
+
+        fresh_static = self._static_values.resolve(
+            resolved.static,
+            expected_users=int(project.get("expected_users", 0) or 0),
+            stage=str(project.get("stage") or ""),
+            requirements=project.get("requirements") or {},
+        )
+        return GlobalUsageModelPayload(
+            llm=payload.llm,
+            static={**payload.static, **fresh_static},
+        )
 
     @staticmethod
     def _is_pricing_run_current(
@@ -289,10 +340,11 @@ class PricingService:
             parameter: UsageParameterEstimate.model_validate(estimate)
             for parameter, estimate in llm_payload.items()
         }
-        static: dict[str, str | int | float] = {}
+        static: dict[str, str | int | float | list[str]] = {}
         for parameter, value in static_payload.items():
-            if isinstance(value, (str, int, float)):
-                static[parameter] = value
+            coerced = coerce_static_usage_value(value)
+            if coerced is not None:
+                static[parameter] = coerced
 
         return GlobalUsageModelPayload(llm=llm, static=static)
 

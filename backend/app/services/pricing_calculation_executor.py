@@ -37,6 +37,7 @@ _SAFE_BUILTINS: dict[str, Any] = {
     "min": min,
     "next": next,
     "round": round,
+    "sorted": sorted,
     "sum": sum,
     "ValueError": ValueError,
 }
@@ -61,7 +62,13 @@ class PricingScriptResult:
 
 
 def _is_displayable_value(value: Any) -> bool:
-    return isinstance(value, (bool, int, float, str)) or value is None
+    if isinstance(value, (bool, int, float, str)) or value is None:
+        return True
+    if isinstance(value, list):
+        return all(
+            isinstance(item, (bool, int, float, str)) or item is None for item in value
+        )
+    return False
 
 
 def _normalize_number(value: Any) -> Any:

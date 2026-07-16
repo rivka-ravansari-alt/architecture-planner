@@ -34,11 +34,8 @@ class Settings(BaseSettings):
     object_storage_provider: str = "gcs"
     object_storage_local_root: str = "./object-storage"
     object_storage_bucket: str = "archsari-generations-prod"
+    # GCP project for GCS and Firestore. Leave empty to infer from ADC.
     gcs_project_id: str = ""
-
-    # Firestore (the only application database). Uses Application Default
-    # Credentials; leave the project id empty to infer it from ADC.
-    firestore_project_id: str = ""
 
     google_client_id: str = ""
     google_client_secret: str = ""

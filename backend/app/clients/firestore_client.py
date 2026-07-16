@@ -18,9 +18,9 @@ from app.config.settings import settings
 def get_firestore_client() -> firestore.Client:
     """Return a process-wide cached Firestore client.
 
-    The GCP project is taken from ``FIRESTORE_PROJECT_ID`` when set, otherwise
+    The GCP project is taken from ``GCS_PROJECT_ID`` when set, otherwise
     it is inferred from the ambient ADC credentials.
     """
 
-    project = settings.firestore_project_id or None
+    project = settings.gcs_project_id or None
     return firestore.Client(project=project)

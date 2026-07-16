@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from app.config.params import (
@@ -22,6 +22,7 @@ class ResolvedUsageParameters:
 
     llm: list[str]
     static: list[str]
+    used_by: dict[str, list[str]] = field(default_factory=dict)
 
 
 def _category_ids_from_selection(selected: list[dict[str, Any]]) -> list[str]:
@@ -112,6 +113,7 @@ class UsageParameterResolver:
 
         llm_parameters: set[str] = set(GLOBAL_LLM_USAGE_PARAMETERS)
         static_parameters: set[str] = set(GLOBAL_STATIC_USAGE_PARAMETERS)
+        used_by: dict[str, set[str]] = {}
 
         for service_id in sorted(service_ids):
             pricing_service = self._pricing.find_by_id(service_id)
@@ -123,15 +125,26 @@ class UsageParameterResolver:
 
             for param in _llm_parameters_from_to_know(to_know):
                 cleaned = param.strip()
-                if cleaned and not is_derived_total_usage_parameter(cleaned):
+                if not cleaned:
+                    continue
+                used_by.setdefault(cleaned, set()).add(service_id)
+                if not is_derived_total_usage_parameter(cleaned):
                     llm_parameters.add(cleaned)
 
             for param in _static_parameters_from_to_know(to_know):
                 cleaned = param.strip()
+                if not cleaned:
+                    continue
+                used_by.setdefault(cleaned, set()).add(service_id)
                 if cleaned and cleaned not in DERIVED_TOTAL_USAGE_PARAMETERS:
                     static_parameters.add(cleaned)
+
+        for param in GLOBAL_STATIC_USAGE_PARAMETERS:
+            if param not in used_by and service_ids:
+                used_by[param] = set(service_ids)
 
         return ResolvedUsageParameters(
             llm=sorted(llm_parameters),
             static=sorted(static_parameters),
+            used_by={parameter: sorted(services) for parameter, services in used_by.items()},
         )

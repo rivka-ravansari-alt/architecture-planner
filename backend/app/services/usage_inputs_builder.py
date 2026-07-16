@@ -6,6 +6,9 @@ from typing import Any
 
 from app.schemas.global_usage_model import GlobalUsageModelPayload, UsageParameterEstimate
 
+# Baseline when SMS auth is enabled but the LLM underestimates / omits SMS volume.
+_DEFAULT_SMS_VERIFICATIONS_PER_USER_PER_MONTH = 1.0
+
 
 def _coerce_numeric(value: Any) -> float | None:
     if isinstance(value, bool):
@@ -53,11 +56,34 @@ def build_usage_inputs(payload: GlobalUsageModelPayload) -> dict[str, Any]:
     for parameter, estimate in payload.llm.items():
         inputs[parameter] = _estimate_value(estimate)
 
+    _apply_sms_auth_default(inputs)
+
     users = inputs.get("users")
     if isinstance(users, (int, float)):
         _apply_user_derived_totals(inputs, float(users))
 
     return inputs
+
+
+def _apply_sms_auth_default(inputs: dict[str, Any]) -> None:
+    """Ensure SMS authentication produces billable SMS volume.
+
+    Pricing scripts only add SMS cost when ``sms`` is selected. If the LLM
+    returns 0 (or the parameter is absent), Cognito/Entra/Firebase would show
+    $0 SMS even though SMS auth was explicitly chosen.
+    """
+
+    methods = inputs.get("authentication_methods")
+    if not isinstance(methods, list) or "sms" not in methods:
+        return
+
+    current = inputs.get("sms_verifications_per_user_per_month")
+    if isinstance(current, (int, float)) and float(current) > 0:
+        return
+
+    inputs["sms_verifications_per_user_per_month"] = (
+        _DEFAULT_SMS_VERIFICATIONS_PER_USER_PER_MONTH
+    )
 
 
 def _apply_user_derived_totals(inputs: dict[str, Any], users: float) -> None:

@@ -24,6 +24,7 @@ from app.config.params import (
 )
 from app.config.settings import settings
 from app.core.exceptions import ForbiddenError, NotFoundError, ServiceUnavailableError
+from app.clients.storage_client import StorageClientFactory
 from app.repositories.project_repository import ProjectRepository
 from app.schemas.auth import UserOut
 from app.schemas.global_usage_model import (
@@ -34,6 +35,7 @@ from app.schemas.global_usage_model import (
 from app.services.global_usage_model_service import GlobalUsageModelService
 from app.services.static_usage_value_resolver import StaticUsageValueResolver
 from app.services.usage_parameter_resolver import UsageParameterResolver
+from app.services.usage_model_debug_csv_builder import build_usage_model_debug_csv
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +80,7 @@ class GlobalUsageService:
             llm_estimate = self._usage_model.estimate(
                 selected_components=selected,
                 usage_parameters=resolved_parameters.llm,
+                static_usage_values=static_values,
                 **normalized_input,
             )
 
@@ -93,6 +96,7 @@ class GlobalUsageService:
             llm_estimate=llm_estimate,
             llm_parameters=resolved_parameters.llm,
             static_parameters=resolved_parameters.static,
+            usage_used_by=resolved_parameters.used_by,
             normalized_input=normalized_input,
             selected_components=selected,
         )
@@ -142,6 +146,7 @@ class GlobalUsageService:
         llm_estimate: GlobalUsageModelEstimateResult | None,
         llm_parameters: list[str],
         static_parameters: list[str],
+        usage_used_by: dict[str, list[str]],
         normalized_input: dict[str, Any],
         selected_components: list[dict[str, Any]],
     ) -> str:
@@ -185,6 +190,38 @@ class GlobalUsageService:
             len(llm_parameters),
             len(static_parameters),
         )
+
+        # Best-effort debug artifact: never fail Step 3 if storage write fails.
+        try:
+            object_path = (
+                f"projects/{project_id}/usage-models/{model_id}/usage_model_debug.csv"
+            )
+            update_fn = getattr(
+                self._projects, "update_global_usage_model_debug_csv_path", None
+            )
+            if callable(update_fn):
+                try:
+                    update_fn(project_id, model_id, object_path)
+                except Exception:
+                    logger.exception(
+                        "usage_model_debug.csv Firestore path update failed (project_id=%s model_id=%s).",
+                        project_id,
+                        model_id,
+                    )
+
+            debug_bucket = "archsari-debug-artifacts-prod"
+
+            storage = StorageClientFactory.create(bucket_name=debug_bucket)
+
+            debug_csv = build_usage_model_debug_csv(payload, used_by=usage_used_by)
+            storage.write_csv(object_path, debug_csv)
+        except Exception:
+            logger.exception(
+                "usage_model_debug.csv upload failed (project_id=%s model_id=%s).",
+                project_id,
+                model_id,
+            )
+
         return model_id
 
     @staticmethod

@@ -69,6 +69,41 @@ def test_build_includes_notification_usage_parameter_guidance():
     assert "enabled channels" in prompt
 
 
+def test_build_includes_static_usage_values_and_sms_guidance():
+    builder = GlobalUsagePromptBuilder()
+    prompt = builder.build(
+        application_description="A mobile app with SMS login.",
+        platform="mobile",
+        stage="mvp",
+        expected_users=10_000,
+        requirements={
+            "authentication": {
+                "enabled": True,
+                "authentication_methods": ["email", "sms"],
+            }
+        },
+        selected_components=[
+            {
+                "category_id": "authentication",
+                "name": "Authentication",
+                "description": "User identity.",
+                "reason": "Login required.",
+            }
+        ],
+        usage_parameters=["sms_verifications_per_user_per_month"],
+        static_usage_values={
+            "users": 10_000,
+            "authentication_methods": ["email", "sms"],
+        },
+    )
+
+    assert "Known static inputs" in prompt
+    assert '"authentication_methods"' in prompt
+    assert '"sms"' in prompt
+    assert "- sms_verifications_per_user_per_month:" in prompt
+    assert "MUST return a positive number" in prompt
+
+
 def test_build_includes_workload_type_parameter_guidance():
     builder = GlobalUsagePromptBuilder()
     prompt = builder.build(

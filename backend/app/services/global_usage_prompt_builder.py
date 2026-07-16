@@ -19,6 +19,7 @@ class GlobalUsagePromptBuilder:
         requirements: dict[str, Any],
         selected_components: list[dict[str, Any]],
         usage_parameters: list[str],
+        static_usage_values: dict[str, Any] | None = None,
     ) -> str:
         platform_label = PLATFORM_LABELS.get(platform, platform.replace("_", " ").title())
         replacements = {
@@ -27,6 +28,9 @@ class GlobalUsagePromptBuilder:
             "{{stage}}": str(stage),
             "{{expected_users}}": str(expected_users),
             "{{requirements}}": self._format_requirements(requirements),
+            "{{static_usage_values}}": self._format_static_usage_values(
+                static_usage_values
+            ),
             "{{selected_components}}": self._format_selected_components(
                 selected_components
             ),
@@ -43,6 +47,12 @@ class GlobalUsagePromptBuilder:
         if not requirements:
             return "No specific requirements were provided."
         return json.dumps(requirements, indent=2, sort_keys=True)
+
+    @staticmethod
+    def _format_static_usage_values(static_usage_values: dict[str, Any] | None) -> str:
+        if not static_usage_values:
+            return "None."
+        return json.dumps(static_usage_values, indent=2, sort_keys=True)
 
     @staticmethod
     def _format_selected_components(selected_components: list[dict[str, Any]]) -> str:

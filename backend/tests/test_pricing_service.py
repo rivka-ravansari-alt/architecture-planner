@@ -36,7 +36,13 @@ class FakeProjectRepository:
     def find_by_id(self, project_id: str):
         if project_id != "project-1":
             return None
-        return {"id": project_id, "user_id": "user-1"}
+        return {
+            "id": project_id,
+            "user_id": "user-1",
+            "expected_users": 1000,
+            "stage": "mvp",
+            "requirements": {},
+        }
 
     def get_latest_architecture_selection(self, project_id: str):
         return {
@@ -311,6 +317,117 @@ def test_generate_provider_returns_skipped_line_item_when_pricing_missing():
     assert item.skip_reason is not None
     assert "aws_cognito" in item.skip_reason
     assert response.result.monthly_total == 0
+
+
+AWS_COGNITO_SCRIPT = (
+    "def calculate_price(inputs, skus, free_tier):\n"
+    "    users = max(0, inputs.get(\"users\", 0))\n"
+    "    authentication_methods = inputs.get(\"authentication_methods\", []) or []\n"
+    "    sms_per_user = max(0, inputs.get(\"sms_verifications_per_user_per_month\", 0))\n"
+    "    mau_sku = next(sku for sku in skus if sku[\"name\"] == \"Monthly Active User\")\n"
+    "    sms_sku = next(sku for sku in skus if sku[\"name\"] == \"SMS Verification\")\n"
+    "    free_mau = free_tier.get(\"monthly_active_users\", 0)\n"
+    "    billable_mau = max(0, users - free_mau)\n"
+    "    mau_cost = billable_mau * mau_sku[\"price_per_mau\"]\n"
+    "    sms_cost = 0\n"
+    "    if \"sms\" in authentication_methods:\n"
+    "        monthly_sms = users * sms_per_user\n"
+    "        sms_cost = monthly_sms * sms_sku[\"price_per_sms\"]\n"
+    "    return round(mau_cost + sms_cost, 2)"
+)
+
+
+def test_generate_provider_refreshes_authentication_methods_for_sms_pricing():
+    """Stale usage models missing authentication_methods still price SMS."""
+
+    class MappingWithAuth(FakeMappingRepository):
+        def find_by_id(self, category_id: str):
+            if category_id == "authentication":
+                return {
+                    "category_id": "authentication",
+                    "providers": {
+                        "aws": [{"service_id": "aws_cognito", "priority": 1}],
+                    },
+                }
+            return super().find_by_id(category_id)
+
+    class ProjectWithSmsAuth(FakeProjectRepository):
+        def find_by_id(self, project_id: str):
+            project = super().find_by_id(project_id)
+            assert project is not None
+            return {
+                **project,
+                "expected_users": 10_000,
+                "requirements": {
+                    "authentication": {
+                        "enabled": True,
+                        "authentication_methods": ["sms", "google"],
+                    }
+                },
+            }
+
+        def get_latest_architecture_selection(self, project_id: str):
+            return {
+                "id": "selection-1",
+                "selected": [
+                    {
+                        "instance_id": "inst-auth-1",
+                        "category_id": "authentication",
+                        "name": "Authentication",
+                        "description": "User auth.",
+                        "reason": "Required for sign-in.",
+                    }
+                ],
+            }
+
+        def get_latest_global_usage_model(self, project_id: str):
+            return {
+                "id": "model-1",
+                "selection_id": "selection-1",
+                "usage_model": {
+                    "llm": {},
+                    # Stale: generated before authentication_methods existed.
+                    "static": {"users": 10_000, "stage": "mvp"},
+                },
+            }
+
+    class PricingWithCognito(FakePricingRepository):
+        SERVICES = {
+            **FakePricingRepository.SERVICES,
+            "aws_cognito": {
+                "service_id": "aws_cognito",
+                "to_know": {
+                    "llm": ["sms_verifications_per_user_per_month"],
+                    "static": ["users", "authentication_methods"],
+                },
+                "skus": [
+                    {
+                        "name": "Monthly Active User",
+                        "price_per_mau": 0.015,
+                    },
+                    {
+                        "name": "SMS Verification",
+                        "price_per_sms": 0.05,
+                    },
+                ],
+                "free_tier": {"monthly_active_users": 10_000},
+                "script_calculation": AWS_COGNITO_SCRIPT,
+            },
+        }
+
+    service = PricingService(
+        ProjectWithSmsAuth(), MappingWithAuth(), PricingWithCognito()
+    )
+    user = UserOut(id="user-1", email="user@example.com", name="User")
+
+    response = service.generate_provider("project-1", "aws", user)
+
+    assert response.result.status == "completed"
+    assert len(response.result.line_items) == 1
+    item = response.result.line_items[0]
+    assert item.status == "priced"
+    assert item.monthly_price == 500.0
+    assert any("sms" in line.lower() for line in (item.calculation_summary or []))
 
 
 def test_generate_provider_rejects_unknown_provider():

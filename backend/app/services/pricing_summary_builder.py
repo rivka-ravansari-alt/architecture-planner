@@ -38,6 +38,8 @@ def _format_with_suffix(suffix: str) -> Callable[[Any], str]:
 def _format_plain(value: Any) -> str:
     if isinstance(value, str):
         return value
+    if isinstance(value, list):
+        return ", ".join(str(item) for item in value) if value else "none"
     return _format_number(value)
 
 
@@ -165,12 +167,33 @@ _SERVICE_SUMMARY_FIELDS: dict[str, tuple[_SummaryField, ...]] = {
     ),
     "aws_cognito": (
         _field("Monthly active users", "users", "billable_mau"),
+        _field("Auth methods", "authentication_methods"),
+        _field(
+            "SMS verifications/user",
+            "sms_verifications_per_user_per_month",
+            "sms_per_user",
+        ),
+        _field("SMS messages", "monthly_sms", suffix="/month"),
     ),
     "azure_entra_id": (
         _field("Monthly active users", "users", "billable_mau"),
+        _field("Auth methods", "authentication_methods"),
+        _field(
+            "SMS verifications/user",
+            "sms_verifications_per_user_per_month",
+            "sms_per_user",
+        ),
+        _field("SMS messages", "monthly_sms", "billable_sms", suffix="/month"),
     ),
     "gcp_firebase_auth": (
-        _field("Monthly active users", "users", "billable"),
+        _field("Monthly active users", "users", "remaining_mau"),
+        _field("Auth methods", "authentication_methods"),
+        _field(
+            "SMS verifications/user",
+            "sms_verifications_per_user_per_month",
+            "sms_per_user",
+        ),
+        _field("SMS messages", "monthly_sms", "billable_sms", suffix="/month"),
     ),
     "aws_api_gateway": (
         _field("API type", "api_type", "selected_sku.name"),

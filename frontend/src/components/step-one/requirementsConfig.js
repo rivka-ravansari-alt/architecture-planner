@@ -15,7 +15,22 @@ export const REQUIREMENT_CARDS = [
     id: "authentication",
     title: "Authentication",
     question: "Does your application require user authentication?",
-    fields: [],
+    fields: [
+      {
+        key: "authentication_methods",
+        type: "checkbox_group",
+        label: "Authentication methods",
+        options: [
+          { value: "email", label: "Email" },
+          { value: "google", label: "Google" },
+          { value: "apple", label: "Apple" },
+          { value: "facebook", label: "Facebook" },
+          { value: "github", label: "GitHub" },
+          { value: "microsoft", label: "Microsoft" },
+          { value: "sms", label: "SMS" },
+        ],
+      },
+    ],
   },
   {
     id: "file_uploads",

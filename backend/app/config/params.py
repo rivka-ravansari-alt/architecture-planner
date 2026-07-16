@@ -716,7 +716,7 @@ Return JSON only, in exactly this structure:
 # Global usage model (Step 3)
 # ---------------------------------------------------------------------------
 
-GLOBAL_USAGE_MODEL_PROMPT_VERSION = "global-usage-model-v3"
+GLOBAL_USAGE_MODEL_PROMPT_VERSION = "global-usage-model-v4"
 
 # Behavioral parameters the global usage model may ask the LLM to estimate.
 # Static project inputs (e.g. ``users``) and derived monthly totals are excluded.
@@ -772,6 +772,15 @@ USAGE_PARAMETER_GUIDANCE: dict[str, str] = {
         "enabled channels (email, push, SMS, in-app). Use requirements.notifications "
         "when present: if disabled, return 0; if enabled, scale volume by the selected "
         "channels and application type (transactional alerts vs marketing, etc.)."
+    ),
+    "sms_verifications_per_user_per_month": (
+        "Average SMS verification messages sent per active user per month for SMS "
+        "authentication (sign-up, sign-in, MFA/OTP). "
+        "Look at requirements.authentication.authentication_methods and Known static "
+        "inputs. If authentication is disabled OR 'sms' is not listed, return 0. "
+        "If 'sms' IS listed, you MUST return a positive number (typically 1.0 for "
+        "about one SMS per active user per month; use 2–3 for frequent re-auth). "
+        "Never return 0 when SMS authentication is enabled."
     ),
 }
 
@@ -840,6 +849,9 @@ Expected users:
 Requirements:
 {{requirements}}
 
+Known static inputs (already resolved — do not re-estimate these):
+{{static_usage_values}}
+
 Selected architecture components:
 {{selected_components}}
 
@@ -855,6 +867,7 @@ Base the estimates on:
 - the described application functionality;
 - the product stage;
 - the expected number of users;
+- the requirements and Known static inputs (especially authentication_methods);
 - the selected architecture components.
 
 Return realistic baseline estimates for the current stage, not maximum capacity.

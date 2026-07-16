@@ -154,8 +154,20 @@ def get_pricing_service(
         get_cloud_service_mapping_repository
     ),
     pricing: PricingServiceRepository = Depends(get_pricing_service_repository),
+    usage_parameter_resolver: UsageParameterResolver = Depends(
+        get_usage_parameter_resolver
+    ),
+    static_value_resolver: StaticUsageValueResolver = Depends(
+        get_static_usage_value_resolver
+    ),
 ) -> PricingService:
-    return PricingService(projects, mappings, pricing)
+    return PricingService(
+        projects,
+        mappings,
+        pricing,
+        usage_parameter_resolver,
+        static_value_resolver,
+    )
 
 
 def get_project_service(

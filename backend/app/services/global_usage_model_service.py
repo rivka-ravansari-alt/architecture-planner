@@ -73,6 +73,7 @@ class GlobalUsageModelService:
         requirements: dict[str, Any],
         selected_components: list[dict[str, Any]],
         usage_parameters: list[str],
+        static_usage_values: dict[str, Any] | None = None,
     ) -> GlobalUsageModelEstimateResult:
         requested = [
             parameter.strip()
@@ -87,6 +88,7 @@ class GlobalUsageModelService:
             requirements=requirements,
             selected_components=selected_components,
             usage_parameters=requested,
+            static_usage_values=static_usage_values,
         )
 
         accumulated: dict[str, UsageParameterEstimate] = {}
