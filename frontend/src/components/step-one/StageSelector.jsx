@@ -1,6 +1,6 @@
 const STAGE_OPTIONS = [
   { value: "mvp", label: "MVP" },
-  { value: "production", label: "Production" },
+  { value: "production", label: "Production", disabled: true },
 ];
 
 /**
@@ -18,8 +18,14 @@ export default function StageSelector({ value, onChange }) {
             type="button"
             role="radio"
             aria-checked={value === option.value}
-            className={`chip${value === option.value ? " selected" : ""}`}
-            onClick={() => onChange(option.value)}
+            aria-disabled={option.disabled || undefined}
+            disabled={option.disabled}
+            className={`chip${value === option.value ? " selected" : ""}${
+              option.disabled ? " disabled" : ""
+            }`}
+            onClick={() => {
+              if (!option.disabled) onChange(option.value);
+            }}
           >
             {option.label}
           </button>

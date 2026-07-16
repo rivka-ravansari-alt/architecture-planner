@@ -33,7 +33,10 @@ export default function App() {
   return (
     <div className="step-one-page">
       <header className="step-one-topbar">
-        <span className="step-one-brand">Archsari</span>
+        <div className="step-one-brand">
+          <span className="step-one-brand-name">ArchSari</span>
+          <span className="brand-tagline">Know Your Cloud Costs Before You Start</span>
+        </div>
         <div className="step-one-user">
           {user.name && <span>{user.name}</span>}
           <button type="button" className="btn btn-ghost" onClick={logout}>

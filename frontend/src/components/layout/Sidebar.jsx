@@ -44,8 +44,8 @@ export default function Sidebar({
           </svg>
         </div>
         <div className="brand-text">
-          <span className="brand-name">Archsari</span>
-          <span className="brand-sub">Architecture Before Code</span>
+          <span className="brand-name">ArchSari</span>
+          <span className="brand-tagline">Know Your Cloud Costs Before You Start</span>
         </div>
       </div>
 
@@ -127,7 +127,7 @@ export default function Sidebar({
         })}
       </nav>
 
-      <div className="sidebar-footer">Architecture Before Code</div>
+      <div className="sidebar-footer">Know Your Cloud Costs Before You Start</div>
     </aside>
   );
 }

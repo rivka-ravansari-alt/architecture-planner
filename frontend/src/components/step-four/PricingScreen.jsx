@@ -76,7 +76,7 @@ function PricingDetailsPanel({ item }) {
           </ul>
         ) : (
           <p className="pricing-details-empty">
-            No calculation summary available. Recalculate pricing to generate one.
+            No calculation summary available.
           </p>
         )}
       </section>
@@ -462,21 +462,13 @@ export default function PricingScreen({ projectId, onBack }) {
         </section>
       )}
 
-      <div className="actions">
-        {onBack && (
+      {onBack && (
+        <div className="actions">
           <button type="button" className="btn btn-ghost" onClick={onBack}>
             Back
           </button>
-        )}
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => runProgressivePricing()}
-          disabled={phase === "pricing"}
-        >
-          Recalculate pricing
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
