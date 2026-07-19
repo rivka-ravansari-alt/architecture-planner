@@ -42,7 +42,7 @@ export default function LoginPage() {
           <h1>ArchSari</h1>
           <p className="brand-tagline">Know Your Cloud Costs Before You Start</p>
         </div>
-        <p className="login-subtitle">Sign in to plan your application architecture with AI.</p>
+        <p className="login-subtitle">Plan smarter with AI.</p>
         <button
           type="button"
           className="btn btn-google"
