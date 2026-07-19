@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 
 import { useAuth } from "./context/AuthContext.jsx";
-import StepOneForm from "./components/step-one/StepOneForm.jsx";
-import ComponentSelectionScreen from "./components/step-two/ComponentSelectionScreen.jsx";
-import PricingScreen from "./components/step-four/PricingScreen.jsx";
+import { Spinner } from "./components/ui/Spinner.jsx";
 import AuthLoadingPage from "./pages/AuthLoadingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+
+const StepOneForm = lazy(() => import("./components/step-one/StepOneForm.jsx"));
+const ComponentSelectionScreen = lazy(() =>
+  import("./components/step-two/ComponentSelectionScreen.jsx")
+);
+const PricingScreen = lazy(() =>
+  import("./components/step-four/PricingScreen.jsx")
+);
 
 export default function App() {
   const { user, loading, logout } = useAuth();
@@ -45,20 +51,22 @@ export default function App() {
         </div>
       </header>
       <main className="step-one-main">
-        {!projectId ? (
-          <StepOneForm onCreated={handleProjectCreated} />
-        ) : step === "pricing" ? (
-          <PricingScreen
-            projectId={projectId}
-            onBack={() => setStep("components")}
-          />
-        ) : (
-          <ComponentSelectionScreen
-            projectId={projectId}
-            onBack={handleBackToIntake}
-            onContinue={() => setStep("pricing")}
-          />
-        )}
+        <Suspense fallback={<Spinner className="spinner-lg" />}>
+          {!projectId ? (
+            <StepOneForm onCreated={handleProjectCreated} />
+          ) : step === "pricing" ? (
+            <PricingScreen
+              projectId={projectId}
+              onBack={() => setStep("components")}
+            />
+          ) : (
+            <ComponentSelectionScreen
+              projectId={projectId}
+              onBack={handleBackToIntake}
+              onContinue={() => setStep("pricing")}
+            />
+          )}
+        </Suspense>
       </main>
     </div>
   );
