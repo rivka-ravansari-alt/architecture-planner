@@ -1,3 +1,3 @@
-export function Spinner() {
-  return <span className="spinner" aria-hidden />;
+export function Spinner({ className = "" }) {
+  return <span className={`spinner ${className}`.trim()} aria-hidden />;
 }

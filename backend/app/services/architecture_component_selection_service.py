@@ -8,6 +8,8 @@ from Firestore, build the prompt, call OpenAI, and return a validated
 from __future__ import annotations
 
 import logging
+import time
+from dataclasses import dataclass
 from typing import Any
 
 from app.clients.ai_client import BaseAIClient
@@ -37,6 +39,20 @@ _CORRECTION_TEMPLATE = (
 )
 
 
+@dataclass
+class GenerationTrace:
+    """Mutable record of a single selection run, used to build generation artifacts.
+
+    ``select`` fills this in on success so callers can persist the exact prompt
+    and raw model output without changing the method's return contract.
+    """
+
+    prompt: str | None = None
+    raw_response: str | None = None
+    duration_seconds: float | None = None
+    attempts: int = 0
+
+
 class ArchitectureComponentSelectionService:
     def __init__(
         self,
@@ -58,13 +74,19 @@ class ArchitectureComponentSelectionService:
         expected_users: int,
         requirements: dict[str, Any],
         categories: list[dict[str, Any]],
+        record: GenerationTrace | None = None,
     ) -> ComponentSelectionResult:
         """Build the prompt, call OpenAI, and return the validated selection.
 
         Retries a bounded number of times on validation failure, feeding the
         model its own error so it can self-correct. Never repairs the payload.
+
+        When ``record`` is provided, it is populated on success with the final
+        prompt, raw model response, attempt count, and duration so the caller can
+        persist generation artifacts.
         """
 
+        started_at = time.perf_counter()
         base_prompt = self._prompt_builder.build(
             application_description=application_description,
             platform=platform,
@@ -94,6 +116,12 @@ class ArchitectureComponentSelectionService:
                 )
                 prompt = base_prompt + _CORRECTION_TEMPLATE.format(error=error.message)
                 continue
+
+            if record is not None:
+                record.prompt = prompt
+                record.raw_response = raw_response
+                record.attempts = attempt
+                record.duration_seconds = time.perf_counter() - started_at
 
             logger.info(
                 "component_selection selected=%d excluded=%d (attempt %d)",

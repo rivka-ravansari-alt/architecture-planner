@@ -121,6 +121,7 @@ export default function PricingScreen({ projectId, onBack }) {
   const [error, setError] = useState("");
   const requestRef = useRef(0);
   const runIdRef = useRef(null);
+  const ensureUsageModelPromiseRef = useRef(null);
 
   const allFinished =
     PROVIDER_ORDER.every((provider) => {
@@ -128,16 +129,27 @@ export default function PricingScreen({ projectId, onBack }) {
       return status === "completed" || status === "failed";
     }) && PROVIDER_ORDER.some((provider) => providers[provider]);
 
-  const ensureUsageModel = useCallback(async () => {
-    try {
-      await projectApi.getGlobalUsageModel(projectId);
-    } catch (err) {
-      const message = err.message || "";
-      if (!message.includes("No global usage model exists")) {
-        throw err;
-      }
-      await projectApi.generateGlobalUsageModel(projectId);
+  const ensureUsageModel = useCallback(() => {
+    // In-flight guard: collapse concurrent calls (e.g. React StrictMode's
+    // double-invoked effect) onto a single request so we never fire two
+    // usage-model generations at once. The promise is cleared once settled so
+    // later, legitimate regenerations can run again.
+    if (!ensureUsageModelPromiseRef.current) {
+      ensureUsageModelPromiseRef.current = (async () => {
+        try {
+          await projectApi.getGlobalUsageModel(projectId);
+        } catch (err) {
+          const message = err.message || "";
+          if (!message.includes("No global usage model exists")) {
+            throw err;
+          }
+          await projectApi.generateGlobalUsageModel(projectId);
+        }
+      })().finally(() => {
+        ensureUsageModelPromiseRef.current = null;
+      });
     }
+    return ensureUsageModelPromiseRef.current;
   }, [projectId]);
 
   const runProgressivePricing = useCallback(

@@ -28,6 +28,7 @@ from app.services.architecture_component_selection_service import (
 )
 from app.services.architecture_component_service import ArchitectureComponentService
 from app.services.auth_service import AuthService
+from app.services.generation_storage_service import GenerationStorageService
 from app.services.global_usage_model_service import GlobalUsageModelService
 from app.services.global_usage_service import GlobalUsageService
 from app.services.pricing_service import PricingService
@@ -79,6 +80,10 @@ def get_architecture_component_selection_service(
     return ArchitectureComponentSelectionService(ai_client)
 
 
+def get_generation_storage_service() -> GenerationStorageService:
+    return GenerationStorageService()
+
+
 def get_architecture_component_service(
     projects: ProjectRepository = Depends(get_project_repository),
     categories: ArchitectureCategoryRepository = Depends(
@@ -87,8 +92,13 @@ def get_architecture_component_service(
     selection_service: ArchitectureComponentSelectionService = Depends(
         get_architecture_component_selection_service
     ),
+    generation_storage: GenerationStorageService = Depends(
+        get_generation_storage_service
+    ),
 ) -> ArchitectureComponentService:
-    return ArchitectureComponentService(projects, categories, selection_service)
+    return ArchitectureComponentService(
+        projects, categories, selection_service, generation_storage
+    )
 
 
 def get_auth_service(

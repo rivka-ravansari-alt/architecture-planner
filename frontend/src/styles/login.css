@@ -6,18 +6,32 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: var(--bg);
+  background:
+    radial-gradient(1200px 600px at 50% -10%, var(--accent-soft), transparent 60%),
+    var(--bg);
 }
 
 .login-card {
   width: 100%;
   max-width: 400px;
-  padding: 2.5rem 2rem;
+  padding: 2.75rem 2.25rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   text-align: center;
+}
+
+.login-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: var(--primary);
+}
+
+.login-loading .login-subtitle {
+  margin: 0;
 }
 
 .login-brand {
@@ -66,6 +80,27 @@
 
 .btn-google {
   width: 100%;
+  gap: 0.6rem;
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-google:hover:not(:disabled) {
+  background: var(--surface-muted);
+  border-color: var(--text-faint);
+}
+
+.btn-google:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  flex-shrink: 0;
 }
 
 .topbar-actions {
