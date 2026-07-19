@@ -39,7 +39,7 @@
   margin-top: 8px;
   font-size: 0.92rem;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--text);
   line-height: 1.35;
 }
 
@@ -129,10 +129,10 @@
 
 .arch-doc-section-title {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--primary);
+  color: var(--text);
   line-height: 1.25;
 }
 
@@ -206,7 +206,7 @@
 }
 
 .doc-status-value.is-ok {
-  color: #15803d;
+  color: var(--success-strong);
 }
 
 .doc-component-grid {
@@ -245,9 +245,9 @@
   width: 32px;
   height: 32px;
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
-  color: #475569;
+  color: var(--text-soft);
 }
 
 .doc-component-name {
@@ -273,7 +273,7 @@
   cursor: pointer;
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--accent, #2563eb);
+  color: var(--accent, #3157d5);
   list-style: none;
   user-select: none;
 }
@@ -335,7 +335,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .doc-implementation-meta dd {
@@ -355,7 +355,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .doc-implementation-points ul {
@@ -373,7 +373,7 @@
 .doc-implementation-na {
   margin: 0;
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--text-faint);
   font-style: italic;
 }
 

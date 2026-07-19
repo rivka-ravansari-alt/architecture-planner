@@ -42,7 +42,9 @@
 .login-card h1 {
   margin: 0;
   font-size: 1.75rem;
-  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 .login-brand .brand-tagline {

@@ -2,8 +2,8 @@
 /* ------------------------------------------------------------------ */
 .error-banner {
   background: var(--danger-soft);
-  border: 1px solid #fecaca;
-  color: #b91c1c;
+  border: 1px solid var(--danger-border);
+  color: var(--danger-strong);
   padding: 13px 16px;
   border-radius: var(--radius);
   margin-bottom: 18px;

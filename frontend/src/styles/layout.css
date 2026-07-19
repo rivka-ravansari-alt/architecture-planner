@@ -334,7 +334,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--primary);
+  color: var(--text);
 }
 
 .focus-workspace-sub {
@@ -423,23 +423,25 @@
 
 .topbar h1 {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--text);
 }
 
 .topbar p {
-  margin: 4px 0 0;
-  font-size: 0.9rem;
+  margin: 6px 0 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
   color: var(--text-soft);
 }
 
 .content {
   flex: 1 1 auto;
-  padding: 32px 40px 56px;
-  max-width: 1080px;
+  padding: 44px 40px 72px;
+  max-width: 940px;
   width: 100%;
+  margin: 0 auto;
 }
 
 .content-workspace {

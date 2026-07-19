@@ -1,39 +1,63 @@
 :root {
-  /* Brand */
-  --primary: #1e3a5f;
-  --primary-hover: #2c4a6b;
-  --secondary: #2c4a6b;
-  --accent: #4f7cac;
-  --accent-soft: #eef3f8;
+  /* Brand — calm, sophisticated blue. Reserved for primary actions,
+     active selections, links and focus states (not used as a wash). */
+  --primary: #3157d5;
+  --primary-hover: #2748b8;
+  --primary-active: #1f3a96;
 
-  /* Surfaces */
-  --bg: #f8fafc;
+  /* Accent tints for active selections / soft highlights */
+  --accent: #3157d5;
+  --accent-soft: #eef2fd;
+  --accent-border: #d3ddf6;
+
+  /* Secondary — purple, reserved for AI-related actions & highlights only */
+  --secondary: #6d5ae0;
+  --secondary-hover: #5a48c9;
+  --secondary-soft: #f2f0fd;
+  --secondary-border: #ddd7f6;
+
+  /* Surfaces — soft page background so white cards read as elevated */
+  --bg: #f5f7fb;
   --surface: #ffffff;
-  --surface-soft: #f8fafc;
-  --surface-muted: #f1f5f9;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --surface-soft: #f7f9fc;
+  --surface-muted: #eef1f7;
+  --border: #dde3ec;
+  --border-soft: #e7ebf2;
+  --border-strong: #cbd3e0;
 
   /* Text */
-  --text: #0f172a;
-  --text-soft: #64748b;
-  --text-faint: #94a3b8;
+  --text: #162033;
+  --text-soft: #667085;
+  --text-muted: #8a93a5;
+  --text-faint: #a6aebd;
 
   /* Status */
-  --success: #16a34a;
-  --success-soft: #f0fdf4;
-  --warn: #f59e0b;
-  --warn-soft: #fffbeb;
-  --danger: #dc2626;
-  --danger-soft: #fef2f2;
+  --success: #12946b;
+  --success-strong: #0f7a58;
+  --success-soft: #eafaf4;
+  --success-border: #b7ead6;
+  --warn: #d98c1a;
+  --warn-strong: #b45309;
+  --warn-soft: #fdf6ea;
+  --warn-border: #f3dcae;
+  --danger: #e0453f;
+  --danger-strong: #b3302c;
+  --danger-soft: #fdf0ef;
+  --danger-border: #f4ccc9;
+
+  /* Focus ring */
+  --ring: 0 0 0 3px rgba(175, 194, 255, 0.55);
+  --ring-color: #afc2ff;
 
   /* Geometry */
   --radius-sm: 8px;
-  --radius: 10px;
-  --radius-lg: 12px;
-  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow-xs: 0 1px 2px rgba(22, 32, 51, 0.04);
+  --shadow-sm: 0 1px 2px rgba(22, 32, 51, 0.04), 0 2px 4px rgba(22, 32, 51, 0.04);
+  --shadow-md: 0 4px 16px rgba(22, 32, 51, 0.06), 0 1px 3px rgba(22, 32, 51, 0.04);
+  --shadow-lg: 0 20px 48px rgba(22, 32, 51, 0.12);
 
   --sidebar-w: 264px;
   --sidebar-w-collapsed: 56px;

@@ -19,14 +19,15 @@
 .component-review-header h1 {
   margin: 0;
   font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   color: var(--text);
 }
 
 .component-review-header .subtitle {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   color: var(--text-soft);
+  line-height: 1.55;
 }
 
 .component-review-section {
@@ -196,7 +197,7 @@
   align-items: flex-start;
   justify-content: center;
   padding: 8vh 16px 16px;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(22, 32, 51, 0.5);
   overflow-y: auto;
 }
 
