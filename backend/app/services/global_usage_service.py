@@ -9,6 +9,8 @@ Ties together the pipeline:
 
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 from typing import Any
 
@@ -59,14 +61,30 @@ class GlobalUsageService:
         if selection is None:
             raise NotFoundError(ERR_NO_COMPONENT_SELECTION)
 
+        selection_id = selection["id"]
         selected = list(selection.get("selected", []))
+        normalized_input = self._normalize_input(project)
+
+        # Idempotency key: identical selection + inputs always maps to the same
+        # document id, so concurrent/duplicate requests converge on one model.
+        model_id = self._input_fingerprint(selection_id, normalized_input, selected)
+
+        # Fast path: an identical, current model already exists — reuse it without
+        # re-running the (expensive, non-deterministic) LLM estimate or writing again.
+        existing = self._projects.get_global_usage_model(project_id, model_id)
+        if existing is not None and not existing.get("stale"):
+            logger.info(
+                "reusing existing global usage model project_id=%s model_id=%s",
+                project_id,
+                model_id,
+            )
+            return GlobalUsageModelResponse.from_stored_document(existing)
+
         resolved_parameters = self._parameter_resolver.resolve_for_selected_components(
             selected
         )
         if not resolved_parameters.llm and not resolved_parameters.static:
             raise ServiceUnavailableError(ERR_NO_USAGE_PARAMETERS)
-
-        normalized_input = self._normalize_input(project)
 
         static_values = self._static_values.resolve(
             resolved_parameters.static,
@@ -89,9 +107,10 @@ class GlobalUsageService:
             static=static_values,
         )
 
-        model_id = self._persist(
+        created = self._persist(
             project_id,
-            selection_id=selection["id"],
+            model_id=model_id,
+            selection_id=selection_id,
             payload=payload,
             llm_estimate=llm_estimate,
             llm_parameters=resolved_parameters.llm,
@@ -100,9 +119,22 @@ class GlobalUsageService:
             normalized_input=normalized_input,
             selected_components=selected,
         )
+
+        # Lost a concurrent race: another request already persisted this model.
+        # Return the stored document so both callers see the same result.
+        if not created:
+            stored = self._projects.get_global_usage_model(project_id, model_id)
+            if stored is not None:
+                logger.info(
+                    "concurrent duplicate ignored; reusing model project_id=%s model_id=%s",
+                    project_id,
+                    model_id,
+                )
+                return GlobalUsageModelResponse.from_stored_document(stored)
+
         return GlobalUsageModelResponse.from_payload(
             model_id=model_id,
-            selection_id=selection["id"],
+            selection_id=selection_id,
             llm_parameters=resolved_parameters.llm,
             static_parameters=resolved_parameters.static,
             payload=payload,
@@ -141,6 +173,7 @@ class GlobalUsageService:
         self,
         project_id: str,
         *,
+        model_id: str,
         selection_id: str,
         payload: GlobalUsageModelPayload,
         llm_estimate: GlobalUsageModelEstimateResult | None,
@@ -149,10 +182,11 @@ class GlobalUsageService:
         usage_used_by: dict[str, list[str]],
         normalized_input: dict[str, Any],
         selected_components: list[dict[str, Any]],
-    ) -> str:
+    ) -> bool:
         model_name = "static" if settings.use_static_ai_response else settings.openai_model
         document = {
             "selection_id": selection_id,
+            "input_fingerprint": model_id,
             "stale": False,
             "llm_parameters": llm_parameters,
             "static_parameters": static_parameters,
@@ -182,7 +216,17 @@ class GlobalUsageService:
                 "static_parameters": static_parameters,
             },
         }
-        model_id = self._projects.save_global_usage_model(project_id, document)
+        model_id, created = self._projects.create_global_usage_model_if_absent(
+            project_id, model_id, document
+        )
+        if not created:
+            logger.info(
+                "global usage model already present; skipping write project_id=%s model_id=%s",
+                project_id,
+                model_id,
+            )
+            return False
+
         logger.info(
             "saved global usage model project_id=%s model_id=%s llm=%d static=%d",
             project_id,
@@ -194,7 +238,7 @@ class GlobalUsageService:
         # Best-effort debug artifact: never fail Step 3 if storage write fails.
         try:
             object_path = (
-                f"projects/{project_id}/usage-models/{model_id}/usage_model_debug.csv"
+                f"projects/{project_id}_{model_id}_usage_model_debug.csv"
             )
             update_fn = getattr(
                 self._projects, "update_global_usage_model_debug_csv_path", None
@@ -222,7 +266,35 @@ class GlobalUsageService:
                 model_id,
             )
 
-        return model_id
+        return True
+
+    @staticmethod
+    def _input_fingerprint(
+        selection_id: str,
+        normalized_input: dict[str, Any],
+        selected_components: list[dict[str, Any]],
+    ) -> str:
+        """Stable id derived from the selection + inputs that define the usage model.
+
+        Identical inputs always produce the same id, which is used as the Firestore
+        document id so duplicate/concurrent generations converge on one document.
+        """
+
+        selected_keys = sorted(
+            str(component.get("instance_id") or component.get("category_id") or "")
+            for component in selected_components
+        )
+        canonical = json.dumps(
+            {
+                "selection_id": selection_id,
+                "input": normalized_input,
+                "selected": selected_keys,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        )
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
     @staticmethod
     def _is_usage_model_current(

@@ -19,6 +19,7 @@ from app.schemas.project import CreateProjectRequest
 
 class ProjectRepository:
     def __init__(self, client: firestore.Client) -> None:
+        self._client = client
         self._collection = client.collection(FIRESTORE_PROJECTS_COLLECTION)
 
     def create(self, payload: CreateProjectRequest, user_id: str) -> str:
@@ -194,6 +195,50 @@ class ProjectRepository:
         )
         return reference.id
 
+    def get_global_usage_model(
+        self, project_id: str, model_id: str
+    ) -> dict[str, Any] | None:
+        """Return a specific global usage model (with its id) or ``None``."""
+
+        snapshot = (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_GLOBAL_USAGE_MODELS_SUBCOLLECTION)
+            .document(model_id)
+            .get()
+        )
+        if not snapshot.exists:
+            return None
+        data = snapshot.to_dict() or {}
+        data["id"] = snapshot.id
+        return data
+
+    def create_global_usage_model_if_absent(
+        self, project_id: str, model_id: str, usage_model: dict[str, Any]
+    ) -> tuple[str, bool]:
+        """Atomically create the usage-model document only if it isn't already present.
+
+        Uses a Firestore transaction keyed on the deterministic ``model_id`` so that
+        concurrent Step-3 requests with identical inputs converge on a single
+        document: exactly one caller creates it, and the rest reuse it. Returns the
+        model id and whether this call created the document (``False`` == reused).
+        """
+
+        reference = (
+            self._collection.document(project_id)
+            .collection(FIRESTORE_GLOBAL_USAGE_MODELS_SUBCOLLECTION)
+            .document(model_id)
+        )
+        transaction = self._client.transaction()
+        created = _create_global_usage_model_if_absent(
+            transaction, reference, usage_model
+        )
+        if created:
+            self._collection.document(project_id).set(
+                {"current_step": 3, "updated_at": firestore.SERVER_TIMESTAMP},
+                merge=True,
+            )
+        return model_id, created
+
     def update_global_usage_model_debug_csv_path(
         self, project_id: str, model_id: str, object_path: str
     ) -> None:
@@ -336,3 +381,22 @@ class ProjectRepository:
             for provider in PRICING_GENERATION_ORDER
             if provider in results_by_provider
         ]
+
+
+@firestore.transactional
+def _create_global_usage_model_if_absent(
+    transaction: firestore.Transaction,
+    reference: firestore.DocumentReference,
+    usage_model: dict[str, Any],
+) -> bool:
+    """Create ``usage_model`` at ``reference`` only if no current document exists.
+
+    Returns ``True`` when it wrote a new document, ``False`` when a non-stale
+    document was already present (so the caller should reuse it).
+    """
+
+    snapshot = reference.get(transaction=transaction)
+    if snapshot.exists and not (snapshot.to_dict() or {}).get("stale"):
+        return False
+    transaction.set(reference, usage_model)
+    return True

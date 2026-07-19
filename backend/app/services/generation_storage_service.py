@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 from typing import Any
 
@@ -10,6 +11,7 @@ from app.config.params import (
     AI_RESPONSE_FORMAT,
     AI_SYSTEM_PROMPT,
     AI_TEMPERATURE,
+    GENERATION_ARTIFACT_BUCKET,
     GENERATION_REQUEST_FILENAME,
     GENERATION_RESPONSE_FILENAME,
     GENERATION_STORAGE_PREFIX,
@@ -19,10 +21,15 @@ from app.config.params import (
 from app.config.settings import settings
 from app.models import Project
 
+logger = logging.getLogger(__name__)
+
 
 class GenerationStorageService:
     def __init__(self, storage: StorageClient | None = None) -> None:
-        self._storage = storage or StorageClientFactory.create()
+        # Lazily bind to GCS so constructing the service (e.g. during dependency
+        # injection or in tests) never requires GCS credentials. The client is
+        # only created on the first write, which happens in the background task.
+        self._storage = storage
 
     def build_request_payload(
         self,
@@ -32,14 +39,62 @@ class GenerationStorageService:
         prompt: str,
         model_name: str,
     ) -> dict[str, Any]:
+        return self._request_payload(
+            generation_id=generation_id,
+            project_id=project.id,
+            user_id=project.user_id,
+            project_types=project.project_types,
+            original_user_input=self._original_user_input(project),
+            prompt=prompt,
+            model_name=model_name,
+        )
+
+    def build_selection_request_payload(
+        self,
+        *,
+        generation_id: str,
+        project_id: str,
+        user_id: str | None,
+        project_types: list[str] | None,
+        original_user_input: dict[str, Any],
+        prompt: str,
+        model_name: str,
+    ) -> dict[str, Any]:
+        """Build the request artifact for the Step-2 component-selection flow.
+
+        Unlike ``build_request_payload`` this accepts plain values (the live flow
+        works with Firestore dicts rather than the ORM ``Project`` model).
+        """
+
+        return self._request_payload(
+            generation_id=generation_id,
+            project_id=project_id,
+            user_id=user_id,
+            project_types=project_types,
+            original_user_input=original_user_input,
+            prompt=prompt,
+            model_name=model_name,
+        )
+
+    def _request_payload(
+        self,
+        *,
+        generation_id: str,
+        project_id: str,
+        user_id: str | None,
+        project_types: list[str] | None,
+        original_user_input: dict[str, Any],
+        prompt: str,
+        model_name: str,
+    ) -> dict[str, Any]:
         return {
             "generation_id": generation_id,
             "request_id": generation_id,
-            "project_id": project.id,
-            "user_id": project.user_id,
-            "project_type": list(project.project_types or []),
+            "project_id": project_id,
+            "user_id": user_id,
+            "project_type": list(project_types or []),
             "generation_type": GENERATION_TYPE_ARCHITECTURE,
-            "original_user_input": self._original_user_input(project),
+            "original_user_input": original_user_input,
             "generated_prompt": prompt,
             "model": model_name,
             "parameters": self._model_parameters(),
@@ -74,11 +129,56 @@ class GenerationStorageService:
 
     def save_request(self, generation_id: str, payload: dict[str, Any]) -> str:
         key = self._object_key(generation_id, GENERATION_REQUEST_FILENAME)
-        return self._storage.write_json(key, payload)
+        return self._ensure_storage().write_json(key, payload)
 
     def save_response(self, generation_id: str, payload: dict[str, Any]) -> str:
         key = self._object_key(generation_id, GENERATION_RESPONSE_FILENAME)
-        return self._storage.write_json(key, payload)
+        return self._ensure_storage().write_json(key, payload)
+
+    def upload_artifacts(
+        self,
+        *,
+        generation_id: str,
+        request_payload: dict[str, Any],
+        response_payload: dict[str, Any],
+    ) -> None:
+        """Persist both generation artifacts, best-effort.
+
+        Intended to run as a background task after the response has been sent, so
+        a storage failure must never propagate to the user request. Each write is
+        isolated and failures are logged (with stack trace) but swallowed.
+        """
+
+        try:
+            uri = self.save_request(generation_id, request_payload)
+            logger.info(
+                "uploaded generation request artifact generation_id=%s uri=%s",
+                generation_id,
+                uri,
+            )
+        except Exception:
+            logger.exception(
+                "generation request.json upload failed generation_id=%s",
+                generation_id,
+            )
+
+        try:
+            uri = self.save_response(generation_id, response_payload)
+            logger.info(
+                "uploaded generation response artifact generation_id=%s uri=%s",
+                generation_id,
+                uri,
+            )
+        except Exception:
+            logger.exception(
+                "generation response.json upload failed generation_id=%s",
+                generation_id,
+            )
+
+    def _ensure_storage(self) -> StorageClient:
+        if self._storage is None:
+            self._storage = StorageClientFactory.create_gcs(GENERATION_ARTIFACT_BUCKET)
+        return self._storage
 
     @staticmethod
     def resolve_model_name() -> str:

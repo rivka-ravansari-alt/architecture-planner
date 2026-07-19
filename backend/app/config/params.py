@@ -519,6 +519,11 @@ GENERATION_RESPONSE_FILENAME = "response.json"
 
 GENERATION_TYPE_ARCHITECTURE = "architecture"
 
+# Generation request/response artifacts always land in GCS (never the local
+# filesystem), in every environment. This is intentionally independent of the
+# OBJECT_STORAGE_* settings used for other object storage.
+GENERATION_ARTIFACT_BUCKET = "archsari-generations-prod"
+
 # ---------------------------------------------------------------------------
 # AI generation
 # ---------------------------------------------------------------------------

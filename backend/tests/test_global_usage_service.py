@@ -15,6 +15,7 @@ from app.services.usage_parameter_resolver import ResolvedUsageParameters, Usage
 class FakeProjectRepository:
     def __init__(self) -> None:
         self.saved_documents: list[dict] = []
+        self.saved_by_id: dict[str, dict] = {}
         self.stale_models: set[str] = set()
         self.stale_runs: set[str] = set()
 
@@ -47,6 +48,22 @@ class FakeProjectRepository:
     def save_global_usage_model(self, project_id: str, usage_model: dict) -> str:
         self.saved_documents.append({"project_id": project_id, **usage_model})
         return "model-1"
+
+    def get_global_usage_model(self, project_id: str, model_id: str):
+        document = self.saved_by_id.get(model_id)
+        if document is None:
+            return None
+        return {"id": model_id, **document}
+
+    def create_global_usage_model_if_absent(
+        self, project_id: str, model_id: str, usage_model: dict
+    ):
+        existing = self.saved_by_id.get(model_id)
+        if existing is not None and not existing.get("stale"):
+            return model_id, False
+        self.saved_by_id[model_id] = usage_model
+        self.saved_documents.append({"project_id": project_id, **usage_model})
+        return model_id, True
 
     def get_latest_global_usage_model(self, project_id: str):
         if "model-1" in self.stale_models:
@@ -122,7 +139,7 @@ def test_generate_persists_and_returns_combined_usage_model():
 
     response = service.generate("project-1", user)
 
-    assert response.model_id == "model-1"
+    assert isinstance(response.model_id, str) and response.model_id
     assert response.selection_id == "selection-1"
     assert response.llm_parameters == ["requests_per_user_per_month"]
     assert response.static_parameters == ["users", "stage"]
@@ -211,6 +228,24 @@ def test_get_usage_model_raises_when_selection_id_mismatch():
 
     with pytest.raises(NotFoundError, match="No global usage model exists"):
         service.get_usage_model("project-1", user)
+
+
+def test_generate_is_idempotent_for_identical_inputs():
+    projects = FakeProjectRepository()
+    service = GlobalUsageService(
+        projects,
+        FakeParameterResolver(),
+        StaticUsageValueResolver(),
+        FakeUsageModelService(),
+    )
+    user = UserOut(id="user-1", email="test@example.com", name="Test User")
+
+    first = service.generate("project-1", user)
+    second = service.generate("project-1", user)
+
+    # Same selection + inputs -> same deterministic id and a single Firestore doc.
+    assert first.model_id == second.model_id
+    assert len(projects.saved_documents) == 1
 
 
 def test_generate_persists_stale_false():

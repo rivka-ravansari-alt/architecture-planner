@@ -10,8 +10,10 @@ route handler:
 from __future__ import annotations
 
 import logging
+import uuid
 from typing import Any
 
+from fastapi import BackgroundTasks
 from google.cloud import firestore
 
 from app.config.params import (
@@ -47,12 +49,14 @@ from app.schemas.component_selection import (
 )
 from app.services.architecture_component_selection_service import (
     ArchitectureComponentSelectionService,
+    GenerationTrace,
 )
 from app.services.component_selection_mapper import (
     new_component_instance_id,
     to_response,
     to_response_from_lists,
 )
+from app.services.generation_storage_service import GenerationStorageService
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +67,19 @@ class ArchitectureComponentService:
         project_repository: ProjectRepository,
         category_repository: ArchitectureCategoryRepository,
         selection_service: ArchitectureComponentSelectionService,
+        generation_storage: GenerationStorageService | None = None,
     ) -> None:
         self._projects = project_repository
         self._categories = category_repository
         self._selection = selection_service
+        self._generation_storage = generation_storage or GenerationStorageService()
 
-    def generate(self, project_id: str, user: UserOut) -> ComponentSelectionResponse:
+    def generate(
+        self,
+        project_id: str,
+        user: UserOut,
+        background_tasks: BackgroundTasks | None = None,
+    ) -> ComponentSelectionResponse:
         project = self._load_owned_project(project_id, user)
         categories = self._categories.list_all()
         if not categories:
@@ -79,15 +90,86 @@ class ArchitectureComponentService:
         # The selection service validates the OpenAI response internally and
         # raises before returning if it is invalid, so reaching this point means
         # the result has passed validation.
-        result = self._selection.select(categories=categories, **normalized_input)
+        trace = GenerationTrace()
+        result = self._selection.select(
+            categories=categories, record=trace, **normalized_input
+        )
 
         enriched = to_response(result, categories)
 
         selection_id = self._persist(project_id, result, enriched, normalized_input)
-        return self._to_api_response(
+        response = self._to_api_response(
             selection_id,
             [item.model_dump(mode="json") for item in enriched.selected],
             [item.model_dump(mode="json") for item in enriched.excluded],
+        )
+
+        # Upload the request/response artifacts after the response is returned,
+        # so object storage latency never delays the UI. Failures are logged
+        # inside the task and never surface to the user.
+        if background_tasks is not None:
+            self._schedule_artifact_upload(
+                background_tasks,
+                project=project,
+                project_id=project_id,
+                normalized_input=normalized_input,
+                result=result,
+                trace=trace,
+            )
+
+        return response
+
+    def _schedule_artifact_upload(
+        self,
+        background_tasks: BackgroundTasks,
+        *,
+        project: dict[str, Any],
+        project_id: str,
+        normalized_input: dict[str, Any],
+        result: ComponentSelectionResult,
+        trace: GenerationTrace,
+    ) -> None:
+        generation_id = uuid.uuid4().hex
+        model_name = GenerationStorageService.resolve_model_name()
+        original_user_input = {
+            "name": project.get("name", ""),
+            "description": normalized_input["application_description"],
+            "project_types": list(project.get("project_types", []) or []),
+            "platform": normalized_input["platform"],
+            "stage": normalized_input["stage"],
+            "expected_users": normalized_input["expected_users"],
+            "requirements": normalized_input["requirements"],
+        }
+
+        request_payload = self._generation_storage.build_selection_request_payload(
+            generation_id=generation_id,
+            project_id=project_id,
+            user_id=project.get("user_id"),
+            project_types=project.get("project_types"),
+            original_user_input=original_user_input,
+            prompt=trace.prompt or "",
+            model_name=model_name,
+        )
+        response_payload = self._generation_storage.build_response_payload(
+            generation_id=generation_id,
+            project_id=project_id,
+            model_name=model_name,
+            raw_ai_response=trace.raw_response,
+            parsed_response=result.model_dump(mode="json"),
+            validation_result={"valid": True, "attempts": trace.attempts},
+            duration_seconds=trace.duration_seconds,
+        )
+
+        background_tasks.add_task(
+            self._generation_storage.upload_artifacts,
+            generation_id=generation_id,
+            request_payload=request_payload,
+            response_payload=response_payload,
+        )
+        logger.info(
+            "scheduled generation artifact upload project_id=%s generation_id=%s",
+            project_id,
+            generation_id,
         )
 
     def get_selection(self, project_id: str, user: UserOut) -> ComponentSelectionResponse:

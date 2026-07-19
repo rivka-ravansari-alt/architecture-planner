@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from fastapi import BackgroundTasks
+
 from app.schemas.auth import UserOut
 from app.schemas.component_selection import (
     AddComponentRequest,
@@ -36,9 +38,14 @@ class ProjectController:
         return self._service.create(payload, user)
 
     def generate_architecture_components(
-        self, project_id: str, user: UserOut
+        self,
+        project_id: str,
+        user: UserOut,
+        background_tasks: BackgroundTasks | None = None,
     ) -> ComponentSelectionResponse:
-        return self._architecture_components.generate(project_id, user)
+        return self._architecture_components.generate(
+            project_id, user, background_tasks
+        )
 
     def get_architecture_selection(
         self, project_id: str, user: UserOut

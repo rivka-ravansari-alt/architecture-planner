@@ -115,6 +115,17 @@ class S3StorageClient(StorageClient):
 
 class StorageClientFactory:
     @staticmethod
+    def create_gcs(bucket_name: str) -> "GCSStorageClient":
+        """Return a GCS client for ``bucket_name`` regardless of the configured provider.
+
+        Some artifacts (e.g. generation request/response JSON) must always be
+        written to GCS in every environment, so this deliberately bypasses
+        ``object_storage_provider`` and never falls back to local storage.
+        """
+
+        return GCSStorageClient(bucket_name)
+
+    @staticmethod
     def create(*, bucket_name: str | None = None) -> StorageClient:
         provider = str(settings.object_storage_provider).lower().strip()
         resolved_bucket = bucket_name or settings.object_storage_bucket

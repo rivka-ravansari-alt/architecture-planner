@@ -6,7 +6,7 @@ controller -> service(s) -> repository / clients.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 
 from app.api.controllers.project_controller import ProjectController
 from app.core.dependencies import get_current_user, get_project_controller
@@ -35,10 +35,13 @@ def create_project(
 @router.post("/projects/{project_id}/architecture-components/generate")
 def generate_architecture_components(
     project_id: str,
+    background_tasks: BackgroundTasks,
     user: UserOut = Depends(get_current_user),
     controller: ProjectController = Depends(get_project_controller),
 ) -> ComponentSelectionResponse:
-    return controller.generate_architecture_components(project_id, user)
+    return controller.generate_architecture_components(
+        project_id, user, background_tasks
+    )
 
 
 @router.get("/projects/{project_id}/architecture-components/selection")
